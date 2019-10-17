@@ -102,35 +102,22 @@
  
       var loginStaffId = $('[name=inputStaffId]').val();
       var loginPassword = $('[name=inputPassword]').val();
-      // console.log(loginStaffId);
-      // console.log(loginPassword);
-      // console.log(JSON.stringify({
-      //       loginStaffId: loginStaffId,
-      //       loginPassword: loginPassword
-      //   }));
 
       $.ajax({
-        url:'login.php',
+        url:'testtest.php/user/login',
         type:'POST',
         data:{data:JSON.stringify({
             loginStaffId: loginStaffId,
             loginPassword: loginPassword
         })},
-        
-        dataType:'json',
         success:function(data){
-          console.log(data.status);
-          console.log(data.user);
+          console.log(data);
           window.location.href='index.html';
         },
         error:function(jqXHR, textStatus, errorThrown){
           console.log("failed");
-
         }
-      });
-      
-      
-    });
-     
+      }); 
+    });   
   });
 </script>

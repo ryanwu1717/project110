@@ -28,15 +28,22 @@
 		$jsonStr=json_encode($row);
 		$myArr=json_decode($jsonStr, true);
 		$correctPassword=$myArr['staff_password'];
-		// echo ($correctPassword);
+		//echo ($correctPassword);
 		// var_dump($loginPassword);
 		// var_dump($correctPassword);
 		if($loginPassword == $correctPassword){
 			// echo "same";
-			$_SESSION['id']=$loginStaffId;
+			$sql = "SELECT  staff_name FROM staff.staff WHERE staff_id = :staff_id;";
+			$sth = $conn->prepare($sql);
+		   	$sth->bindParam(':staff_id',$loginStaffId);
+		   	$sth->execute();
+			$row = $sth->fetchColumn(0);
+			
+			$_SESSION['user']=$row;
+			//$_SESSION['login']=ture;
 			$ack = array(
 				'status'=>'success',
-				'user'=>$loginStaffId
+				'user'=>$_SESSION['user']
 			);
 			echo json_encode($ack);
 			header("Content-Type: application/json");

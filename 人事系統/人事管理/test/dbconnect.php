@@ -47,11 +47,14 @@
    				}else if($id=='10'){
 					$_SESSION['id']='user';
    				}else if($id=='11'){
-   					$sql = 'SELECT staff_name FROM staff.staff WHERE staff_id = :staffId';
-   					$sth = $conn->prepare($sql);
-	   				$sth->bindParam(':staff_id',$_SESSION['id']);
-	   					
-					echo($_SESSION['id']);
+   					// if($_SESSION['login']){
+   						
+		   				echo ($_SESSION['user']);
+						//echo($_SESSION['id']);
+   					// }else{
+   					// 	echo "user";
+   					// }
+   					
    				}else if($id=='12'){
 					session_destroy();
    				}

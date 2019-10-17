@@ -1,28 +1,185 @@
 <?php
-	$dbhost = 'localhost';
-	$dbuser = 'postgres';
-	$dbpasswd = '880817';
-	$dbname = 'ryanDB';
-	$dsn = "pgsql:host=".$dbhost.";dbname=".$dbname;
-	 
-	try
-	{
+require 'C:\inetpub\wwwroot\API/vendor/autoload.php';
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
+require_once 'user.php';
+$app = new \Slim\App;
+$conn=null;
+
+function createconn()   
+	{ 
+		global $conn; 
+		$dbhost = 'localhost';
+		$dbuser = 'postgres';
+		$dbpasswd = '880817';
+		$dbname = 'ryanDB';
+		$dsn = "pgsql:host=".$dbhost.";dbname=".$dbname;
+		try
+		{
+		    
+		    $conn = new \PDO($dsn,$dbuser,$dbpasswd);
+		    $conn->exec("SET CHARACTER SET utf8");
+		    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		    //echo "Connected Successfully";
+		}
+		catch(PDOException $e)
+		{
+		    echo "Connection failed: ".$e->getMessage();
+		}
+	}
+createconn();
+$app->group('/user', function () use ($app) {
+	$app->post('/login', function (Request $request, Response $response, array $args) {
+		
+	    $user = new User();
+	    $result = $user->login();
+	    echo $result;
+	    header("Content-Type: application/json");
 	    
-	    $conn = new PDO($dsn,$dbuser,$dbpasswd);
-	    $conn->exec("SET CHARACTER SET utf8");
-	    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	    echo "Connected Successfully";
-	    $sql = "SELECT * FROM `users` WHERE sn > :sn AND name = :name";
-		$sth = $conn->prepare($sql);
-		$sn = 1;
-		$sth->bindParam(':sn',$sn);
-		$sth->execute();
-		$row = $sth->fetch();
-		echo ($row);
-	}
-	catch(PDOException $e)
-	{
-	    echo "Connection failed: ".$e->getMessage();
-	}
+	});
+
+
+
+	$app->get('/login/get', function (Request $request, Response $response, array $args) {
+		
+	    $user = new User();
+	    $result = $user->get();
+	    echo($result);
+	    
+	});
+	$app->get('/logout', function (Request $request, Response $response, array $args) {
+		
+		$user = new User();
+		$result = $user->initial();
+		echo($result);
+	    
+	 });
+});
+
+$app->group('/staff', function () use ($app) {
+	$app->get('/department/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getDepartment();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/position/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getPosition();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/gender/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getGender();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/marriage/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getMarriage();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/insuredcompany/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getInsuredcompany();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/workStatue/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getWorkStatue();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/staffType/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getStaffType();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/educationCondition/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getEducationCondition();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+	$app->get('/staffNum/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $result = $staff->getStaffNum();
+	    echo ($result);
+	    
+	    
+	});
+
+	$app->post('/register/post', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Staff();
+	    $staff->register();
+	    
+	    echo "success";
+	    
+	});
+});
+$app->group('/table', function () use ($app) {
+	$app->get('/getTable', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Table();
+	    $result = $staff->getTable();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+
+
+
 	
+});
+
+$app->run();
+
 ?>

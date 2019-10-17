@@ -281,9 +281,8 @@
   $(function(){
 
     $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/department/get',
         type:'get',
-        data:{id:1},
         dataType:'json',
         success:function(response){
           console.log(response);
@@ -295,9 +294,8 @@
       });
 
     $.ajax({
-      url:'dbconnect.php',
+      url:'testtest.php/staff/position/get',
       type:'get',
-      data:{id:2},
       dataType:'json',
       success:function(response){
         console.log(response);
@@ -308,9 +306,8 @@
     }); 
 
     $.ajax({
-      url:'dbconnect.php',
+      url:'testtest.php/staff/gender/get',
       type:'get',
-      data:{id:3},
       dataType:'json',
       success:function(response){
         console.log(response);
@@ -321,9 +318,8 @@
     }); 
 
       $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/marriage/get',
         type:'get',
-        data:{id:4},
         dataType:'json',
         success:function(response){
           console.log(response);
@@ -334,9 +330,8 @@
       }); 
 
        $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/insuredcompany/get',
         type:'get',
-        data:{id:5},
         dataType:'json',
         success:function(response){
           console.log(response);
@@ -347,9 +342,8 @@
       }); 
 
       $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/workStatue/get',
         type:'get',
-        data:{id:6},
         dataType:'json',
         success:function(response){
           console.log(response);
@@ -360,9 +354,8 @@
       }); 
 
       $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/staffType/get',
         type:'get',
-        data:{id:7},
         dataType:'json',
         success:function(response){
           console.log(response);
@@ -373,9 +366,8 @@
       }); 
 
       $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/educationCondition/get',
         type:'get',
-        data:{id:8},
         dataType:'json',
         success:function(response){
           console.log(response);
@@ -399,25 +391,22 @@
   $(function(){
     
     $("button[name=registerFirstButton]").on('click', function(){
-      $('input').each(function(){
-        console.log($(this).val());
-      });
+      // $('input').each(function(){
+      //   console.log($(this).val());
+      // });
 
-      $('select').each(function(){
-        console.log($(this).val());
-      });
+      // $('select').each(function(){
+      //   console.log($(this).val());
+      // });
       var staff_department = $('[name=buttonDepartment]').val();
       var staff_position = $('[name=buttonPosition]').val();
       $.ajax({
-        url:'dbconnect.php',
+        url:'testtest.php/staff/staffNum/get',
         type:'get',
-        data:{id:'staffNum'},
-        dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position +paddingLeft(this.num,4));
-          });
+          
+          $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position +paddingLeft(response,4));
+          
         } 
       });  
 
@@ -432,19 +421,15 @@
 
       var count;
       $.ajax({
-        async:false,
-        url:'dbconnect.php',
+        url:'testtest.php/staff/staffNum/get',
+        async: false,
         type:'get',
-        data:{id:'staffNum'},
-        dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            count = paddingLeft(this.num,4);
-          });
+                    count = paddingLeft(response,4);
+          
+          
         } 
       });
-
       var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
       console.log(staff_id);
       var staff_department = $('[name=buttonDepartment]').val();
@@ -484,7 +469,7 @@
 
 
       $.ajax({
-        url:'register.php',
+        url:'testtest.php/staff/register/post',
         type:'POST',
         data:{data:JSON.stringify({
             staff_id: staff_id,
@@ -525,6 +510,7 @@
         },
         error:function(jqXHR, textStatus, errorThrown){
           console.log("failed");
+          window.location.href='register.html';
 
         }
       });
