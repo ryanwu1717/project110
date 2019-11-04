@@ -348,33 +348,26 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                   <thead>
                     <tr>
+                      <th>ID</th>
                       <th>中文姓名</th>
                       <th>職稱</th>
                       <th>部門</th>
                       <th>手機</th>
-                      <th>到職日期</th>
-                      <th>員工類型</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tfoot>
                     <tr>
+                      <th>ID</th>
                       <th>中文姓名</th>
                       <th>職稱</th>
                       <th>部門</th>
                       <th>手機</th>
-                      <th>到職日期</th>
-                      <th>員工類型</th>
+                      <th>Action</th>
                     </tr>
                   </tfoot>
                   <tbody name="tbody_inputData">
-                    <tr>
-                      <td>Test</td>
-                      <td>單位成員</td>
-                      <td>校園門市</td>
-                      <td>0946978875</td>
-                      <td>2011-04-25</td>
-                      <td>正職</td>
-                    </tr>
+                    
                     
                   </tbody>
                 </table>
@@ -443,7 +436,6 @@
   <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
 
   <!-- Page level custom scripts -->
-  <script src="js/demo/datatables-demo.js"></script>
 
 </body>
 
@@ -459,16 +451,27 @@
       success:function(response){
         console.log(response);
         $(response).each(function(){
-          $('[name=tbody_inputData]').append('<tr> <td>'+this.name+'</td> <td>'+
+          $('[name=tbody_inputData]').append('<tr> <td>'+this.id+'</td> <td>'+
+                                                         this.name+'</td> <td>'+
                                                          this.position+'</td> <td>'+
                                                          this.department+'</td> <td>'+
                                                          this.phonenumber+'</td> <td>'+
-                                                         this.enddate+'</td> <td>'+
-                                                         this.stafftype+'</td> </tr>');
+                                                         '<button type="button" class="btn btn-primary data-id = "'+this.id+'""><i class="far fa-eye"></i></button>'+
+                                                         '<button type="button" class="btn btn-success"><i class="fas fa-edit" name="updateButton"  onclick="window.location.href=\'/test/register.html?id='+this.id+'\'"></i></button>'+
+                                                         ' <button type="button" class="btn btn-danger"><i class="far fa-trash-alt"></i></button>  </td> </tr>');
         });
+        $('#dataTable').DataTable();
 
       } 
     });
   });
+
+  // $(function(){
+  //   $("button[name=updateButton]").on('click', function(){
+
+
+  //   });
+    
+  // });
 </script>
 
