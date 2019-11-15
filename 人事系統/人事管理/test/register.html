@@ -12,11 +12,11 @@
   <title>SB Admin 2 - Register</title>
 
   <!-- Custom fonts for this template-->
-  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
   <!-- Custom styles for this template-->
-  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="/css/sb-admin-2.min.css" rel="stylesheet">
 
  
 
@@ -44,7 +44,7 @@
              <form action="/action_page.php">
                
               <select class="custom-select" name="buttonDepartment">
-                <option selected disabled>部門</option>
+                <option name = "selectDepartment" selected disabled >部門</option>
               </select>
               </br></br>
 
@@ -53,21 +53,21 @@
               <input type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號"></br>
 
               <select class="custom-select" name="buttonMarriage">
-                <option selected disabled>婚姻狀況</option>
+                <option name = "selectMarriage" selected disabled>婚姻狀況</option>
               </select>
             </form>
           </div>
           <div class="col-sm-3">  
             <form action="/action_page.php">
               <select class="custom-select" name="buttonPosition">
-                <option selected disabled>職位</option>
+                <option name = "selectPosition" selected disabled>職位</option>
               </select>
               </br></br>
 
               <input type="text" class="form-control form-control-user" name="password" placeholder="密碼"></br>
 
               <select class="custom-select" name="buttonGender">
-                <option selected disabled>性別</option>
+                <option name = "selectGender" selected disabled>性別</option>
               </select>
               </br></br>
 
@@ -125,31 +125,31 @@
           <div class="col-sm-3"> 
             <form action="/action_page.php">
               <select class="custom-select" name="buttonInsuredcompany">
-                <option selected disabled>投保公司</option>
+                <option name = "selectInsuredCompany" selected disabled>投保公司</option>
               </select>
               </br></br>
        
               <select class="custom-select" name="buttonStafftype">
-                <option selected disabled> 員工類型</option>
+                <option name = "selectStaffType" selected disabled> 員工類型</option>
               </select>
               </br></br>
 
               <div>
                 離職日期
-                <input type="date" class="form-control"name="leaveDate" placeholder="出生日期"> 
+                <input type="date" class="form-control"name="leaveDate" > 
               </div></br>
             </form> 
           </div>
           <div class="col-sm-3">  
             <form action="/action_page.php">
               <select class="custom-select" name="buttonWorkstatue">
-                <option selected disabled>在職狀態</option>
+                <option name = "selectWorkStatue" selected disabled>在職狀態</option>
               </select>
               </br></br>
 
               <div>
                 到職日期
-                <input type="date" class="form-control" name="endDate" placeholder="出生日期"> 
+                <input type="date" class="form-control" name="endDate" > 
               </div></br>
             </form>
           </div>
@@ -193,7 +193,7 @@
               <input type="text" class="form-control form-control-user" name="educationTime" placeholder="就學期間"></br>
               <input type="text" class="form-control form-control-user" name="schoolName" placeholder="學校"></br>
               <select class="custom-select" name="buttonEducationCondition">
-                <option selected disabled> 就學狀況</option>
+                <option name = "selectEducationCondition" selected disabled> 就學狀況</option>
               </select>
               </br></br></br>
             </form>
@@ -250,21 +250,21 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">否</button>
-          <button type="button" class="btn btn-primary" name = "registerButton"  onclick="window.location.href='/test/login.html'">是</button>
+          <button type="button" class="btn btn-primary" name = "registerButton"  onclick="window.location.href='/page/login'">是</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Bootstrap core JavaScript-->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
   <!-- Core plugin JavaScript-->
-  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+  <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
 
   <!-- Custom scripts for all pages-->
-  <script src="js/sb-admin-2.min.js"></script>
+  <script src="/js/sb-admin-2.min.js"></script>
 
 
 </body>
@@ -274,19 +274,58 @@
 <script type="text/javascript">
   var url = new URL(window.location.href);
   var isUpdate = url.searchParams.get("id");
+  var checkPassword;
   if (isUpdate != null){
     $('[name=typeUpdate]').empty();
     $('[name=typeUpdate]').append("修改資料");
     $.ajax({
-        url:'testtest.php/table/update/post',
+        url:'table/update/post',
         type:'POST',
         data:{data:JSON.stringify({
             staff_id : isUpdate
         })},
-        
         dataType:'json',
         success:function(data){
-          
+          console.log(data);
+          $('[name=selectDepartment]').empty();
+          $('[name=selectDepartment]').append(data[0].department_name);
+          $('[name=selectPosition]').empty();
+          $('[name=selectPosition]').append(data[0].position_name);
+          $("[name=staffName]").val(data[0].staff_name);
+          $("[name=TWid]").val(data[0].staff_TWid);
+          $('[name=selectGender]').empty();
+          $('[name=selectGender]').append(data[0].staff_gender);
+          $('[name=selectMarriage]').empty();
+          $('[name=selectMarriage]').append(data[0].staff_marriage);
+          $("[name=staffBirthday]").val(data[0].staff_birthday);
+          $("[name=companyNumber]").val(data[0].contact_companyNumber);
+          $("[name=homeNumber]").val(data[0].contact_homeNumber);
+          $("[name=phoneNumber]").val(data[0].contact_phoneNumber);
+          $("[name=contactAddress]").val(data[0].contact_contactAddress);
+          $("[name=homeAddress]").val(data[0].contact_homeAddress);
+          $('[name=selectInsuredCompany]').empty();
+          $('[name=selectInsuredCompany]').append(data[0].seniority_insuredCompany);
+          $('[name=selectStaffType]').empty();
+          $('[name=selectStaffType]').append(data[0].seniority_staffType);
+          $('[name=selectWorkStatue]').empty();
+          $('[name=selectWorkStatue]').append(data[0].seniority_workStatue);
+          $("[name=leaveDate]").val(data[0].seniority_leaveDate);
+          $("[name=endDate]").val(data[0].seniority_endDate);
+          $("[name=contactPersonName]").val(data[0].contactPerson_name);
+          $("[name=contactPersonHomeNumber]").val(data[0].contactPerson_homeNumber);
+          $("[name=contactPersonPhone]").val(data[0].contactPerson_phone);
+          $("[name=contactPersonRelation]").val(data[0].contactPerson_relation);
+          $("[name=contactPersonMore]").val(data[0].contactPerson_more);
+          $("[name=educationTime]").val(data[0].education_time);
+          $("[name=educationType]").val(data[0].education_type);
+          $("[name=schoolName]").val(data[0].education_school);
+          $("[name=schoolDepartment]").val(data[0].education_department);
+          $('[name=selectEducationCondition]').empty();
+          $('[name=selectEducationCondition]').append(data[0].education_statue);
+
+          $('[name=registerFirstButton]').empty();
+          $('[name=registerFirstButton]').append("修改資料");
+          checkPassword = data[0].staff_password;
         },
         error:function(jqXHR, textStatus, errorThrown){
           console.log(jqXHR);
@@ -294,147 +333,32 @@
           console.log(errorThrown);
           console.log("failed");
           // window.location.href='register.html';
-
         }
       });
 
-    
-    console.log("in");
-  }
-
-  function paddingLeft(str,lenght){
-    if(str.length >= lenght)
-    return str;
-    else
-    return paddingLeft("0" +str,lenght);
-  }
-  $(function(){
-
-    $.ajax({
-        url:'testtest.php/staff/department/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonDepartment]').append('<option value="'+this.department_id+'">'+this.department_name+'</option>');
-          });
-
-        } 
+      $("button[name=registerFirstButton]").on('click', function(){
+        ch();
+        $('#exampleModalLabel').append('你的id為'+isUpdate);
       });
-
-    $.ajax({
-      url:'testtest.php/staff/position/get',
-      type:'get',
-      dataType:'json',
-      success:function(response){
-        console.log(response);
-        $(response).each(function(){
-          $('[name=buttonPosition]').append('<option value="'+this.position_id+'">'+this.position_name+'</option>');
-        });
-      } 
-    }); 
-
-    $.ajax({
-      url:'testtest.php/staff/gender/get',
-      type:'get',
-      dataType:'json',
-      success:function(response){
-        console.log(response);
-        $(response).each(function(){
-          $('[name=buttonGender]').append('<option value="'+this.type+'">'+this.type+'</option>');
-        });
-      } 
-    }); 
-
-      $.ajax({
-        url:'testtest.php/staff/marriage/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonMarriage]').append('<option value="'+this.type+'">'+this.type+'</option>');
-          });
-        } 
-      }); 
-
-       $.ajax({
-        url:'testtest.php/staff/insuredcompany/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonInsuredcompany]').append('<option value="'+this.companyName+'">'+this.companyName+'</option>');
-          });
-        } 
-      }); 
-
-      $.ajax({
-        url:'testtest.php/staff/workStatue/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonWorkstatue]').append('<option value="'+this.statue+'">'+this.statue+'</option>');
-          });
-        } 
-      }); 
-
-      $.ajax({
-        url:'testtest.php/staff/staffType/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonStafftype]').append('<option value="'+this.type+'">'+this.type+'</option>');
-          });
-        } 
-      }); 
-
-      $.ajax({
-        url:'testtest.php/staff/educationCondition/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonEducationCondition]').append('<option value="'+this.type+'">'+this.type+'</option>');
-          });
-        } 
+      $("button[name=registerButton]").on('click', function(){
+        if($("[name=password]").val() == checkPassword){
+          modify();
+        }else{
+          $("#ckeckRegisterModel").empty();
+          $("#ckeckRegisterModel").append("密碼錯誤");
+          $('[name=registerButton]').hide();
+        }
       });
-
-
     
-  
-   
-    $(".dropdown-menu li a").on('click', function(){
-      $(".btn:first-child").text($(this).text());
-      $(".btn:first-child").val($(this).text());
-     });
     
-  });
-
-  $(function(){
-    
+  }else{
     $("button[name=registerFirstButton]").on('click', function(){
-      $('#exampleModalLabel').empty();
-      $('#ckeckRegisterModel').empty();
-      // $('input').each(function(){
-      //   console.log($(this).val());
-      // });
-
-      // $('select').each(function(){
-      //   console.log($(this).val());
-      // });
+      ch();
       var staff_department = $('[name=buttonDepartment]').val();
       var staff_position = $('[name=buttonPosition]').val();
       var count;
       $.ajax({
-        url:'testtest.php/staff/staffNum/get',
+        url:'/staff/staffNum/get',
         type:'get',
         async: false,
         dataType:'json',
@@ -444,123 +368,132 @@
           $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
         } 
       });  
-
-      var staff_name = $('[name=staffName]').val();
-      var staff_birthday = $('[name=staffBirthday]').val();
-      var staff_gender = $('[name=buttonGender]').val();
-      var staff_marriage = $('[name=buttonMarriage]').val();
-      var staff_TWid = $('[name=TWid]').val();
-      var staff_password = $('[name=password]').val();
-      console.log(staff_name);
-
-      var contact_homeNumber = $('[name=homeNumber]').val();
-      var contact_phoneNumber = $('[name=phoneNumber]').val();
-      var contact_companyNumber = $('[name=companyNumber]').val();
-      var contact_homeAddress = $('[name=homeAddress]').val();
-      var contact_contactAddress = $('[name=contactAddress]').val();
-
-      var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
-      var seniority_workStatue = $('[name=buttonWorkstatue]').val();
-      var seniority_staffType = $('[name=buttonStafftype]').val();
-      var seniority_endDate = $('[name=endDate]').val();
-      var seniority_leaveDate = $('[name=leaveDate]').val();
-
-      var contactPerson_name = $('[name=contactPersonName]').val();
-      var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
-      var contactPerson_phone = $('[name=contactPersonPhone]').val();
-      var contactPerson_relation = $('[name=contactPersonRelation]').val();
-      var contactPerson_more = $('[name=contactPersonMore]').val();
-    
-      var education_time = $('[name=educationTime]').val();
-      var education_type = $('[name=educationType]').val();
-      var education_school = $('[name=schoolName]').val();
-      var education_department = $('[name=schoolDepartment]').val();
-      var education_statue = $('[name=buttonEducationCondition]').val();
-      $.ajax({
-        url:'testtest.php/staff/checkRegister/post',
-        type:'POST',
-        
-        data:{data:JSON.stringify({
-            staff_department: staff_department,
-            staff_position: staff_position,
-            staff_name: staff_name,
-            staff_birthday: staff_birthday,
-            staff_gender: staff_gender,
-            staff_marriage: staff_marriage,
-            staff_TWid: staff_TWid,
-            contact_homeNumber: contact_homeNumber,
-            contact_phoneNumber: contact_phoneNumber,
-            contact_companyNumber: contact_companyNumber,
-            contact_homeAddress: contact_homeAddress,
-            contact_contactAddress: contact_contactAddress,
-            seniority_insuredCompany: seniority_insuredCompany,
-            seniority_workStatue: seniority_workStatue,
-            seniority_staffType: seniority_staffType,
-            seniority_endDate: seniority_endDate,
-            seniority_leaveDate: seniority_leaveDate,
-            contactPerson_name: contactPerson_name,
-            contactPerson_homeNumber: contactPerson_homeNumber,
-            contactPerson_phone: contactPerson_phone,
-            contactPerson_relation: contactPerson_relation,
-            contactPerson_more: contactPerson_more,
-            education_time: education_time,
-            education_type: education_type,
-            education_school: education_school,
-            education_department: education_department,
-            education_statue: education_statue,
-            staff_password: staff_password
-
-        })},
-        
-        dataType:'json',
-        success:function(data){
-          var i = 0;
-          console.log(data.content.split(" "));
-          // var JdataJSON.parse(options.cartlist);
-          var Jdata =data.content.split(" ");
-          // $('#exampleModalLabel').empty();
-          
-          // $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
-          $.each(Jdata, function() {
-            $("#ckeckRegisterModel").append(Jdata[i]+"</br>");
-            i++;
-          });
-          if(data.statue == false){ 
-            $('[name=registerButton]').hide();
-
-          }else{
-            $('[name=registerButton]').show();
-          }
-        },
-        error:function(jqXHR, textStatus, errorThrown){
-          console.log(jqXHR);
-          console.log(textStatus);
-          console.log(errorThrown);
-          console.log("failed");
-          // window.location.href='register.html';
-
-        }
-      });
-
-
-    });  
-  });
-  
-  
-  
-  $(function(){
+    });
     $("button[name=registerButton]").on('click', function(){
+      regis();
+    });
+    
 
-      var count;
+  }
+
+  function ch(){
+    $('#exampleModalLabel').empty();
+    $('#ckeckRegisterModel').empty();
+    // $('input').each(function(){
+    //   console.log($(this).val());
+    // });
+
+    // $('select').each(function(){
+    //   console.log($(this).val());
+    // });
+    var staff_department = $('[name=buttonDepartment]').val();
+    var staff_position = $('[name=buttonPosition]').val();
+    var staff_name = $('[name=staffName]').val();
+    var staff_birthday = $('[name=staffBirthday]').val();
+    var staff_gender = $('[name=buttonGender]').val();
+    var staff_marriage = $('[name=buttonMarriage]').val();
+    var staff_TWid = $('[name=TWid]').val();
+    var staff_password = $('[name=password]').val();
+    console.log(staff_name);
+
+    var contact_homeNumber = $('[name=homeNumber]').val();
+    var contact_phoneNumber = $('[name=phoneNumber]').val();
+    var contact_companyNumber = $('[name=companyNumber]').val();
+    var contact_homeAddress = $('[name=homeAddress]').val();
+    var contact_contactAddress = $('[name=contactAddress]').val();
+
+    var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+    var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+    var seniority_staffType = $('[name=buttonStafftype]').val();
+    var seniority_endDate = $('[name=endDate]').val();
+    var seniority_leaveDate = $('[name=leaveDate]').val();
+
+    var contactPerson_name = $('[name=contactPersonName]').val();
+    var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+    var contactPerson_phone = $('[name=contactPersonPhone]').val();
+    var contactPerson_relation = $('[name=contactPersonRelation]').val();
+    var contactPerson_more = $('[name=contactPersonMore]').val();
+  
+    var education_time = $('[name=educationTime]').val();
+    var education_type = $('[name=educationType]').val();
+    var education_school = $('[name=schoolName]').val();
+    var education_department = $('[name=schoolDepartment]').val();
+    var education_statue = $('[name=buttonEducationCondition]').val();
+    $.ajax({
+      url:'/staff/checkRegister/post',
+      type:'POST',
+      
+      data:{data:JSON.stringify({
+          staff_department: staff_department,
+          staff_position: staff_position,
+          staff_name: staff_name,
+          staff_birthday: staff_birthday,
+          staff_gender: staff_gender,
+          staff_marriage: staff_marriage,
+          staff_TWid: staff_TWid,
+          contact_homeNumber: contact_homeNumber,
+          contact_phoneNumber: contact_phoneNumber,
+          contact_companyNumber: contact_companyNumber,
+          contact_homeAddress: contact_homeAddress,
+          contact_contactAddress: contact_contactAddress,
+          seniority_insuredCompany: seniority_insuredCompany,
+          seniority_workStatue: seniority_workStatue,
+          seniority_staffType: seniority_staffType,
+          seniority_endDate: seniority_endDate,
+          seniority_leaveDate: seniority_leaveDate,
+          contactPerson_name: contactPerson_name,
+          contactPerson_homeNumber: contactPerson_homeNumber,
+          contactPerson_phone: contactPerson_phone,
+          contactPerson_relation: contactPerson_relation,
+          contactPerson_more: contactPerson_more,
+          education_time: education_time,
+          education_type: education_type,
+          education_school: education_school,
+          education_department: education_department,
+          education_statue: education_statue,
+          staff_password: staff_password
+
+      })},
+      
+      dataType:'json',
+      success:function(data){
+        var i = 0;
+        console.log(data.content.split(" "));
+        // var JdataJSON.parse(options.cartlist);
+        var Jdata =data.content.split(" ");
+        // $('#exampleModalLabel').empty();
+        
+        // $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
+        $.each(Jdata, function() {
+          $("#ckeckRegisterModel").append(Jdata[i]+"</br>");
+          i++;
+        });
+        if(data.statue == false){ 
+          $('[name=registerButton]').hide();
+
+        }else{
+          $('[name=registerButton]').show();
+        }
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+        console.log("failed");
+        // window.location.href='register.html';
+
+      }
+    });
+  }
+  function regis(){
+    var count;
       $.ajax({
-        url:'testtest.php/staff/staffNum/get',
+        url:'staff/staffNum/get',
         async: false,
         type:'get',
         dataType:'json',
         success:function(response){
-          count = paddingLeft(response.num,4);
-          
-          
+          count = paddingLeft(response.num,4);      
         } 
       });
       var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
@@ -599,10 +532,8 @@
       var education_department = $('[name=schoolDepartment]').val();
       var education_statue = $('[name=buttonEducationCondition]').val();
 
-
-
       $.ajax({
-        url:'testtest.php/staff/register/post',
+        url:'staff/register/post',
         type:'POST',
         data:{data:JSON.stringify({
             staff_id: staff_id,
@@ -635,8 +566,7 @@
             education_statue: education_statue,
             staff_password: staff_password
 
-        })},
-        
+        })},        
         dataType:'json',
         success:function(data){
            console.log("success");
@@ -644,9 +574,318 @@
         error:function(jqXHR, textStatus, errorThrown){
           console.log("failed");
           // window.location.href='register.html';
-
         }
       });
+  }
+  function modify(){
+    var count;
+      $.ajax({
+        url:'staff/staffNum/get',
+        async: false,
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          count = paddingLeft(response.num,4);      
+        } 
+      });
+      var staff_id = isUpdate;
+      console.log(staff_id);
+      var staff_department = $('[name=buttonDepartment]').val();
+      var staff_position = $('[name=buttonPosition]').val();
+      var staff_name = $('[name=staffName]').val();
+      var staff_birthday = $('[name=staffBirthday]').val();
+      var staff_gender = $('[name=buttonGender]').val();
+      var staff_marriage = $('[name=buttonMarriage]').val();
+      var staff_TWid = $('[name=TWid]').val();
+      var staff_password = $('[name=password]').val();
+      
+
+      var contact_homeNumber = $('[name=homeNumber]').val();
+      var contact_phoneNumber = $('[name=phoneNumber]').val();
+      var contact_companyNumber = $('[name=companyNumber]').val();
+      var contact_homeAddress = $('[name=homeAddress]').val();
+      var contact_contactAddress = $('[name=contactAddress]').val();
+
+      var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+      var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+      var seniority_staffType = $('[name=buttonStafftype]').val();
+      var seniority_endDate = $('[name=endDate]').val();
+      var seniority_leaveDate = $('[name=leaveDate]').val();
+
+      var contactPerson_name = $('[name=contactPersonName]').val();
+      var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+      var contactPerson_phone = $('[name=contactPersonPhone]').val();
+      var contactPerson_relation = $('[name=contactPersonRelation]').val();
+      var contactPerson_more = $('[name=contactPersonMore]').val();
+    
+      var education_time = $('[name=educationTime]').val();
+      var education_type = $('[name=educationType]').val();
+      var education_school = $('[name=schoolName]').val();
+      var education_department = $('[name=schoolDepartment]').val();
+      var education_statue = $('[name=buttonEducationCondition]').val();
+
+      $.ajax({
+        url:'/staff/modify/post',
+        type:'POST',
+        data:{data:JSON.stringify({
+            staff_id: staff_id,
+            staff_department: staff_department,
+            staff_position: staff_position,
+            staff_name: staff_name,
+            staff_birthday: staff_birthday,
+            staff_gender: staff_gender,
+            staff_marriage: staff_marriage,
+            staff_TWid: staff_TWid,
+            contact_homeNumber: contact_homeNumber,
+            contact_phoneNumber: contact_phoneNumber,
+            contact_companyNumber: contact_companyNumber,
+            contact_homeAddress: contact_homeAddress,
+            contact_contactAddress: contact_contactAddress,
+            seniority_insuredCompany: seniority_insuredCompany,
+            seniority_workStatue: seniority_workStatue,
+            seniority_staffType: seniority_staffType,
+            seniority_endDate: seniority_endDate,
+            seniority_leaveDate: seniority_leaveDate,
+            contactPerson_name: contactPerson_name,
+            contactPerson_homeNumber: contactPerson_homeNumber,
+            contactPerson_phone: contactPerson_phone,
+            contactPerson_relation: contactPerson_relation,
+            contactPerson_more: contactPerson_more,
+            education_time: education_time,
+            education_type: education_type,
+            education_school: education_school,
+            education_department: education_department,
+            education_statue: education_statue,
+            staff_password: staff_password
+
+        })},        
+        dataType:'json',
+        success:function(data){
+           console.log("success");
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+          console.log("failed");
+          // window.location.href='register.html';
+        }
+      });
+  }
+
+  function paddingLeft(str,lenght){
+    if(str.length >= lenght)
+    return str;
+    else
+    return paddingLeft("0" +str,lenght);
+  }
+  $(function(){
+
+    $.ajax({
+        url:'/staff/department/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonDepartment]').append('<option value="'+this.department_id+'">'+this.department_name+'</option>');
+          });
+
+        } 
+      });
+
+    $.ajax({
+      url:'/staff/position/get',
+      type:'get',
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        $(response).each(function(){
+          $('[name=buttonPosition]').append('<option value="'+this.position_id+'">'+this.position_name+'</option>');
+        });
+      } 
+    }); 
+
+    $.ajax({
+      url:'/staff/gender/get',
+      type:'get',
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        $(response).each(function(){
+          $('[name=buttonGender]').append('<option value="'+this.type+'">'+this.type+'</option>');
+        });
+      } 
+    }); 
+
+      $.ajax({
+        url:'/staff/marriage/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonMarriage]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          });
+        } 
+      }); 
+
+       $.ajax({
+        url:'/staff/insuredcompany/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonInsuredcompany]').append('<option value="'+this.companyName+'">'+this.companyName+'</option>');
+          });
+        } 
+      }); 
+
+      $.ajax({
+        url:'/staff/workStatue/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonWorkstatue]').append('<option value="'+this.statue+'">'+this.statue+'</option>');
+          });
+        } 
+      }); 
+
+      $.ajax({
+        url:'/staff/staffType/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonStafftype]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          });
+        } 
+      }); 
+
+      $.ajax({
+        url:'/staff/educationCondition/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonEducationCondition]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          });
+        } 
+      });
+
+
+    
+  
+   
+    $(".dropdown-menu li a").on('click', function(){
+      $(".btn:first-child").text($(this).text());
+      $(".btn:first-child").val($(this).text());
+     });
+    
+  });
+
+  
+  
+  
+  
+  $(function(){
+    $("button[name=registerButton]").on('click', function(){
+      // var count;
+      // $.ajax({
+      //   url:'testtest.php/staff/staffNum/get',
+      //   async: false,
+      //   type:'get',
+      //   dataType:'json',
+      //   success:function(response){
+      //     count = paddingLeft(response.num,4);      
+      //   } 
+      // });
+      // var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+      // console.log(staff_id);
+      // var staff_department = $('[name=buttonDepartment]').val();
+      // var staff_position = $('[name=buttonPosition]').val();
+      // var staff_name = $('[name=staffName]').val();
+      // var staff_birthday = $('[name=staffBirthday]').val();
+      // var staff_gender = $('[name=buttonGender]').val();
+      // var staff_marriage = $('[name=buttonMarriage]').val();
+      // var staff_TWid = $('[name=TWid]').val();
+      // var staff_password = $('[name=password]').val();
+      
+
+      // var contact_homeNumber = $('[name=homeNumber]').val();
+      // var contact_phoneNumber = $('[name=phoneNumber]').val();
+      // var contact_companyNumber = $('[name=companyNumber]').val();
+      // var contact_homeAddress = $('[name=homeAddress]').val();
+      // var contact_contactAddress = $('[name=contactAddress]').val();
+
+      // var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+      // var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+      // var seniority_staffType = $('[name=buttonStafftype]').val();
+      // var seniority_endDate = $('[name=endDate]').val();
+      // var seniority_leaveDate = $('[name=leaveDate]').val();
+
+      // var contactPerson_name = $('[name=contactPersonName]').val();
+      // var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+      // var contactPerson_phone = $('[name=contactPersonPhone]').val();
+      // var contactPerson_relation = $('[name=contactPersonRelation]').val();
+      // var contactPerson_more = $('[name=contactPersonMore]').val();
+    
+      // var education_time = $('[name=educationTime]').val();
+      // var education_type = $('[name=educationType]').val();
+      // var education_school = $('[name=schoolName]').val();
+      // var education_department = $('[name=schoolDepartment]').val();
+      // var education_statue = $('[name=buttonEducationCondition]').val();
+
+
+
+      // $.ajax({
+      //   url:'testtest.php/staff/register/post',
+      //   type:'POST',
+      //   data:{data:JSON.stringify({
+      //       staff_id: staff_id,
+      //       staff_department: staff_department,
+      //       staff_position: staff_position,
+      //       staff_name: staff_name,
+      //       staff_birthday: staff_birthday,
+      //       staff_gender: staff_gender,
+      //       staff_marriage: staff_marriage,
+      //       staff_TWid: staff_TWid,
+      //       contact_homeNumber: contact_homeNumber,
+      //       contact_phoneNumber: contact_phoneNumber,
+      //       contact_companyNumber: contact_companyNumber,
+      //       contact_homeAddress: contact_homeAddress,
+      //       contact_contactAddress: contact_contactAddress,
+      //       seniority_insuredCompany: seniority_insuredCompany,
+      //       seniority_workStatue: seniority_workStatue,
+      //       seniority_staffType: seniority_staffType,
+      //       seniority_endDate: seniority_endDate,
+      //       seniority_leaveDate: seniority_leaveDate,
+      //       contactPerson_name: contactPerson_name,
+      //       contactPerson_homeNumber: contactPerson_homeNumber,
+      //       contactPerson_phone: contactPerson_phone,
+      //       contactPerson_relation: contactPerson_relation,
+      //       contactPerson_more: contactPerson_more,
+      //       education_time: education_time,
+      //       education_type: education_type,
+      //       education_school: education_school,
+      //       education_department: education_department,
+      //       education_statue: education_statue,
+      //       staff_password: staff_password
+
+      //   })},
+        
+      //   dataType:'json',
+      //   success:function(data){
+      //      console.log("success");
+      //   },
+      //   error:function(jqXHR, textStatus, errorThrown){
+      //     console.log("failed");
+      //     // window.location.href='register.html';
+
+      //   }
+      // });
       
     });
      

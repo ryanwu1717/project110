@@ -1,11 +1,16 @@
 <?php
-require 'C:\inetpub\wwwroot\API/vendor/autoload.php';
+require 'vendor/autoload.php';
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 require_once 'user.php';
 $app = new \Slim\App;
 $conn=null;
+$container = $app->getContainer();
 
+// Register component on container
+$container['view'] = function ($container) {
+    return new \Slim\Views\PhpRenderer(___DIR__);
+};
 function createconn()   
 	{ 
 		global $conn; 
@@ -29,6 +34,11 @@ function createconn()
 	}
 createconn();
 $app->group('/user', function () use ($app) {
+	$app->get('/view', function (Request $request, Response $response, array $args) {		
+		return $this->view->render($response, '404.html', [
+	    ]);
+	});
+
 	$app->post('/login', function (Request $request, Response $response, array $args) {		
 	    $user = new User();
 	    $result = $user->login();
@@ -147,6 +157,11 @@ $app->group('/staff', function () use ($app) {
 	    $staff = new Staff();
 	    $staff->register();  
 	});
+
+	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
+	    $staff = new Staff();
+	    $staff->modify();  
+	});
 });
 $app->group('/table', function () use ($app) {
 	$app->get('/getTable', function (Request $request, Response $response, array $args) {
@@ -166,7 +181,9 @@ $app->group('/table', function () use ($app) {
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
-	    // return $response;
+
+	    
+	    return $response;
 	    
 	});
 
