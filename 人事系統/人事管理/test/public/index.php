@@ -13,48 +13,69 @@ $container = $app->getContainer();
 $container['view'] = function ($container) {
     return new PhpRenderer(__DIR__.'/../view');
 };
-function createconn()   
-	{ 
-		global $conn; 
-		$dbhost = '140.127.40.40';
-		$dbport = '25432';
-		$dbuser = 'minlab';
-		$dbpasswd = '970314970314';
-		$dbname = 'humanresource';
-		$dsn = "pgsql:host=".$dbhost.";port=".$dbport.";dbname=".$dbname;
-		try
-		{
-		    
-		    $conn = new \PDO($dsn,$dbuser,$dbpasswd);
-		    $conn->exec("SET CHARACTER SET utf8");
-		    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		    //echo "Connected Successfully";
-		}
-		catch(PDOException $e)
-		{
-		    echo "Connection failed: ".$e->getMessage();
-		}
-	}
 createconn();
+session_start();
+function createconn()   
+{ 
+	global $conn; 
+	$dbhost = '140.127.40.40';
+	$dbport = '25432';
+	$dbuser = 'minlab';
+	$dbpasswd = '970314970314';
+	$dbname = 'humanresource';
+	$dsn = "pgsql:host=".$dbhost.";port=".$dbport.";dbname=".$dbname;
+	try
+	{
+	    
+	    $conn = new \PDO($dsn,$dbuser,$dbpasswd);
+	    $conn->exec("SET CHARACTER SET utf8");
+	    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	    //echo "Connected Successfully";
+	}
+	catch(PDOException $e)
+	{
+	    echo "Connection failed: ".$e->getMessage();
+	}
+}
+
+class ViewMiddleware
+{
+    public function __invoke($request, $response, $next)
+    {
+    	if(isset($_SESSION['id']))
+        	$response = $next($request, $response);
+    	else{
+			header("Location: /page/login"); 	
+    	}
+        return $response;
+    }
+}
+$app->get('/', function (Request $request, Response $response, array $args) {		
+	return $response->withRedirect('/page/home', 301);
+});
 $app->group('/page', function () use ($app) {
-	$app->get('/home', function (Request $request, Response $response, array $args) {		
-		return $this->view->render($response, '/index.html', [
-	    ]);
-	});
-	$app->get('/register', function (Request $request, Response $response, array $args) {		
-		return $this->view->render($response, '/register.html', [
-	    ]);
-	});
-	$app->get('/table', function (Request $request, Response $response, array $args) {		
-		return $this->view->render($response, '/tables.html', [
-	    ]);
-	});
-	$app->get('/login', function (Request $request, Response $response, array $args) {		
+	$app->group('', function () use ($app) {
+		$app->get('/home', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/index.html', [
+		    ]);
+		});
+		$app->get('/register', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/register.html', [
+		    ]);
+		});
+		$app->get('/table', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/tables.html', [
+		    ]);
+		});
+		$app->get('/modify', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/register.html', [
+		    ]);
+		});
+	})->add( new ViewMiddleware() );
+	$app->get('/login', function (Request $request, Response $response, array $args) {	
+		session_destroy();
+		session_start();
 		return $this->view->render($response, '/login.html', [
-	    ]);
-	});
-	$app->get('/modify', function (Request $request, Response $response, array $args) {		
-		return $this->view->render($response, '/register.html', [
 	    ]);
 	});
 });
@@ -72,23 +93,13 @@ $app->group('/user', function () use ($app) {
 	$app->post('/login', function (Request $request, Response $response, array $args) {		
 	    $user = new User();
 	    $result = $user->login();
-	    echo $result;
-	    header("Content-Type: application/json");	    
-	});
-
-
-
-	$app->get('/login/get', function (Request $request, Response $response, array $args) {		
-	    $user = new User();
-	    $result = $user->get();
-	    echo($result);
-	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+		return $response;
 	});
 	$app->get('/logout', function (Request $request, Response $response, array $args) {		
-		$user = new User();
-		$result = $user->initial();
-		echo($result);	    
-	 });
+		return $response;
+ 	});
 });
 
 $app->group('/staff', function () use ($app) {

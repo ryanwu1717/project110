@@ -1,5 +1,4 @@
 <?php
-	session_start();
 	Class User{
 		var $result;   
 		function login()
@@ -8,39 +7,35 @@
 			$_POST=json_decode($_POST['data'],true);
 		   	$loginStaffId = $_POST['loginStaffId'];
 			$loginPassword = $_POST['loginPassword'];		 	
-			$sql ="SELECT  staff_password FROM staff.staff WHERE staff_id = :staff_id;";
+			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password;";
 			$sth = $conn->prepare($sql);
 		   	$sth->bindParam(':staff_id',$loginStaffId);
-		   	$sth->execute();
-			$row = $sth->fetch();
-			$jsonStr=json_encode($row);
-			$myArr=json_decode($jsonStr, true);
-			$correctPassword=$myArr['staff_password'];		
-			if($loginPassword == $correctPassword){
-				$sql = "SELECT  staff_name FROM staff.staff WHERE staff_id = :staff_id;";
-				$sth = $conn->prepare($sql);
-			   	$sth->bindParam(':staff_id',$loginStaffId);
-			   	$sth->execute();
-				$row = $sth->fetchColumn(0);
-				$_SESSION['user']=$row;			
-				return $row;
+		   	$sth->bindParam(':staff_password',$loginPassword);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row)==1){
+				$_SESSION['id']=$loginStaffId;
+				$ack = array(
+					'status' => 'success', 
+				);
 			}else{
-				echo"else";
-				header("Location: http://localhost/test/login.html"); 
+				$ack = array(
+					'status' => 'failed', 
+					'data' =>count($row)
+				);
 			}
+			return $ack;
 		} 
 
 		function get(){ 
-			//$_SESSION['user'] = 'USER';
-			$result = $_SESSION['user'];				
+			$result = $_SESSION['id'];
 			return $result;
 		} 
 
 		function initial(){
-			$_SESSION['user'] = 'USER';
-			$result = $_SESSION['user'];		
+			$result = $_SESSION['id'];		
 			return $result;
-		}		
+		}
 	}
 
 	Class Staff{
