@@ -574,9 +574,9 @@ setTimeout(function(){
     searchChatroom();
     searchChat();},200);
 
-setInterval(function(){
-    searchChatroom();
-    searchChat();},1000);
+// setInterval(function(){
+//     searchChatroom();
+//     searchChat();},1000);
 $name='yuyt';
 function searchChatroom(){
 	$.ajax({
@@ -593,12 +593,13 @@ function searchChatroom(){
           chatName=this.chatName;
         }
         else{
-          chatName=this.UserName;
+          chatName=this.staff_name;
         }
         $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget(this);" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+this.LastTime+'</span></h5>                  <p>'+this.content+'</p>                </div>              </div>            </div>');
       });
-    } 
+    searchChatroom();} 
   });
+
 }
 var chatID=-1;
 function getTarget(div){
@@ -624,6 +625,7 @@ function searchChat(){
         }
 
       });
+    searchChat();
     }
   })
 }
