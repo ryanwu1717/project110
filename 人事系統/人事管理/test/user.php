@@ -45,7 +45,16 @@
 
 	Class Staff{
 		var $result;   
-		
+		function userId()
+		{ 
+			global $conn;			 	
+			substr("abcd", -3, 1)
+			$sql ='SELECT * from staff_information.department;';	
+			$statement = $conn->prepare($sql);
+			$statement->execute();
+			$row = $statement->fetchAll();			
+			return $row;
+		}
 		function getDepartment()
 		{ 
 			global $conn;			 	
@@ -134,6 +143,26 @@
 			$statement->execute();
 			$row = $statement->fetchColumn(0);			
 			return $row;
+		}
+		function paddingLeft(str,lenght){
+		    if(str.length >= lenght)
+		      return str;
+		    else
+		      return paddingLeft("0" +str,lenght);
+		}
+		function staffId()
+		{
+			global $conn;
+			$_POST=json_decode($_POST['data'],true);		
+			$dp=$_POST['staff_department']+$_POST['staff_position'];	 	
+			$sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';	
+			$statement = $conn->prepare($sql);
+			$sth->bindParam(':dp','%'+$dp+'%');
+			$statement->execute();
+			$row = $statement->fetchColumn(0);
+			$row+=1;
+			$newId = $dp + 	paddingLeft($row,4);	
+			return $newId;
 		}
 
        function checkString($strings, $standard){

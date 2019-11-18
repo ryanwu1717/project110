@@ -184,6 +184,18 @@ $app->group('/staff', function () use ($app) {
 	    return $response;  
 	});
 
+	$app->post('/staffId/post', function (Request $request, Response $response, array $args) {
+	    $staff = new Staff();
+	    $result = $staff->staffId();
+	    $ack = array(
+			'id'=>$result
+		);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($ack);
+		//echo $response['num'];
+	    return $response;  
+	});
+
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff();
 	    $result = $staff->checkRegister();

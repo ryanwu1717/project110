@@ -357,15 +357,30 @@
       var staff_department = $('[name=buttonDepartment]').val();
       var staff_position = $('[name=buttonPosition]').val();
       var count;
-      $.ajax({
-        url:'/staff/staffNum/get',
-        type:'get',
-        async: false,
-        dataType:'json',
-        success:function(response){
-          count = paddingLeft(response.num,4); 
+      // $.ajax({
+      //   url:'/staff/staffNum/get',
+      //   type:'get',
+      //   async: false,
+      //   dataType:'json',
+      //   success:function(response){
+      //     count = paddingLeft(response.num,4); 
           
-          $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
+      //     $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
+      //   } 
+      // });
+      data['staff_department'] = $('[name=buttonDepartment]').val();
+      data['staff_position'] = $('[name=buttonPosition]').val();
+      $.ajax({
+        url:'/staff/staffId/post',
+        type:'post',
+        async: false,
+        data:{data:JSON.stringify({
+          staff_department: staff_department,
+          staff_position: staff_position,
+        })},
+        dataType:'json',
+        success:function(data){
+          $('#exampleModalLabel').append('你的id為'+ data.id);
         } 
       });  
     });

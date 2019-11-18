@@ -131,6 +131,31 @@
 			return $row;
 		}
 
+		public function paddingLeft($str,$strLenght){
+			$len = strlen($str);
+		    if($len >= $strLenght)
+		      return $str;
+		    else
+		      return $this->paddingLeft("0".$str,$strLenght);
+		}
+		public function staffId()
+		{
+			global $conn;
+			$_POST=json_decode($_POST['data'],true);		
+			$dp='%'.$_POST['staff_department'].$_POST['staff_position'].'%';	 	
+			$sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';	
+			$statement = $conn->prepare($sql);
+			$statement->bindParam(':dp',$dp);
+			$statement->execute();
+			$row = $statement->fetchColumn(0);
+			$row+=1;
+			$row = (string)$row;
+			$newId = $this->paddingLeft($row,4);
+			$newId = $_POST['staff_department'].$_POST['staff_position'].$newId;
+			// echo $newId;	
+			return $newId;
+		}
+
        function checkString($strings, $standard){
        		// echo "inCheck";
            if(preg_match($standard, $strings, $hereArray)) {
