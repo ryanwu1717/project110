@@ -1,22 +1,27 @@
 <?php
-	session_start();
-	$id = $_GET['ID'];
-	if($id == '1'){
-		$_SESSION['id'] = '1';
-	}else if($id=='2'){
-		$_SESSION['id'] = '2';
-	}else if($id=='3'){
-		echo($_SESSION['id']);
-	}else if($id=='4'){
-		$dbuser='browser';
-		$dbpassword='880721';
-		$dbhost='localhost';
-		$dbname="work";
-		$dsn = "pgsql:host=".$dbhost.";dbname=".$dbname;
-		$conn=new PDO($dsn,$dbuser,$dbpassword);
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
 
-		// $sql = 'SELECT * FROM "public"."testTable" WHERE (name= :name OR "from"=:name) order by "time";';
-		$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'DD MON\')as "LastTime","content","chatName","UserName"
+require 'vendor/autoload.php';
+
+$app = new \Slim\App;
+
+session_start();
+
+$container = $app->getContainer();
+$container['db'] = function($c) {
+    $dbuser='browser';
+	$dbpassword='880721';
+	$dbhost='localhost';
+	$dbname="work";
+	$dsn = "pgsql:host=".$dbhost.";dbname=".$dbname;
+	$conn=new PDO($dsn,$dbuser,$dbpassword);
+    return $conn;
+};
+
+$app->get('/list/get', function (Request $request, Response $response, array $args) {
+
+	$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'DD MON\')as "LastTime","content","chatName","UserName"
 				FROM(
 					SELECT "chatWith"."chatID","chatToWhom"
 					FROM(
@@ -48,8 +53,8 @@
 						where "LastTime"="sentTime")as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
 						LEFT JOIN "chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
 						LEFT JOIN"userInfo" on "receiverList"."chatToWhom"="userInfo"."UID"
-						order by "LastTime" desc;';
-		$sth = $conn->prepare($sql);
+						order by "LastTime" asc;';
+		$sth = $this->db->prepare($sql);
 		$UID =$_SESSION['id'];
 		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 		$sth->execute();
@@ -57,21 +62,14 @@
 		echo(json_encode($row));
 		
 		header("Content-Type: application/json");
-	}
-	else if($id=='5'){
-		$dbuser='browser';
-		$dbpassword='880721';
-		$dbhost='localhost';
-		$dbname="work";
-		$dsn = "pgsql:host=".$dbhost.";dbname=".$dbname;
-		$conn=new PDO($dsn,$dbuser,$dbpassword);
+    return $response;
+});
+$app->get('/content/get', function (Request $request, Response $response, array $args) {
 
-		
-		$sql='SELECT content, to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)as "diff"
+	$sql = 'SELECT content, to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)as "diff"
 			FROM public."chatContent"
 			WHERE "chatID"= :chatID ;';
-
-		$sth = $conn->prepare($sql);
+		$sth = $this->db->prepare($sql);
 		$UID =$_SESSION['id'];
 		$chatID=$_GET['chatID'];
 		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
@@ -81,5 +79,22 @@
 		echo(json_encode($row));
 		
 		header("Content-Type: application/json");
-	}
-?>
+    return $response;
+});
+$app->get('/sendMsg', function (Request $request, Response $response, array $args) {
+
+	$sql = 'INSERT INTO public."chatContent"(	content, "UID", "sentTime", "chatID")
+	VALUES ( :Msg , :UID , NOW(), :chatID );';
+		$sth = $this->db->prepare($sql);
+		$UID =$_SESSION['id'];
+		$chatID=$_POST['chatID'];
+		$Msg=$_POST['Msg'];
+		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+		$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+		$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
+		$sth->execute();
+		
+		header("Content-Type: application/json");
+    return $response;
+});
+$app->run();

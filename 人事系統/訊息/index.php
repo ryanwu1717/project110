@@ -496,7 +496,8 @@ img{ max-width:100%;}
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
-                <textarea style="word-wrap:break-word;width:100%;"placeholder="Type a message"></textarea>
+                <!-- <textarea style="word-wrap:break-word;width:100%;"placeholder="Type a message" id="textinput"></textarea> -->
+                <input id="textinput"type="text" />
                 <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
             </div>
           </div>
@@ -572,15 +573,16 @@ img{ max-width:100%;}
 setTimeout(function(){
     searchChatroom();
     searchChat();},200);
+
 setInterval(function(){
     searchChatroom();
     searchChat();},1000);
 $name='yuyt';
 function searchChatroom(){
 	$.ajax({
-    url:'sql.php',
+    url:'chat.php/list/get',
     type:'get',
-    data:{ID:'4'},
+    data:{},
     dataType:'json',
     success:function(response){
       console.log(response);
@@ -606,10 +608,9 @@ function getTarget(div){
 }
 function searchChat(){
   $.ajax({
-    url:'sql.php',
+    url:'chat.php/content/get',
     type:'get',
-    data:{ID:'5',
-          chatID:chatID},
+    data:{chatID:chatID},
     dataType:'json',
     success:function(response){
       console.log(response);
@@ -624,6 +625,27 @@ function searchChat(){
 
       });
     }
+  })
+}
+var Msg ="";
+
+$("#textinput").keyup(function(e){
+  var code=e.which;
+  if(code==13){
+    if($("#textinput").val()!="" && !$.trim($("#textarea").val())){
+      sendMsg();
+      $("#textinput").val("");
+    }
+  }
+});
+function sendMsg(){
+  Msg=$("#textinput").val();
+  $.ajax({
+    url:'chat.php/sendMsg',
+    type:'POST',
+    data:{Msg:Msg,
+          chatID:chatID},
+    dataType:'json'
   })
 }
 </script>
