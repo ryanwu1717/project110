@@ -20,7 +20,7 @@ function createconn()
 		$dbport = '25432';
 		$dbuser = 'minlab';
 		$dbpasswd = '970314970314';
-		$dbname = 'personresource';
+		$dbname = 'humanresource';
 		$dsn = "pgsql:host=".$dbhost.";port=".$dbport.";dbname=".$dbname;
 		try
 		{
@@ -186,12 +186,19 @@ $app->group('/staff', function () use ($app) {
 
 	$app->post('/register/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff();
-	    $staff->register();  
+	    $ack = $staff->register();  
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($ack);
+	    return $response;   
+
 	});
 
 	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff();
-	    $staff->modify();  
+	    $ack = $staff->modify();  
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($ack);
+	    return $response;   
 	});
 });
 $app->group('/table', function () use ($app) {

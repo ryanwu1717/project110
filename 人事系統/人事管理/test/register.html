@@ -48,9 +48,9 @@
               </select>
               </br></br>
 
-              <input type="text" class="form-control form-control-user" name="staffName" placeholder="中文姓名"></br>
+              <input type="text" class="form-control form-control-user" name="staffName" placeholder="中文姓名" value="笑哈哈"></br>
 
-              <input type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號"></br>
+              <input type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號" value="A111111111"></br>
 
               <select class="custom-select" name="buttonMarriage">
                 <option name = "selectMarriage" selected disabled>婚姻狀況</option>
@@ -64,7 +64,7 @@
               </select>
               </br></br>
 
-              <input type="text" class="form-control form-control-user" name="password" placeholder="密碼"></br>
+              <input type="password" class="form-control form-control-user" name="password" placeholder="密碼" value="11111111"></br>
 
               <select class="custom-select" name="buttonGender">
                 <option name = "selectGender" selected disabled>性別</option>
@@ -250,7 +250,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">否</button>
-          <button type="button" class="btn btn-primary" name = "registerButton"  onclick="window.location.href='/page/login'">是</button>
+          <button type="button" class="btn btn-primary" name = "registerButton">是</button>
         </div>
       </div>
     </div>
@@ -279,7 +279,7 @@
     $('[name=typeUpdate]').empty();
     $('[name=typeUpdate]').append("修改資料");
     $.ajax({
-        url:'table/update/post',
+        url:'/table/update/post',
         type:'POST',
         data:{data:JSON.stringify({
             staff_id : isUpdate
@@ -488,7 +488,7 @@
   function regis(){
     var count;
       $.ajax({
-        url:'staff/staffNum/get',
+        url:'/staff/staffNum/get',
         async: false,
         type:'get',
         dataType:'json',
@@ -496,77 +496,55 @@
           count = paddingLeft(response.num,4);      
         } 
       });
-      var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
-      console.log(staff_id);
-      var staff_department = $('[name=buttonDepartment]').val();
-      var staff_position = $('[name=buttonPosition]').val();
-      var staff_name = $('[name=staffName]').val();
-      var staff_birthday = $('[name=staffBirthday]').val();
-      var staff_gender = $('[name=buttonGender]').val();
-      var staff_marriage = $('[name=buttonMarriage]').val();
-      var staff_TWid = $('[name=TWid]').val();
-      var staff_password = $('[name=password]').val();
+      // var data = new Object();
+      // data['staff_id'] = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+      // console.log(data['staff_id']);
+      // data['staff_department'] = $('[name=buttonDepartment]').val();
+      // data['staff_position'] = $('[name=buttonPosition]').val();
+      // data['staff_name'] = $('[name=staffName]').val();
+      // data['staff_birthday'] = $('[name=staffBirthday]').val();
+      // data['staff_gender'] = $('[name=buttonGender]').val();
+      // data['staff_marriage'] = $('[name=buttonMarriage]').val();
+      // data['staff_TWid'] = $('[name=TWid]').val();
+      // data['staff_password'] = $('[name=password]').val();
       
 
-      var contact_homeNumber = $('[name=homeNumber]').val();
-      var contact_phoneNumber = $('[name=phoneNumber]').val();
-      var contact_companyNumber = $('[name=companyNumber]').val();
-      var contact_homeAddress = $('[name=homeAddress]').val();
-      var contact_contactAddress = $('[name=contactAddress]').val();
+      // data['contact_homeNumber'] = $('[name=homeNumber]').val();
+      // data['contact_phoneNumber'] = $('[name=phoneNumber]').val();
+      // data['contact_companyNumber'] = $('[name=companyNumber]').val();
+      // data['contact_homeAddress'] = $('[name=homeAddress]').val();
+      // data['contact_contactAddress'] = $('[name=contactAddress]').val();
 
-      var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
-      var seniority_workStatue = $('[name=buttonWorkstatue]').val();
-      var seniority_staffType = $('[name=buttonStafftype]').val();
-      var seniority_endDate = $('[name=endDate]').val();
-      var seniority_leaveDate = $('[name=leaveDate]').val();
+      // data['seniority_insuredCompany'] = $('[name=buttonInsuredcompany]').val();
+      // data['seniority_workStatue'] = $('[name=buttonWorkstatue]').val();
+      // data['seniority_staffType'] = $('[name=buttonStafftype]').val();
+      // data['seniority_endDate'] = $('[name=endDate]').val();
+      // data['seniority_leaveDate'] = $('[name=leaveDate]').val();
 
-      var contactPerson_name = $('[name=contactPersonName]').val();
-      var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
-      var contactPerson_phone = $('[name=contactPersonPhone]').val();
-      var contactPerson_relation = $('[name=contactPersonRelation]').val();
-      var contactPerson_more = $('[name=contactPersonMore]').val();
+      // data['contactPerson_name'] = $('[name=contactPersonName]').val();
+      // data['contactPerson_homeNumber'] = $('[name=contactPersonHomeNumber]').val();
+      // data['contactPerson_phone'] = $('[name=contactPersonPhone]').val();
+      // data['contactPerson_relation'] = $('[name=contactPersonRelation]').val();
+      // data['contactPerson_more'] = $('[name=contactPersonMore]').val();
     
-      var education_time = $('[name=educationTime]').val();
-      var education_type = $('[name=educationType]').val();
-      var education_school = $('[name=schoolName]').val();
-      var education_department = $('[name=schoolDepartment]').val();
-      var education_statue = $('[name=buttonEducationCondition]').val();
-
+      // data['education_time'] = $('[name=educationTime]').val();
+      // data['education_type'] = $('[name=educationType]').val();
+      // data['education_school'] = $('[name=schoolName]').val();
+      // data['education_department'] = $('[name=schoolDepartment]').val();
+      // data['education_statue'] = $('[name=buttonEducationCondition]').val();
+      // console.log(Object.keys(data).length);
+      var data = new Object();
+      data['staff_id'] = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+      $('input').each(function(eachid,eachdata){
+        data[eachdata.name] = $(eachdata).val();
+      });
+      $('select').each(function(eachid,eachdata){
+        data[eachdata.name] = $(eachdata).val();
+      });
       $.ajax({
-        url:'staff/register/post',
+        url:'/staff/register/post',
         type:'POST',
-        data:{data:JSON.stringify({
-            staff_id: staff_id,
-            staff_department: staff_department,
-            staff_position: staff_position,
-            staff_name: staff_name,
-            staff_birthday: staff_birthday,
-            staff_gender: staff_gender,
-            staff_marriage: staff_marriage,
-            staff_TWid: staff_TWid,
-            contact_homeNumber: contact_homeNumber,
-            contact_phoneNumber: contact_phoneNumber,
-            contact_companyNumber: contact_companyNumber,
-            contact_homeAddress: contact_homeAddress,
-            contact_contactAddress: contact_contactAddress,
-            seniority_insuredCompany: seniority_insuredCompany,
-            seniority_workStatue: seniority_workStatue,
-            seniority_staffType: seniority_staffType,
-            seniority_endDate: seniority_endDate,
-            seniority_leaveDate: seniority_leaveDate,
-            contactPerson_name: contactPerson_name,
-            contactPerson_homeNumber: contactPerson_homeNumber,
-            contactPerson_phone: contactPerson_phone,
-            contactPerson_relation: contactPerson_relation,
-            contactPerson_more: contactPerson_more,
-            education_time: education_time,
-            education_type: education_type,
-            education_school: education_school,
-            education_department: education_department,
-            education_statue: education_statue,
-            staff_password: staff_password
-
-        })},        
+        data:{data:JSON.stringify(data)},        
         dataType:'json',
         success:function(data){
            console.log("success");
@@ -672,9 +650,9 @@
 
   function paddingLeft(str,lenght){
     if(str.length >= lenght)
-    return str;
+      return str;
     else
-    return paddingLeft("0" +str,lenght);
+      return paddingLeft("0" +str,lenght);
   }
   $(function(){
 
@@ -792,100 +770,100 @@
   
   $(function(){
     $("button[name=registerButton]").on('click', function(){
-      // var count;
-      // $.ajax({
-      //   url:'testtest.php/staff/staffNum/get',
-      //   async: false,
-      //   type:'get',
-      //   dataType:'json',
-      //   success:function(response){
-      //     count = paddingLeft(response.num,4);      
-      //   } 
-      // });
-      // var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
-      // console.log(staff_id);
-      // var staff_department = $('[name=buttonDepartment]').val();
-      // var staff_position = $('[name=buttonPosition]').val();
-      // var staff_name = $('[name=staffName]').val();
-      // var staff_birthday = $('[name=staffBirthday]').val();
-      // var staff_gender = $('[name=buttonGender]').val();
-      // var staff_marriage = $('[name=buttonMarriage]').val();
-      // var staff_TWid = $('[name=TWid]').val();
-      // var staff_password = $('[name=password]').val();
+    //   var count;
+    //   $.ajax({
+    //     url:'/staff/staffNum/get',
+    //     async: false,
+    //     type:'get',
+    //     dataType:'json',
+    //     success:function(response){
+    //       count = paddingLeft(response.num,4);      
+    //     } 
+    //   });
+    //   var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+    //   console.log(staff_id);
+    //   var staff_department = $('[name=buttonDepartment]').val();
+    //   var staff_position = $('[name=buttonPosition]').val();
+    //   var staff_name = $('[name=staffName]').val();
+    //   var staff_birthday = $('[name=staffBirthday]').val();
+    //   var staff_gender = $('[name=buttonGender]').val();
+    //   var staff_marriage = $('[name=buttonMarriage]').val();
+    //   var staff_TWid = $('[name=TWid]').val();
+    //   var staff_password = $('[name=password]').val();
       
 
-      // var contact_homeNumber = $('[name=homeNumber]').val();
-      // var contact_phoneNumber = $('[name=phoneNumber]').val();
-      // var contact_companyNumber = $('[name=companyNumber]').val();
-      // var contact_homeAddress = $('[name=homeAddress]').val();
-      // var contact_contactAddress = $('[name=contactAddress]').val();
+    //   var contact_homeNumber = $('[name=homeNumber]').val();
+    //   var contact_phoneNumber = $('[name=phoneNumber]').val();
+    //   var contact_companyNumber = $('[name=companyNumber]').val();
+    //   var contact_homeAddress = $('[name=homeAddress]').val();
+    //   var contact_contactAddress = $('[name=contactAddress]').val();
 
-      // var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
-      // var seniority_workStatue = $('[name=buttonWorkstatue]').val();
-      // var seniority_staffType = $('[name=buttonStafftype]').val();
-      // var seniority_endDate = $('[name=endDate]').val();
-      // var seniority_leaveDate = $('[name=leaveDate]').val();
+    //   var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+    //   var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+    //   var seniority_staffType = $('[name=buttonStafftype]').val();
+    //   var seniority_endDate = $('[name=endDate]').val();
+    //   var seniority_leaveDate = $('[name=leaveDate]').val();
 
-      // var contactPerson_name = $('[name=contactPersonName]').val();
-      // var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
-      // var contactPerson_phone = $('[name=contactPersonPhone]').val();
-      // var contactPerson_relation = $('[name=contactPersonRelation]').val();
-      // var contactPerson_more = $('[name=contactPersonMore]').val();
+    //   var contactPerson_name = $('[name=contactPersonName]').val();
+    //   var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+    //   var contactPerson_phone = $('[name=contactPersonPhone]').val();
+    //   var contactPerson_relation = $('[name=contactPersonRelation]').val();
+    //   var contactPerson_more = $('[name=contactPersonMore]').val();
     
-      // var education_time = $('[name=educationTime]').val();
-      // var education_type = $('[name=educationType]').val();
-      // var education_school = $('[name=schoolName]').val();
-      // var education_department = $('[name=schoolDepartment]').val();
-      // var education_statue = $('[name=buttonEducationCondition]').val();
+    //   var education_time = $('[name=educationTime]').val();
+    //   var education_type = $('[name=educationType]').val();
+    //   var education_school = $('[name=schoolName]').val();
+    //   var education_department = $('[name=schoolDepartment]').val();
+    //   var education_statue = $('[name=buttonEducationCondition]').val();
 
 
 
-      // $.ajax({
-      //   url:'testtest.php/staff/register/post',
-      //   type:'POST',
-      //   data:{data:JSON.stringify({
-      //       staff_id: staff_id,
-      //       staff_department: staff_department,
-      //       staff_position: staff_position,
-      //       staff_name: staff_name,
-      //       staff_birthday: staff_birthday,
-      //       staff_gender: staff_gender,
-      //       staff_marriage: staff_marriage,
-      //       staff_TWid: staff_TWid,
-      //       contact_homeNumber: contact_homeNumber,
-      //       contact_phoneNumber: contact_phoneNumber,
-      //       contact_companyNumber: contact_companyNumber,
-      //       contact_homeAddress: contact_homeAddress,
-      //       contact_contactAddress: contact_contactAddress,
-      //       seniority_insuredCompany: seniority_insuredCompany,
-      //       seniority_workStatue: seniority_workStatue,
-      //       seniority_staffType: seniority_staffType,
-      //       seniority_endDate: seniority_endDate,
-      //       seniority_leaveDate: seniority_leaveDate,
-      //       contactPerson_name: contactPerson_name,
-      //       contactPerson_homeNumber: contactPerson_homeNumber,
-      //       contactPerson_phone: contactPerson_phone,
-      //       contactPerson_relation: contactPerson_relation,
-      //       contactPerson_more: contactPerson_more,
-      //       education_time: education_time,
-      //       education_type: education_type,
-      //       education_school: education_school,
-      //       education_department: education_department,
-      //       education_statue: education_statue,
-      //       staff_password: staff_password
+    //   $.ajax({
+    //     url:'/staff/register/post',
+    //     type:'POST',
+    //     data:{data:JSON.stringify({
+    //         staff_id: staff_id,
+    //         staff_department: staff_department,
+    //         staff_position: staff_position,
+    //         staff_name: staff_name,
+    //         staff_birthday: staff_birthday,
+    //         staff_gender: staff_gender,
+    //         staff_marriage: staff_marriage,
+    //         staff_TWid: staff_TWid,
+    //         contact_homeNumber: contact_homeNumber,
+    //         contact_phoneNumber: contact_phoneNumber,
+    //         contact_companyNumber: contact_companyNumber,
+    //         contact_homeAddress: contact_homeAddress,
+    //         contact_contactAddress: contact_contactAddress,
+    //         seniority_insuredCompany: seniority_insuredCompany,
+    //         seniority_workStatue: seniority_workStatue,
+    //         seniority_staffType: seniority_staffType,
+    //         seniority_endDate: seniority_endDate,
+    //         seniority_leaveDate: seniority_leaveDate,
+    //         contactPerson_name: contactPerson_name,
+    //         contactPerson_homeNumber: contactPerson_homeNumber,
+    //         contactPerson_phone: contactPerson_phone,
+    //         contactPerson_relation: contactPerson_relation,
+    //         contactPerson_more: contactPerson_more,
+    //         education_time: education_time,
+    //         education_type: education_type,
+    //         education_school: education_school,
+    //         education_department: education_department,
+    //         education_statue: education_statue,
+    //         staff_password: staff_password
 
-      //   })},
+    //     })},
         
-      //   dataType:'json',
-      //   success:function(data){
-      //      console.log("success");
-      //   },
-      //   error:function(jqXHR, textStatus, errorThrown){
-      //     console.log("failed");
-      //     // window.location.href='register.html';
+    //     dataType:'json',
+    //     success:function(data){
+    //        console.log("success");
+    //     },
+    //     error:function(jqXHR, textStatus, errorThrown){
+    //       console.log("failed");
+    //       // window.location.href='register.html';
 
-      //   }
-      // });
+    //     }
+    //   });
       
     });
      
