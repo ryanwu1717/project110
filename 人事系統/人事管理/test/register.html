@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>SB Admin 2 - Register</title>
+
+  <!-- Custom fonts for this template-->
+  <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link href="/css/sb-admin-2.min.css" rel="stylesheet">
+
+ 
+
+</head>
+
+<body class="bg-gradient-primary">
+
+  <div class="container">
+
+    <div class="card o-hidden border-0 shadow-lg my-5">
+      <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="text-center">
+              </br>
+              <h1  class="font-weight-bold" name = "typeUpdate">新增帳號</h1></br>
+              <h2 class="h4 text-gray-900 mb-4">個人資料</h2>
+              </br>
+            </div>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+          <div class="col-sm-3">  
+             <form action="/action_page.php">
+               
+              <select class="custom-select" name="buttonDepartment">
+                <option name = "selectDepartment" selected disabled >部門</option>
+              </select>
+              </br></br>
+
+              <input type="text" class="form-control form-control-user" name="staffName" placeholder="中文姓名" value="笑哈哈"></br>
+
+              <input type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號" value="A111111111"></br>
+
+              <select class="custom-select" name="buttonMarriage">
+                <option name = "selectMarriage" selected disabled>婚姻狀況</option>
+              </select>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+            <form action="/action_page.php">
+              <select class="custom-select" name="buttonPosition">
+                <option name = "selectPosition" selected disabled>職位</option>
+              </select>
+              </br></br>
+
+              <input type="password" class="form-control form-control-user" name="password" placeholder="密碼" value="11111111"></br>
+
+              <select class="custom-select" name="buttonGender">
+                <option name = "selectGender" selected disabled>性別</option>
+              </select>
+              </br></br>
+
+              <div>
+                出生日期<input type="date" class="form-control" name="staffBirthday" placeholder="出生日期"> 
+              </div></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+
+
+          <div class="col-lg-12">
+            <div class="text-center"></br>
+              <h2 class="h4 text-gray-900 mb-4">聯絡資料</h2>
+              </br>
+            </div>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+          <div class="col-sm-3"> 
+            <form>
+              <input type="text" class="form-control form-control-user" name="companyNumber" placeholder="公司聯絡電話"></br>
+              <input type="text" class="form-control form-control-user" name="phoneNumber" placeholder="手機號碼"></br>
+            </form> 
+          </div>
+          <div class="col-sm-3">
+            <form>  
+              <input type="text" class="form-control form-control-user" name="homeNumber" placeholder="住家電話"></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+
+
+          <div class="col-sm-3">  
+          </div>
+          <div class="col-sm-6">  
+            <form>
+              <input type="text" class="form-control form-control-user" name="contactAddress" placeholder="通訊地址"></br> 
+              <input type="text" class="form-control form-control-user" name="homeAddress" placeholder="戶籍地址"></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+
+          <div class="col-lg-12">
+            <div class="text-center"></br>
+              <h2 class="h4 text-gray-900 mb-4">職務年資</h2>
+              </br>
+            </div>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+          <div class="col-sm-3"> 
+            <form action="/action_page.php">
+              <select class="custom-select" name="buttonInsuredcompany">
+                <option name = "selectInsuredCompany" selected disabled>投保公司</option>
+              </select>
+              </br></br>
+       
+              <select class="custom-select" name="buttonStafftype">
+                <option name = "selectStaffType" selected disabled> 員工類型</option>
+              </select>
+              </br></br>
+
+              <div>
+                離職日期
+                <input type="date" class="form-control"name="leaveDate" > 
+              </div></br>
+            </form> 
+          </div>
+          <div class="col-sm-3">  
+            <form action="/action_page.php">
+              <select class="custom-select" name="buttonWorkstatue">
+                <option name = "selectWorkStatue" selected disabled>在職狀態</option>
+              </select>
+              </br></br>
+
+              <div>
+                到職日期
+                <input type="date" class="form-control" name="endDate" > 
+              </div></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+
+          <div class="col-lg-12">
+            <div class="text-center"></br>
+              <h2 class="h4 text-gray-900 mb-4">緊急聯絡人</h2>
+              </br>
+            </div>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+          <div class="col-sm-3">  
+            <form>
+              <input type="text" class="form-control form-control-user" name="contactPersonName" placeholder="姓名"></br>
+              <input type="text" class="form-control form-control-user" name="contactPersonPhone" placeholder="手機"></br>
+              <input type="text" class="form-control form-control-user" name="contactPersonMore" placeholder="備註"></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+            <form>
+              <input type="text" class="form-control form-control-user" name="contactPersonHomeNumber" placeholder="電話"></br>
+              <input type="text" class="form-control form-control-user" name="contactPersonRelation" placeholder="關係"></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+
+          <div class="col-lg-12">
+            <div class="text-center"></br>
+              <h2 class="h4 text-gray-900 mb-4">緊急聯絡人</h2>
+              </br>
+            </div>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+          <div class="col-sm-3">  
+            <form>
+              <input type="text" class="form-control form-control-user" name="educationTime" placeholder="就學期間"></br>
+              <input type="text" class="form-control form-control-user" name="schoolName" placeholder="學校"></br>
+              <select class="custom-select" name="buttonEducationCondition">
+                <option name = "selectEducationCondition" selected disabled> 就學狀況</option>
+              </select>
+              </br></br></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+            <form>
+              <input type="text" class="form-control form-control-user" name="educationType" placeholder="學制"></br>
+              <input type="text" class="form-control form-control-user" name="schoolDepartment" placeholder="科系"></br>
+            </form>
+          </div>
+          <div class="col-sm-3">  
+          </div>
+        </div>
+        
+        <div class="row">
+        
+          <div class="col-sm-3">
+          </div>
+          <div class="col-sm-6">
+            <button type="button" name=registerFirstButton class="btn btn-primary btn-user btn-block"   data-toggle="modal" data-target="#basicExampleModal">
+              註冊資料
+            </button>
+            
+            <div class="text-center">
+              <a class="small" href="forgot-password.html">Forgot Password?</a>
+            </div>
+            <div class="text-center">
+              <a class="small" href="login.html">Already have an account? Login!</a>
+            </div>
+            </br>
+          </div>
+          <div class="col-sm-2">
+          </div>
+
+        </div>
+      </div>
+    </div>
+    </div>
+
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="basicExampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" >
+          <h5 class="modal-body" id = "ckeckRegisterModel">123</h5>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">否</button>
+          <button type="button" class="btn btn-primary" name = "registerButton">是</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap core JavaScript-->
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="/js/sb-admin-2.min.js"></script>
+
+
+</body>
+
+</html>
+
+<script type="text/javascript">
+  var url = new URL(window.location.href);
+  var isUpdate = url.searchParams.get("id");
+  var checkPassword;
+  if (isUpdate != null){
+    $('[name=typeUpdate]').empty();
+    $('[name=typeUpdate]').append("修改資料");
+    $.ajax({
+        url:'/table/update/post',
+        type:'POST',
+        data:{data:JSON.stringify({
+            staff_id : isUpdate
+        })},
+        dataType:'json',
+        success:function(data){
+          console.log(data);
+          $('[name=selectDepartment]').empty();
+          $('[name=selectDepartment]').append(data[0].department_name);
+          $('[name=selectPosition]').empty();
+          $('[name=selectPosition]').append(data[0].position_name);
+          $("[name=staffName]").val(data[0].staff_name);
+          $("[name=TWid]").val(data[0].staff_TWid);
+          $('[name=selectGender]').empty();
+          $('[name=selectGender]').append(data[0].staff_gender);
+          $('[name=selectMarriage]').empty();
+          $('[name=selectMarriage]').append(data[0].staff_marriage);
+          $("[name=staffBirthday]").val(data[0].staff_birthday);
+          $("[name=companyNumber]").val(data[0].contact_companyNumber);
+          $("[name=homeNumber]").val(data[0].contact_homeNumber);
+          $("[name=phoneNumber]").val(data[0].contact_phoneNumber);
+          $("[name=contactAddress]").val(data[0].contact_contactAddress);
+          $("[name=homeAddress]").val(data[0].contact_homeAddress);
+          $('[name=selectInsuredCompany]').empty();
+          $('[name=selectInsuredCompany]').append(data[0].seniority_insuredCompany);
+          $('[name=selectStaffType]').empty();
+          $('[name=selectStaffType]').append(data[0].seniority_staffType);
+          $('[name=selectWorkStatue]').empty();
+          $('[name=selectWorkStatue]').append(data[0].seniority_workStatue);
+          $("[name=leaveDate]").val(data[0].seniority_leaveDate);
+          $("[name=endDate]").val(data[0].seniority_endDate);
+          $("[name=contactPersonName]").val(data[0].contactPerson_name);
+          $("[name=contactPersonHomeNumber]").val(data[0].contactPerson_homeNumber);
+          $("[name=contactPersonPhone]").val(data[0].contactPerson_phone);
+          $("[name=contactPersonRelation]").val(data[0].contactPerson_relation);
+          $("[name=contactPersonMore]").val(data[0].contactPerson_more);
+          $("[name=educationTime]").val(data[0].education_time);
+          $("[name=educationType]").val(data[0].education_type);
+          $("[name=schoolName]").val(data[0].education_school);
+          $("[name=schoolDepartment]").val(data[0].education_department);
+          $('[name=selectEducationCondition]').empty();
+          $('[name=selectEducationCondition]').append(data[0].education_statue);
+
+          $('[name=registerFirstButton]').empty();
+          $('[name=registerFirstButton]').append("修改資料");
+          checkPassword = data[0].staff_password;
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+          console.log(jqXHR);
+          console.log(textStatus);
+          console.log(errorThrown);
+          console.log("failed");
+          // window.location.href='register.html';
+        }
+      });
+
+      $("button[name=registerFirstButton]").on('click', function(){
+        ch();
+        $('#exampleModalLabel').append('你的id為'+isUpdate);
+      });
+      $("button[name=registerButton]").on('click', function(){
+        if($("[name=password]").val() == checkPassword){
+          modify();
+        }else{
+          $("#ckeckRegisterModel").empty();
+          $("#ckeckRegisterModel").append("密碼錯誤");
+          $('[name=registerButton]').hide();
+        }
+      });
+    
+    
+  }else{
+    $("button[name=registerFirstButton]").on('click', function(){
+      ch();
+      var staff_department = $('[name=buttonDepartment]').val();
+      var staff_position = $('[name=buttonPosition]').val();
+      var count;
+      $.ajax({
+        url:'/staff/staffNum/get',
+        type:'get',
+        async: false,
+        dataType:'json',
+        success:function(response){
+          count = paddingLeft(response.num,4); 
+          
+          $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
+        } 
+      });  
+    });
+    $("button[name=registerButton]").on('click', function(){
+      regis();
+    });
+    
+
+  }
+
+  function ch(){
+    $('#exampleModalLabel').empty();
+    $('#ckeckRegisterModel').empty();
+    // $('input').each(function(){
+    //   console.log($(this).val());
+    // });
+
+    // $('select').each(function(){
+    //   console.log($(this).val());
+    // });
+    var staff_department = $('[name=buttonDepartment]').val();
+    var staff_position = $('[name=buttonPosition]').val();
+    var staff_name = $('[name=staffName]').val();
+    var staff_birthday = $('[name=staffBirthday]').val();
+    var staff_gender = $('[name=buttonGender]').val();
+    var staff_marriage = $('[name=buttonMarriage]').val();
+    var staff_TWid = $('[name=TWid]').val();
+    var staff_password = $('[name=password]').val();
+    console.log(staff_name);
+
+    var contact_homeNumber = $('[name=homeNumber]').val();
+    var contact_phoneNumber = $('[name=phoneNumber]').val();
+    var contact_companyNumber = $('[name=companyNumber]').val();
+    var contact_homeAddress = $('[name=homeAddress]').val();
+    var contact_contactAddress = $('[name=contactAddress]').val();
+
+    var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+    var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+    var seniority_staffType = $('[name=buttonStafftype]').val();
+    var seniority_endDate = $('[name=endDate]').val();
+    var seniority_leaveDate = $('[name=leaveDate]').val();
+
+    var contactPerson_name = $('[name=contactPersonName]').val();
+    var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+    var contactPerson_phone = $('[name=contactPersonPhone]').val();
+    var contactPerson_relation = $('[name=contactPersonRelation]').val();
+    var contactPerson_more = $('[name=contactPersonMore]').val();
+  
+    var education_time = $('[name=educationTime]').val();
+    var education_type = $('[name=educationType]').val();
+    var education_school = $('[name=schoolName]').val();
+    var education_department = $('[name=schoolDepartment]').val();
+    var education_statue = $('[name=buttonEducationCondition]').val();
+    $.ajax({
+      url:'/staff/checkRegister/post',
+      type:'POST',
+      
+      data:{data:JSON.stringify({
+          staff_department: staff_department,
+          staff_position: staff_position,
+          staff_name: staff_name,
+          staff_birthday: staff_birthday,
+          staff_gender: staff_gender,
+          staff_marriage: staff_marriage,
+          staff_TWid: staff_TWid,
+          contact_homeNumber: contact_homeNumber,
+          contact_phoneNumber: contact_phoneNumber,
+          contact_companyNumber: contact_companyNumber,
+          contact_homeAddress: contact_homeAddress,
+          contact_contactAddress: contact_contactAddress,
+          seniority_insuredCompany: seniority_insuredCompany,
+          seniority_workStatue: seniority_workStatue,
+          seniority_staffType: seniority_staffType,
+          seniority_endDate: seniority_endDate,
+          seniority_leaveDate: seniority_leaveDate,
+          contactPerson_name: contactPerson_name,
+          contactPerson_homeNumber: contactPerson_homeNumber,
+          contactPerson_phone: contactPerson_phone,
+          contactPerson_relation: contactPerson_relation,
+          contactPerson_more: contactPerson_more,
+          education_time: education_time,
+          education_type: education_type,
+          education_school: education_school,
+          education_department: education_department,
+          education_statue: education_statue,
+          staff_password: staff_password
+
+      })},
+      
+      dataType:'json',
+      success:function(data){
+        var i = 0;
+        console.log(data.content.split(" "));
+        // var JdataJSON.parse(options.cartlist);
+        var Jdata =data.content.split(" ");
+        // $('#exampleModalLabel').empty();
+        
+        // $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
+        $.each(Jdata, function() {
+          $("#ckeckRegisterModel").append(Jdata[i]+"</br>");
+          i++;
+        });
+        if(data.statue == false){ 
+          $('[name=registerButton]').hide();
+
+        }else{
+          $('[name=registerButton]').show();
+        }
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+        console.log("failed");
+        // window.location.href='register.html';
+
+      }
+    });
+  }
+  function regis(){
+    var count;
+      $.ajax({
+        url:'/staff/staffNum/get',
+        async: false,
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          count = paddingLeft(response.num,4);      
+        } 
+      });
+      // var data = new Object();
+      // data['staff_id'] = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+      // console.log(data['staff_id']);
+      // data['staff_department'] = $('[name=buttonDepartment]').val();
+      // data['staff_position'] = $('[name=buttonPosition]').val();
+      // data['staff_name'] = $('[name=staffName]').val();
+      // data['staff_birthday'] = $('[name=staffBirthday]').val();
+      // data['staff_gender'] = $('[name=buttonGender]').val();
+      // data['staff_marriage'] = $('[name=buttonMarriage]').val();
+      // data['staff_TWid'] = $('[name=TWid]').val();
+      // data['staff_password'] = $('[name=password]').val();
+      
+
+      // data['contact_homeNumber'] = $('[name=homeNumber]').val();
+      // data['contact_phoneNumber'] = $('[name=phoneNumber]').val();
+      // data['contact_companyNumber'] = $('[name=companyNumber]').val();
+      // data['contact_homeAddress'] = $('[name=homeAddress]').val();
+      // data['contact_contactAddress'] = $('[name=contactAddress]').val();
+
+      // data['seniority_insuredCompany'] = $('[name=buttonInsuredcompany]').val();
+      // data['seniority_workStatue'] = $('[name=buttonWorkstatue]').val();
+      // data['seniority_staffType'] = $('[name=buttonStafftype]').val();
+      // data['seniority_endDate'] = $('[name=endDate]').val();
+      // data['seniority_leaveDate'] = $('[name=leaveDate]').val();
+
+      // data['contactPerson_name'] = $('[name=contactPersonName]').val();
+      // data['contactPerson_homeNumber'] = $('[name=contactPersonHomeNumber]').val();
+      // data['contactPerson_phone'] = $('[name=contactPersonPhone]').val();
+      // data['contactPerson_relation'] = $('[name=contactPersonRelation]').val();
+      // data['contactPerson_more'] = $('[name=contactPersonMore]').val();
+    
+      // data['education_time'] = $('[name=educationTime]').val();
+      // data['education_type'] = $('[name=educationType]').val();
+      // data['education_school'] = $('[name=schoolName]').val();
+      // data['education_department'] = $('[name=schoolDepartment]').val();
+      // data['education_statue'] = $('[name=buttonEducationCondition]').val();
+      // console.log(Object.keys(data).length);
+      var data = new Object();
+      data['staff_id'] = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+      $('input').each(function(eachid,eachdata){
+        data[eachdata.name] = $(eachdata).val();
+      });
+      $('select').each(function(eachid,eachdata){
+        data[eachdata.name] = $(eachdata).val();
+      });
+      $.ajax({
+        url:'/staff/register/post',
+        type:'POST',
+        data:{data:JSON.stringify(data)},        
+        dataType:'json',
+        success:function(data){
+           console.log("success");
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+          console.log("failed");
+          // window.location.href='register.html';
+        }
+      });
+  }
+  function modify(){
+    var count;
+      $.ajax({
+        url:'staff/staffNum/get',
+        async: false,
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          count = paddingLeft(response.num,4);      
+        } 
+      });
+      var staff_id = isUpdate;
+      console.log(staff_id);
+      var staff_department = $('[name=buttonDepartment]').val();
+      var staff_position = $('[name=buttonPosition]').val();
+      var staff_name = $('[name=staffName]').val();
+      var staff_birthday = $('[name=staffBirthday]').val();
+      var staff_gender = $('[name=buttonGender]').val();
+      var staff_marriage = $('[name=buttonMarriage]').val();
+      var staff_TWid = $('[name=TWid]').val();
+      var staff_password = $('[name=password]').val();
+      
+
+      var contact_homeNumber = $('[name=homeNumber]').val();
+      var contact_phoneNumber = $('[name=phoneNumber]').val();
+      var contact_companyNumber = $('[name=companyNumber]').val();
+      var contact_homeAddress = $('[name=homeAddress]').val();
+      var contact_contactAddress = $('[name=contactAddress]').val();
+
+      var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+      var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+      var seniority_staffType = $('[name=buttonStafftype]').val();
+      var seniority_endDate = $('[name=endDate]').val();
+      var seniority_leaveDate = $('[name=leaveDate]').val();
+
+      var contactPerson_name = $('[name=contactPersonName]').val();
+      var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+      var contactPerson_phone = $('[name=contactPersonPhone]').val();
+      var contactPerson_relation = $('[name=contactPersonRelation]').val();
+      var contactPerson_more = $('[name=contactPersonMore]').val();
+    
+      var education_time = $('[name=educationTime]').val();
+      var education_type = $('[name=educationType]').val();
+      var education_school = $('[name=schoolName]').val();
+      var education_department = $('[name=schoolDepartment]').val();
+      var education_statue = $('[name=buttonEducationCondition]').val();
+
+      $.ajax({
+        url:'/staff/modify/post',
+        type:'POST',
+        data:{data:JSON.stringify({
+            staff_id: staff_id,
+            staff_department: staff_department,
+            staff_position: staff_position,
+            staff_name: staff_name,
+            staff_birthday: staff_birthday,
+            staff_gender: staff_gender,
+            staff_marriage: staff_marriage,
+            staff_TWid: staff_TWid,
+            contact_homeNumber: contact_homeNumber,
+            contact_phoneNumber: contact_phoneNumber,
+            contact_companyNumber: contact_companyNumber,
+            contact_homeAddress: contact_homeAddress,
+            contact_contactAddress: contact_contactAddress,
+            seniority_insuredCompany: seniority_insuredCompany,
+            seniority_workStatue: seniority_workStatue,
+            seniority_staffType: seniority_staffType,
+            seniority_endDate: seniority_endDate,
+            seniority_leaveDate: seniority_leaveDate,
+            contactPerson_name: contactPerson_name,
+            contactPerson_homeNumber: contactPerson_homeNumber,
+            contactPerson_phone: contactPerson_phone,
+            contactPerson_relation: contactPerson_relation,
+            contactPerson_more: contactPerson_more,
+            education_time: education_time,
+            education_type: education_type,
+            education_school: education_school,
+            education_department: education_department,
+            education_statue: education_statue,
+            staff_password: staff_password
+
+        })},        
+        dataType:'json',
+        success:function(data){
+           console.log("success");
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+          console.log("failed");
+          // window.location.href='register.html';
+        }
+      });
+  }
+
+  function paddingLeft(str,lenght){
+    if(str.length >= lenght)
+      return str;
+    else
+      return paddingLeft("0" +str,lenght);
+  }
+  $(function(){
+
+    $.ajax({
+        url:'/staff/department/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonDepartment]').append('<option value="'+this.department_id+'">'+this.department_name+'</option>');
+          });
+
+        } 
+      });
+
+    $.ajax({
+      url:'/staff/position/get',
+      type:'get',
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        $(response).each(function(){
+          $('[name=buttonPosition]').append('<option value="'+this.position_id+'">'+this.position_name+'</option>');
+        });
+      } 
+    }); 
+
+    $.ajax({
+      url:'/staff/gender/get',
+      type:'get',
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        $(response).each(function(){
+          $('[name=buttonGender]').append('<option value="'+this.type+'">'+this.type+'</option>');
+        });
+      } 
+    }); 
+
+      $.ajax({
+        url:'/staff/marriage/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonMarriage]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          });
+        } 
+      }); 
+
+       $.ajax({
+        url:'/staff/insuredcompany/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonInsuredcompany]').append('<option value="'+this.companyName+'">'+this.companyName+'</option>');
+          });
+        } 
+      }); 
+
+      $.ajax({
+        url:'/staff/workStatue/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonWorkstatue]').append('<option value="'+this.statue+'">'+this.statue+'</option>');
+          });
+        } 
+      }); 
+
+      $.ajax({
+        url:'/staff/staffType/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonStafftype]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          });
+        } 
+      }); 
+
+      $.ajax({
+        url:'/staff/educationCondition/get',
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          console.log(response);
+          $(response).each(function(){
+            $('[name=buttonEducationCondition]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          });
+        } 
+      });
+
+
+    
+  
+   
+    $(".dropdown-menu li a").on('click', function(){
+      $(".btn:first-child").text($(this).text());
+      $(".btn:first-child").val($(this).text());
+     });
+    
+  });
+
+  
+  
+  
+  
+  $(function(){
+    $("button[name=registerButton]").on('click', function(){
+    //   var count;
+    //   $.ajax({
+    //     url:'/staff/staffNum/get',
+    //     async: false,
+    //     type:'get',
+    //     dataType:'json',
+    //     success:function(response){
+    //       count = paddingLeft(response.num,4);      
+    //     } 
+    //   });
+    //   var staff_id = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
+    //   console.log(staff_id);
+    //   var staff_department = $('[name=buttonDepartment]').val();
+    //   var staff_position = $('[name=buttonPosition]').val();
+    //   var staff_name = $('[name=staffName]').val();
+    //   var staff_birthday = $('[name=staffBirthday]').val();
+    //   var staff_gender = $('[name=buttonGender]').val();
+    //   var staff_marriage = $('[name=buttonMarriage]').val();
+    //   var staff_TWid = $('[name=TWid]').val();
+    //   var staff_password = $('[name=password]').val();
+      
+
+    //   var contact_homeNumber = $('[name=homeNumber]').val();
+    //   var contact_phoneNumber = $('[name=phoneNumber]').val();
+    //   var contact_companyNumber = $('[name=companyNumber]').val();
+    //   var contact_homeAddress = $('[name=homeAddress]').val();
+    //   var contact_contactAddress = $('[name=contactAddress]').val();
+
+    //   var seniority_insuredCompany = $('[name=buttonInsuredcompany]').val();
+    //   var seniority_workStatue = $('[name=buttonWorkstatue]').val();
+    //   var seniority_staffType = $('[name=buttonStafftype]').val();
+    //   var seniority_endDate = $('[name=endDate]').val();
+    //   var seniority_leaveDate = $('[name=leaveDate]').val();
+
+    //   var contactPerson_name = $('[name=contactPersonName]').val();
+    //   var contactPerson_homeNumber = $('[name=contactPersonHomeNumber]').val();
+    //   var contactPerson_phone = $('[name=contactPersonPhone]').val();
+    //   var contactPerson_relation = $('[name=contactPersonRelation]').val();
+    //   var contactPerson_more = $('[name=contactPersonMore]').val();
+    
+    //   var education_time = $('[name=educationTime]').val();
+    //   var education_type = $('[name=educationType]').val();
+    //   var education_school = $('[name=schoolName]').val();
+    //   var education_department = $('[name=schoolDepartment]').val();
+    //   var education_statue = $('[name=buttonEducationCondition]').val();
+
+
+
+    //   $.ajax({
+    //     url:'/staff/register/post',
+    //     type:'POST',
+    //     data:{data:JSON.stringify({
+    //         staff_id: staff_id,
+    //         staff_department: staff_department,
+    //         staff_position: staff_position,
+    //         staff_name: staff_name,
+    //         staff_birthday: staff_birthday,
+    //         staff_gender: staff_gender,
+    //         staff_marriage: staff_marriage,
+    //         staff_TWid: staff_TWid,
+    //         contact_homeNumber: contact_homeNumber,
+    //         contact_phoneNumber: contact_phoneNumber,
+    //         contact_companyNumber: contact_companyNumber,
+    //         contact_homeAddress: contact_homeAddress,
+    //         contact_contactAddress: contact_contactAddress,
+    //         seniority_insuredCompany: seniority_insuredCompany,
+    //         seniority_workStatue: seniority_workStatue,
+    //         seniority_staffType: seniority_staffType,
+    //         seniority_endDate: seniority_endDate,
+    //         seniority_leaveDate: seniority_leaveDate,
+    //         contactPerson_name: contactPerson_name,
+    //         contactPerson_homeNumber: contactPerson_homeNumber,
+    //         contactPerson_phone: contactPerson_phone,
+    //         contactPerson_relation: contactPerson_relation,
+    //         contactPerson_more: contactPerson_more,
+    //         education_time: education_time,
+    //         education_type: education_type,
+    //         education_school: education_school,
+    //         education_department: education_department,
+    //         education_statue: education_statue,
+    //         staff_password: staff_password
+
+    //     })},
+        
+    //     dataType:'json',
+    //     success:function(data){
+    //        console.log("success");
+    //     },
+    //     error:function(jqXHR, textStatus, errorThrown){
+    //       console.log("failed");
+    //       // window.location.href='register.html';
+
+    //     }
+    //   });
+      
+    });
+     
+  });
+</script>
+
+ 
