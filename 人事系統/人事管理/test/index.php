@@ -174,6 +174,8 @@ $app->group('/staff', function () use ($app) {
 	    return $response;  
 	});
 
+	
+	
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff();
 	    $result = $staff->checkRegister();

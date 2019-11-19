@@ -7,7 +7,7 @@
 			$_POST=json_decode($_POST['data'],true);
 		   	$loginStaffId = $_POST['loginStaffId'];
 			$loginPassword = $_POST['loginPassword'];		 	
-			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password;";
+			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
 			$sth = $conn->prepare($sql);
 		   	$sth->bindParam(':staff_id',$loginStaffId);
 		   	$sth->bindParam(':staff_password',$loginPassword);
@@ -20,8 +20,7 @@
 				);
 			}else{
 				$ack = array(
-					'status' => 'failed', 
-					'data' =>count($row)
+					'status' => 'failed'
 				);
 			}
 			return $ack;
@@ -40,7 +39,6 @@
 
 	Class Staff{
 		var $result;   
-		
 		function getDepartment()
 		{ 
 			global $conn;			 	
@@ -91,10 +89,10 @@
 			return $row;
 		} 
 
-		function getWorkStatue()
+		function getWorkStatus()
 		{ 
 			global $conn;			 	
-			$sql ='SELECT * from staff_salary."workStatue";';	
+			$sql ='SELECT * from staff_salary."workStatus";';	
 			$statement = $conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
@@ -305,79 +303,45 @@
 		public function checkRegister(){
 
 			$_POST=json_decode($_POST['data'],true);
+
+			$check = array();
+			$check['checkDepartment'] = $this -> check('部門',$_POST['buttonDepartment']);
+			$check['checkPosition'] = $this -> check('職位',$_POST['buttonPosition']);
+			$check['checkName'] = $this -> check('中文名字',$_POST['staffName']);
+			$check['checkPassword'] = $this -> check("密碼",$_POST['password']);
+			$check['checkBirthday'] = $this -> check('生日',$_POST['staffBirthday']);
+			$check['checkGender'] = $this -> check('性別',$_POST['buttonGender']);
+			$check['checkMarriage'] = $this -> check('婚姻狀況',$_POST['buttonMarriage']);
+			$check['checkTWid'] = $this-> check('身分證號碼',$_POST['TWid']);
+
+			$check['checkContactCompanyNumber'] = $this -> check("公司聯絡電話",$_POST['homeNumber']);
+			$check['checkContactPhoneNumber'] = $this -> check("手機",$_POST['phoneNumber']);
+			$check['checkContactHomeNumber'] = $this -> check("住家電話",$_POST['companyNumber']);
+			$check['checkContactHomeAddress'] = $this -> check("戶籍地址",$_POST['homeAddress']);
+			$check['checkContactContactAddress'] = $this -> check("通訊地址",$_POST['contactAddress']);
+
+			$check['checkInsuredCompany'] = $this -> check("投保公司",$_POST['buttonInsuredcompany']);
+			$check['checkWorkStatus'] = $this -> check("在職狀態",$_POST['buttonWorkstatus']);
+			$check['checkStaffType'] = $this -> check("員工類型",$_POST['buttonStafftype']);
+			$check['checkEndDate'] = $this -> check("到職日期",$_POST['endDate']);
+			$check['checkLeaveDate'] = $this -> check("離職日期",$_POST['leaveDate']);
+
+			$check['checkContactPersonName'] = $this -> check("緊急聯絡人姓名",$_POST['contactPersonName']);
+			$check['checkContactPersonHomeNumber'] = $this -> check("緊急聯絡人電話",$_POST['contactPersonHomeNumber']);
+			$check['checkContactPersonPhone'] = $this -> check("緊急聯絡人手機",$_POST['contactPersonPhone']);
+			$check['checkContactPersonRelation'] = $this -> check("緊急聯絡人關係",$_POST['contactPersonRelation']);
+			$check['checkContactPersonMore'] = $this -> check("緊急聯絡人備註",$_POST['contactPersonMore']);
+
+			$check['checkEducationTime'] = $this -> check("就學期間",$_POST['educationTime']);
+			$check['checkEducationType'] = $this -> check("學制",$_POST['educationType']);
+			$check['checkEducationSchool'] = $this -> check("學校",$_POST['schoolName']);
+			$check['checkEducationDepartment'] = $this -> check("科系",$_POST['schoolDepartment']);
 		
-			$_SESSION['checkDepartment'] = $this -> check('部門',$_POST['staff_department']);
-			$_SESSION['checkPosition'] = $this -> check('職位',$_POST['staff_position']);
-			$_SESSION['checkName'] = $this -> check('中文名字',$_POST['staff_name']);
-			$_SESSION['checkPassword'] = $this -> check("密碼",$_POST['staff_password']);
-			$_SESSION['checkBirthday'] = $this -> check('生日',$_POST['staff_birthday']);
-			$_SESSION['checkGender'] = $this -> check('性別',$_POST['staff_gender']);
-			$_SESSION['checkMarriage'] = $this -> check('婚姻狀況',$_POST['staff_marriage']);
-			$_SESSION['checkTWid'] = $this-> check('身分證號碼',$_POST['staff_TWid']);
-
-			$_SESSION['checkContactCompanyNumber'] = $this -> check("公司聯絡電話",$_POST['contact_companyNumber']);
-			$_SESSION['checkContactPhoneNumber'] = $this -> check("手機",$_POST['contact_phoneNumber']);
-			$_SESSION['checkContactHomeNumber'] = $this -> check("住家電話",$_POST['contact_homeNumber']);
-			$_SESSION['checkContactHomeAddress'] = $this -> check("戶籍地址",$_POST['contact_homeAddress']);
-			$_SESSION['checkContactContactAddress'] = $this -> check("通訊地址",$_POST['contact_contactAddress']);
-
-			$_SESSION['checkInsuredCompany'] = $this -> check("投保公司",$_POST['seniority_insuredCompany']);
-			$_SESSION['checkWorkStatue'] = $this -> check("在職狀態",$_POST['seniority_workStatue']);
-			$_SESSION['checkStaffType'] = $this -> check("員工類型",$_POST['seniority_staffType']);
-			$_SESSION['checkEndDate'] = $this -> check("到職日期",$_POST['seniority_endDate']);
-			$_SESSION['checkLeaveDate'] = $this -> check("離職日期",$_POST['seniority_leaveDate']);
-
-			$_SESSION['checkContactPersonName'] = $this -> check("緊急聯絡人姓名",$_POST['contactPerson_name']);
-			$_SESSION['checkContactPersonHomeNumber'] = $this -> check("緊急聯絡人電話",$_POST['contactPerson_homeNumber']);
-			$_SESSION['checkContactPersonPhone'] = $this -> check("緊急聯絡人手機",$_POST['contactPerson_phone']);
-			$_SESSION['checkContactPersonRelation'] = $this -> check("緊急聯絡人關係",$_POST['contactPerson_relation']);
-			$_SESSION['checkContactPersonMore'] = $this -> check("緊急聯絡人備註",$_POST['contactPerson_more']);
-
-			$_SESSION['checkEducationTime'] = $this -> check("就學期間",$_POST['education_time']);
-			$_SESSION['checkEducationType'] = $this -> check("學制",$_POST['education_type']);
-			$_SESSION['checkEducationSchool'] = $this -> check("學校",$_POST['education_school']);
-			$_SESSION['checkEducationDepartment'] = $this -> check("科系",$_POST['education_department']);
-			
-			$check = array(
-				'checkDepartment'=>$_SESSION['checkDepartment'],
-				'checkPosition'=>$_SESSION['checkPosition'],
-				'checkName'=> $_SESSION['checkName'],
-				'checkPassword' => $_SESSION['checkPassword'],
-				'checkTWid' => $_SESSION['checkTWid'],
-				'checkGender' => $_SESSION['checkGender'],
-				'checkMarriage' => $_SESSION['checkMarriage'],
-				'checkBirthday' => $_SESSION['checkBirthday'],
-				'checkContactHomeNumber' => $_SESSION['checkContactHomeNumber'],
-				'checkContactHomeNumber' => $_SESSION['checkContactHomeNumber'],
-				'checkContactPhoneNumber' => $_SESSION['checkContactPhoneNumber'],
-				'checkContactCompanyNumber' => $_SESSION['checkContactCompanyNumber'],
-				'checkContactHomeAddress' => $_SESSION['checkContactHomeAddress'],
-				'checkContactContactAddress' => $_SESSION['checkContactContactAddress'],
-				'checkInsuredCompany' => $_SESSION['checkInsuredCompany'],
-				'checkWorkStatue' => $_SESSION['checkWorkStatue'],
-				'checkStaffType' => $_SESSION['checkStaffType'],
-				'checkEndDate' => $_SESSION['checkEndDate'],
-				'checkLeaveDate' => $_SESSION['checkLeaveDate'],
-				'checkContactPersonName' => $_SESSION['checkContactPersonName'],
-				'checkContactPersonHomeNumber' => $_SESSION['checkContactPersonHomeNumber'],
-				'checkContactPersonPhone' => $_SESSION['checkContactPersonPhone'],
-				'checkContactPersonRelation' => $_SESSION['checkContactPersonRelation'],
-				'checkContactPersonMore' => $_SESSION['checkContactPersonMore'],
-				'checkEducationTime' => $_SESSION['checkEducationTime'],
-				'checkEducationType' => $_SESSION['checkEducationType'],		
-				'checkEducationSchool' => $_SESSION['checkEducationSchool'],
-				'checkEducationDepartment' => $_SESSION['checkEducationDepartment']
-			);
-			$_SESSION['checkArr'] = $check;
-			return $check;
-		}
-
-		function finalCheck(){
 			$ack = array(
 				'status' => true,
 				'content' => '確認新增此帳號'	
 			);
-			foreach($_SESSION['checkArr'] as $ch){
+			foreach($check as $ch){
 				// echo $ch;
 				if($ch != 'success'){
 
@@ -389,7 +353,7 @@
 					}
 				}
 			}
-			return $ack;
+			return $ack;	
 		}
 
 		function register(){
@@ -402,23 +366,23 @@
 													  "staff_birthday","staff_gender","staff_marriage","staff_TWid",
 													  "contact_homeNumber","contact_phoneNumber","contact_companyNumber",
 													  "contact_homeAddress","contact_contactAddress",
-													  "seniority_insuredCompany","seniority_workStatue","seniority_staffType",
+													  "seniority_insuredCompany","seniority_workStatus","seniority_staffType",
 													  "seniority_endDate","seniority_leaveDate",
 													  "contactPerson_name","contactPerson_homeNumber","contactPerson_phone",
 													  "contactPerson_relation","contactPerson_more",
 													  "education_time","education_type","education_school",
-													  "education_department","education_statue","staff_password"
+													  "education_department","education_status","staff_password"
 													 )  
 							VALUES (:staff_id, :staff_department, :staff_position, :staff_name,
 							 		:staff_birthday, :staff_gender, :staff_marriage, :staff_TWid,
 							 		:contact_homeNumber, :contact_phoneNumber, :contact_companyNumber,
 							 		:contact_homeAddress, :contact_contactAddress,
-							 		:seniority_insuredCompany, :seniority_workStatue, :seniority_staffType,
+							 		:seniority_insuredCompany, :seniority_workStatus, :seniority_staffType,
 							 		:seniority_endDate, :seniority_leaveDate,
 							 		:contactPerson_name, :contactPerson_homeNumber, :contactPerson_phone,
 							 		:contactPerson_relation, :contactPerson_more,
 							 		:education_time, :education_type, :education_school,
-							 		:education_department, :education_statue, :staff_password
+							 		:education_department, :education_status, :staff_password
 							 		) ';
 					$sth = $conn->prepare($sql);
 
@@ -445,7 +409,7 @@
 					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
 
 					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredcompany']);
-					$sth->bindParam(':seniority_workStatue',$_POST['buttonWorkstatue']);
+					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
 					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
@@ -460,7 +424,7 @@
 					$sth->bindParam(':education_type',$_POST['educationType']);
 					$sth->bindParam(':education_school',$_POST['schoolName']);
 					$sth->bindParam(':education_department',$_POST['schoolDepartment']);
-					$sth->bindParam(':education_statue',$_POST['buttonEducationCondition']);
+					$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
 
 					$sth->execute();
 					$ack = array(
@@ -488,7 +452,7 @@
 								 "contact_homeNumber" = :contact_homeNumber, "contact_phoneNumber" = :contact_phoneNumber,
 								 "contact_companyNumber" = :contact_companyNumber, "contact_homeAddress" = :contact_homeAddress,
 								 "contact_contactAddress" = :contact_contactAddress,
-								 "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatue"= :seniority_workStatue,
+								 "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatus"= :seniority_workStatus,
 								 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate, 
 								 "seniority_leaveDate" = :seniority_leaveDate,
 								 "contactPerson_name" = :contactPerson_name, "contactPerson_homeNumber" = :contactPerson_homeNumber,
@@ -496,7 +460,7 @@
 								 "contactPerson_more" = :contactPerson_more,
 								 education_time = :education_time, education_type = :education_type,
 								 education_school = :education_school, education_department = :education_department,
-								 education_statue = :education_statue, staff_password = :staff_password
+								 education_status = :education_status, staff_password = :staff_password
 							WHERE "staff_id" = :staff_id;';
 					$sth = $conn->prepare($sql);
 
@@ -522,7 +486,7 @@
 					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
 
 					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredcompany']);
-					$sth->bindParam(':seniority_workStatue',$_POST['buttonWorkstatue']);
+					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
 					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
@@ -537,7 +501,7 @@
 					$sth->bindParam(':education_type',$_POST['educationType']);
 					$sth->bindParam(':education_school',$_POST['schoolName']);
 					$sth->bindParam(':education_department',$_POST['schoolDepartment']);
-					$sth->bindParam(':education_statue',$_POST['buttonEducationCondition']);
+					$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
 
 
 					$sth->execute();
@@ -589,6 +553,55 @@
 			$row = $statement->fetchAll();
 			// echo $row.staff_department;
 			return $row;
+		}
+		function getProfile(){
+			$profile = $this->allInfo();
+			if(count($profile)==1){
+				$data = array();
+				foreach ($profile[0] as $key => $value) {
+					if($key=='department_name') $data['部門']=$value;
+					else if($key=='staff_id') $data['職員編號']=$value;
+					else if($key=='position_name') $data['職位']=$value;
+					else if($key=='staff_name') $data['中文名字']=$value;
+					else if($key=='staff_password') $data['密碼']=$value;
+					else if($key=='staff_birthday') $data['生日']=$value;
+					else if($key=='staff_gender') $data['性別']=$value;
+					else if($key=='staff_marriage') $data['婚姻狀況']=$value;
+					else if($key=='staff_TWid') $data['身分證號碼']=$value;
+					else if($key=='contact_companyNumber') $data['公司聯絡電話']=$value;
+
+					else if($key=='contact_phoneNumber') $data['手機']=$value;
+					else if($key=='contact_homeNumber') $data['住家電話']=$value;
+					else if($key=='contact_homeAddress') $data['戶籍地址']=$value;
+					else if($key=='contact_contactAddress') $data['通訊地址']=$value;
+
+					else if($key=='seniority_insuredCompany') $data['投保公司']=$value;
+					else if($key=='seniority_workStatus') $data['在職狀態']=$value;
+					else if($key=='seniority_staffType') $data['員工類型']=$value;
+					else if($key=='seniority_endDate') $data['到職日期']=$value;
+					else if($key=='seniority_leaveDate') $data['離職日期']=$value;
+
+					else if($key=='contactPerson_name') $data['緊急聯絡人姓名']=$value;
+					else if($key=='contactPerson_homeNumber') $data['緊急聯絡人電話']=$value;
+					else if($key=='contactPerson_phone') $data['緊急聯絡人手機']=$value;
+					else if($key=='contactPerson_relation') $data['緊急聯絡人關係']=$value;
+					else if($key=='contactPerson_more') $data['緊急聯絡人備註']=$value;
+
+					else if($key=='education_time') $data['就學期間']=$value;
+					else if($key=='education_type') $data['學制']=$value;
+					else if($key=='education_school') $data['學校']=$value;
+					else if($key=='education_department') $data['科系']=$value;
+				}
+				$ack = array(
+					'status'=>'successs',
+					'data'=>$data
+				);
+			}else{
+				$ack = array(
+					'status'=>'failed'
+				);
+			}
+			return $ack;
 		}
 	}
 ?>
