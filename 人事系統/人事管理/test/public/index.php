@@ -56,19 +56,19 @@ $app->get('/', function (Request $request, Response $response, array $args) {
 $app->group('/page', function () use ($app) {
 	$app->group('', function () use ($app) {
 		$app->get('/home', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/index.html', [
+			return $this->view->render($response, '/index.php', [
 		    ]);
 		});
 		$app->get('/register', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/register.html', [
+			return $this->view->render($response, '/register.php', [
 		    ]);
 		});
 		$app->get('/table', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/tables.html', [
+			return $this->view->render($response, '/tables.php', [
 		    ]);
 		});
 		$app->get('/modify', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/register.html', [
+			return $this->view->render($response, '/register.php', [
 		    ]);
 		});
 	})->add( new ViewMiddleware() );
@@ -145,9 +145,9 @@ $app->group('/staff', function () use ($app) {
 	    return $response;
 	});
 
-	$app->get('/workStatue/get', function (Request $request, Response $response, array $args) {
+	$app->get('/workStatus/get', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff();
-	    $result = $staff->getWorkStatue();
+	    $result = $staff->getWorkStatus();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -184,24 +184,11 @@ $app->group('/staff', function () use ($app) {
 	    return $response;  
 	});
 
-	$app->post('/staffId/post', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
-	    $result = $staff->staffId();
-	    $ack = array(
-			'id'=>$result
-		);
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($ack);
-		//echo $response['num'];
-	    return $response;  
-	});
-
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff();
 	    $result = $staff->checkRegister();
-	    $resultStatue = $staff->finalCheck();
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($resultStatue);
+		$response = $response->withJson($result);
 		// echo $response;
 	    return $response;   
 	});
@@ -238,6 +225,18 @@ $app->group('/table', function () use ($app) {
 		
 	    $staff = new Table();
 	    $result = $staff->allInfo();
+	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+
+	    
+	    return $response;
+	    
+	});
+	$app->post('/profile/get', function (Request $request, Response $response, array $args) {
+		
+	    $staff = new Table();
+	    $result = $staff->getProfile();
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);

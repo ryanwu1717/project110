@@ -15,23 +15,23 @@
 										  "staff_birthday","staff_gender","staff_marriage","staff_TWid",
 										  "contact_homeNumber","contact_phoneNumber","contact_companyNumber",
 										  "contact_homeAddress","contact_contactAddress",
-										  "seniority_insuredCompany","seniority_workStatue","seniority_staffType",
+										  "seniority_insuredCompany","seniority_workStatus","seniority_staffType",
 										  "seniority_endDate","seniority_leaveDate",
 										  "contactPerson_name","contactPerson_homeNumber","contactPerson_phone",
 										  "contactPerson_relation","contactPerson_more",
 										  "education_time","education_type","education_school",
-										  "education_department","education_statue","staff_password"
+										  "education_department","education_status","staff_password"
 										 )  
 				VALUES (:staff_id, :staff_department, :staff_position, :staff_name,
 				 		:staff_birthday, :staff_gender, :staff_marriage, :staff_TWid,
 				 		:contact_homeNumber, :contact_phoneNumber, :contact_companyNumber,
 				 		:contact_homeAddress, :contact_contactAddress,
-				 		:seniority_insuredCompany, :seniority_workStatue, :seniority_staffType,
+				 		:seniority_insuredCompany, :seniority_workStatus, :seniority_staffType,
 				 		:seniority_endDate, :seniority_leaveDate,
 				 		:contactPerson_name, :contactPerson_homeNumber, :contactPerson_phone,
 				 		:contactPerson_relation, :contactPerson_more,
 				 		:education_time, :education_type, :education_school,
-				 		:education_department, :education_statue, :staff_password
+				 		:education_department, :education_status, :staff_password
 				 		) ';
 		$sth = $conn->prepare($sql);
 
@@ -56,7 +56,7 @@
 		$contact_contactAddress = $_POST['contact_contactAddress'];
 
 		$seniority_insuredCompany = $_POST['seniority_insuredCompany'];
-		$seniority_workStatue = $_POST['seniority_workStatue'];
+		$seniority_workStatus = $_POST['seniority_workStatus'];
 		$seniority_staffType = $_POST['seniority_staffType'];
 		$seniority_endDate = $_POST['seniority_endDate'];
 		$seniority_leaveDate = $_POST['seniority_leaveDate'];
@@ -71,7 +71,7 @@
 		$education_type = $_POST['education_type'];
 		$education_school = $_POST['education_school'];
 		$education_department = $_POST['education_department'];
-		$education_statue = $_POST['education_statue'];
+		$education_status = $_POST['education_status'];
 
 		$staff_password = $_POST['staff_password'];
 
@@ -91,7 +91,7 @@
 		$sth->bindParam(':contact_contactAddress',$contact_contactAddress);
 
 		$sth->bindParam(':seniority_insuredCompany',$seniority_insuredCompany);
-		$sth->bindParam(':seniority_workStatue',$seniority_workStatue);
+		$sth->bindParam(':seniority_workStatus',$seniority_workStatus);
 		$sth->bindParam(':seniority_staffType',$seniority_staffType);
 		$sth->bindParam(':seniority_endDate',$seniority_endDate);
 		$sth->bindParam(':seniority_leaveDate',$seniority_leaveDate);
@@ -106,7 +106,7 @@
 		$sth->bindParam(':education_type',$education_type);
 		$sth->bindParam(':education_school',$education_school);
 		$sth->bindParam(':education_department',$education_department);
-		$sth->bindParam(':education_statue',$education_statue);
+		$sth->bindParam(':education_status',$education_status);
 
 		$sth->bindParam(':staff_password',$staff_password);
 
