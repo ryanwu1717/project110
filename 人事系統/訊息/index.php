@@ -575,9 +575,18 @@ setTimeout(function(){
     searchChat();},200);
 
 // setInterval(function(){
-//     searchChatroom();
-//     searchChat();},1000);
-$name='yuyt';
+//   searchChatroom();
+//   searchChat();},5000);
+
+function updateLastReadTime(){
+  $.ajax({
+    url:'chat.php/updateLastReadTime',
+    type:'POST',
+    data:{chatID:chatID},
+    dataType:'json'
+  })
+}
+
 function searchChatroom(){
 	$.ajax({
     url:'chat.php/list/get',
@@ -595,9 +604,16 @@ function searchChatroom(){
         else{
           chatName=this.staff_name;
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget(this);" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+this.LastTime+'</span></h5>                  <p>'+this.content+'</p>                </div>              </div>            </div>');
+        var haveUnread ='';
+        if(this.CountUnread!='0'){
+          haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> '
+        }
+        else{
+          haveUnread ='';
+        }
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget(this);" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+this.LastTime+'</span></h5>                  <p>'+this.content+'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
-    searchChatroom();} 
+    } 
   });
 
 }
@@ -606,6 +622,8 @@ function getTarget(div){
   console.log($(div).attr("data-name"));
   chatID=$(div).attr("data-name");
   searchChat();
+  updateLastReadTime();
+  searchChatroom();
 }
 function searchChat(){
   $.ajax({
@@ -625,7 +643,7 @@ function searchChat(){
         }
 
       });
-    searchChat();
+    
     }
   })
 }
@@ -647,7 +665,12 @@ function sendMsg(){
     type:'POST',
     data:{Msg:Msg,
           chatID:chatID},
-    dataType:'json'
+    dataType:'json',
+    success:function(response){
+    searchChatroom();
+    searchChat();
+  }
   })
+
 }
 </script>

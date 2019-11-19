@@ -30,7 +30,7 @@ $_SESSION['id'] = 'A10001';
 });
 $app->get('/list/get', function (Request $request, Response $response, array $args) {
 
-	$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'DD MON\')as "LastTime","content","chatName","staff_name"
+	$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'DD MON\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread"
 				FROM(
 					SELECT "chatWith"."chatID","chatToWhom"
 					FROM(
@@ -62,7 +62,13 @@ $app->get('/list/get', function (Request $request, Response $response, array $ar
 						where "LastTime"="sentTime")as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
 						LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
 						LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
-						order by "LastTime" asc;';
+						LEFT JOIN (SELECT "chatID","UID",COUNT("c")as "CountUnread"
+									FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+										FROM staff_chat."chatHistory"
+										join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+										where "chatHistory"."UID"=:UID) as "countUnread"
+									group by "chatID","UID") as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+						order by "LastTime1" desc;';
 		$sth = $this->db->prepare($sql);
 		$UID =$_SESSION['id'];
 		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
@@ -101,6 +107,21 @@ $app->post('/sendMsg', function (Request $request, Response $response, array $ar
 		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 		$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 		$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
+		$sth->execute();
+		
+		header("Content-Type: application/json");
+    return $response;
+});
+$app->post('/updateLastReadTime', function (Request $request, Response $response, array $args) {
+
+	$sql = 'UPDATE staff_chat."chatHistory"
+	SET "time"= NOW()
+	WHERE "chatHistory"."chatID"= :chatID AND "chatHistory"."UID"= :UID ;';
+		$sth = $this->db->prepare($sql);
+		$UID =$_SESSION['id'];
+		$chatID=$_POST['chatID'];
+		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+		$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 		$sth->execute();
 		
 		header("Content-Type: application/json");
