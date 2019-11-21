@@ -203,6 +203,11 @@ img{ max-width:100%;}
       </div>
     </div>
     <div class="mesgs">
+      <div class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+          <a class="navbar-brand" name="navbarChatroomTitle">Navbar</a>
+        </nav>
+      </div>
       <div class="msg_history" name=chatBox>
         
         
@@ -309,17 +314,20 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>                  <p>'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>                  <p>'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
 
 }
 var chatID=-1;
-function getTarget(_chatID){
+var chatName = '';
+function getTarget(_chatID,_chatName){
   // console.log($(div).attr("data-name"));
   // chatID=$(div).attr("data-name");
   chatID = _chatID;
+  chatName = _chatName;
+  $('[name=navbarChatroomTitle]').text(chatName);
   updateLastReadTime();
   clearTimeout(queue);
   schedule();
@@ -369,7 +377,7 @@ function sendMsg(){
             chatID:chatID,_METHOD:'PATCH'},
       dataType:'json',
       success:function(response){
-        getTarget(chatID);
+        getTarget(chatID,chatName);
     }
   })
 
@@ -419,7 +427,7 @@ $('#basicModal').on('show.bs.modal',function(){
       });
     },300);
   });
-  $('#basicModal .buttonChatroomCreate').on('click',function(){
+  $('#basicModal .buttonChatroomCreate').unbind().on('click',function(){
     var data = new Object();
     data['title'] = $('#basicModal [name=inputChatroomTitle]').val();
     data['member'] = [];
@@ -443,7 +451,7 @@ $('#basicModal').on('show.bs.modal',function(){
     });
   });
   $.ajax({
-    url:'/table/getTable',
+    url:'/chat/list',
     type:'get',
     dataType:'json',
     success:function(response){
@@ -455,7 +463,7 @@ $('#basicModal').on('show.bs.modal',function(){
                 '<input type="checkbox" class="checkItem" data-name='+this.id+'>'+
               '</div>'+
             '</div>'+
-            '<input type="text" class="form-control listName" disabled value='+this.id+'>'+
+            '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
             '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
           '</div>'
         );

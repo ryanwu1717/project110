@@ -29,15 +29,15 @@
 			return $ack;
 		} 
 
-		function get(){ 
-			$result = $_SESSION['id'];
-			return $result;
+		function getName(){ 
+			$staff_id = $_SESSION['id'];
+			$sql ="SELECT staff_name FROM staff.staff WHERE staff_id = :staff_id;";
+			$sth = $this->conn->prepare($sql);
+		   	$sth->bindParam(':staff_id',$staff_id,PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
 		} 
-
-		function initial(){
-			$result = $_SESSION['id'];		
-			return $result;
-		}
 	}
 
 	Class Staff{
@@ -735,6 +735,14 @@
 			);
 			return $ack;
 
+		}
+		function getList(){
+			$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id;";
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
 		}
 	}
 ?>

@@ -86,7 +86,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group row">
-                      <label class="col-form-label col-md-4">住家電話</label>
+                      <label class="col-form-label col-md-4">公司聯絡電話</label>
                       <div class="col-md-8">  
                         <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="公司聯絡電話">
                       </div>

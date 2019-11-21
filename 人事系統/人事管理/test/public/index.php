@@ -33,15 +33,30 @@ $container['db'] = function ($container) {
 	}
 	return $conn;
 };
+$container['ViewMiddleware'] = function($container) {
+    return new ViewMiddleware($container->db);
+};
 session_start();
 
 
 class ViewMiddleware
 {
+	private $conn;
+	function __construct($db){
+		$this->conn = $db;
+	}
     public function __invoke($request, $response, $next)
     {
-    	if(isset($_SESSION['id']))
+    	if(isset($_SESSION['id'])){
+    		$user = new User($this->conn);
+	    	$name = $user->getName();
+    		$viewParam = array();
+	    	if(count($name)==1){
+	    		$viewParam['name'] = $name[0]['staff_name'];
+	    	}
+    		$request = $request->withAttribute('viewParam', $viewParam);
         	$response = $next($request, $response);
+    	}
     	else{
 			header("Location: /login"); 	
     	}
@@ -53,28 +68,27 @@ $app->get('/', function (Request $request, Response $response, array $args) {
 });
 $app->group('', function () use ($app) {
 	$app->group('', function () use ($app) {
-		$app->get('/home', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/index.php', [
-		    ]);
+		$app->get('/home', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');	
+			return $this->view->render($response, '/index.php', $viewParam);
 		});
-		$app->get('/register', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/register.php', [
-		    ]);
+		$app->get('/register', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');		
+			return $this->view->render($response, '/register.php', $viewParam);
 		});
-		$app->get('/table', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/tables.php', [
-		    ]);
+		$app->get('/table', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');		
+			return $this->view->render($response, '/tables.php', $viewParam);
 		});
-		$app->get('/modify', function (Request $request, Response $response, array $args) {		
-			return $this->view->render($response, '/register.php', [
-		    ]);
+		$app->get('/modify', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');		
+			return $this->view->render($response, '/register.php', $viewParam);
 		});
-	})->add( new ViewMiddleware() );
+	})->add('ViewMiddleware');
 	$app->get('/login', function (Request $request, Response $response, array $args) {	
 		session_destroy();
 		session_start();
-		return $this->view->render($response, '/login.html', [
-	    ]);
+		return $this->view->render($response, '/login.html', []);
 	});
 });
 
@@ -249,6 +263,13 @@ $app->group('/table', function () use ($app) {
 });
 
 $app->group('/chat', function () use ($app) {
+	$app->get('/list', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getList();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->get('/chatroom', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getChatroom();
