@@ -6,18 +6,13 @@ use Slim\Views\PhpRenderer;
 
 require_once '../model/user.php';
 $app = new \Slim\App;
-$conn=null;
 $container = $app->getContainer();
 
 // Register component on container
 $container['view'] = function ($container) {
     return new PhpRenderer(__DIR__.'/../view');
 };
-createconn();
-session_start();
-function createconn()   
-{ 
-	global $conn; 
+$container['db'] = function ($container) {
 	$dbhost = '140.127.40.40';
 	$dbport = '25432';
 	$dbuser = 'minlab';
@@ -36,7 +31,10 @@ function createconn()
 	{
 	    echo "Connection failed: ".$e->getMessage();
 	}
-}
+	return $conn;
+};
+session_start();
+
 
 class ViewMiddleware
 {
@@ -45,15 +43,15 @@ class ViewMiddleware
     	if(isset($_SESSION['id']))
         	$response = $next($request, $response);
     	else{
-			header("Location: /page/login"); 	
+			header("Location: /login"); 	
     	}
         return $response;
     }
 }
 $app->get('/', function (Request $request, Response $response, array $args) {		
-	return $response->withRedirect('/page/home', 301);
+	return $response->withRedirect('/home', 301);
 });
-$app->group('/page', function () use ($app) {
+$app->group('', function () use ($app) {
 	$app->group('', function () use ($app) {
 		$app->get('/home', function (Request $request, Response $response, array $args) {		
 			return $this->view->render($response, '/index.php', [
@@ -91,7 +89,7 @@ $app->group('/user', function () use ($app) {
 	});
 
 	$app->post('/login', function (Request $request, Response $response, array $args) {		
-	    $user = new User();
+	    $user = new User($this->db);
 	    $result = $user->login();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -104,7 +102,7 @@ $app->group('/user', function () use ($app) {
 
 $app->group('/staff', function () use ($app) {
 	$app->get('/department/get', function (Request $request, Response $response, array $args) {		
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getDepartment();	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -112,7 +110,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/position/get', function (Request $request, Response $response, array $args) {		
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getPosition();	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -121,7 +119,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/gender/get', function (Request $request, Response $response, array $args) {		
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getGender();	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -129,7 +127,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/marriage/get', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getMarriage();	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -138,7 +136,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/insuredcompany/get', function (Request $request, Response $response, array $args) {		
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getInsuredcompany();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -146,7 +144,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/workStatus/get', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getWorkStatus();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -155,7 +153,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/staffType/get', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getStaffType();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -164,7 +162,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/educationCondition/get', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getEducationCondition();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -173,7 +171,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->get('/staffNum/get', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->getStaffNum();
 	    $ack = array(
 			'num'=>$result
@@ -185,7 +183,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $result = $staff->checkRegister();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -194,7 +192,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->post('/register/post', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $ack = $staff->register();  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
@@ -203,7 +201,7 @@ $app->group('/staff', function () use ($app) {
 	});
 
 	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff();
+	    $staff = new Staff($this->db);
 	    $ack = $staff->modify();  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
@@ -213,7 +211,7 @@ $app->group('/staff', function () use ($app) {
 $app->group('/table', function () use ($app) {
 	$app->get('/getTable', function (Request $request, Response $response, array $args) {
 		
-	    $staff = new Table();
+	    $staff = new Table($this->db);
 	    $result = $staff->getTable();
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -223,7 +221,7 @@ $app->group('/table', function () use ($app) {
 	});
 	$app->post('/update/post', function (Request $request, Response $response, array $args) {
 		
-	    $staff = new Table();
+	    $staff = new Table($this->db);
 	    $result = $staff->allInfo();
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -235,7 +233,7 @@ $app->group('/table', function () use ($app) {
 	});
 	$app->post('/profile/get', function (Request $request, Response $response, array $args) {
 		
-	    $staff = new Table();
+	    $staff = new Table($this->db);
 	    $result = $staff->getProfile();
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -248,6 +246,44 @@ $app->group('/table', function () use ($app) {
 
 
 	
+});
+
+$app->group('/chat', function () use ($app) {
+	$app->get('/chatroom', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getChatroom();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->post('/chatroom', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->createChatroom($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/content/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getChatContent($args['chatID']);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->patch('/message', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->updateMessage($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->patch('/lastReadTime', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->updateLastReadTime($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 });
 
 $app->run();

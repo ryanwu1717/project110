@@ -25,14 +25,14 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">中文姓名</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="staffName" placeholder="中文姓名" value="笑哈哈">
+                        <input required type="text" class="form-control form-control-user" name="staffName" placeholder="中文姓名">
                       </div>
                     </div>
 
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">身分證字號</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號" value="A111111111">
+                        <input required type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號">
                       </div>
                     </div>
 
@@ -57,7 +57,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">密碼</label>
                       <div class="col-md-8">  
-                        <input required type="password" class="form-control form-control-user" name="password" placeholder="密碼" value="11111111">
+                        <input required type="password" class="form-control form-control-user" name="password" placeholder="密碼">
                       </div>
                     </div>
                     <div class="form-group row">
@@ -131,7 +131,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">投保公司</label>
                       <div class="col-md-8">
-                        <select required class="custom-select" name="buttonInsuredcompany">
+                        <select required class="custom-select" name="buttonInsuredCompany">
                           <option name = "selectInsuredCompany" selected disabled value="">請選擇</option>
                         </select>
                       </div>
@@ -253,7 +253,7 @@
               </div>
               <div class="row">
                 <div class="col-md-12">
-                  <button type="submit" name=registerFirstButton class="btn btn-primary btn-user btn-block"   data-toggle="modal" data-target="#basicExampleModal">
+                  <button type="submit" name=registerFirstButton class="btn btn-primary btn-user btn-block">
                     註冊資料
                   </button>
                 </div>
@@ -307,9 +307,9 @@
         success:function(data){
           console.log(data);
           $('[name=selectDepartment]').empty();
-          $('[name=selectDepartment]').append(data[0].department_name);
+          $('[name=selectDepartment]').append(data[0].staff_department);
           $('[name=selectPosition]').empty();
-          $('[name=selectPosition]').append(data[0].position_name);
+          $('[name=selectPosition]').append(data[0].staff_position);
           $("[name=staffName]").val(data[0].staff_name);
           $("[name=TWid]").val(data[0].staff_TWid);
           $('[name=selectGender]').empty();
@@ -344,7 +344,6 @@
 
           $('[name=registerFirstButton]').empty();
           $('[name=registerFirstButton]').append("修改資料");
-          checkPassword = data[0].staff_password;
         },
         error:function(jqXHR, textStatus, errorThrown){
           console.log(jqXHR);
@@ -352,26 +351,17 @@
           console.log(errorThrown);
           console.log("failed");
           // window.location.href='register.html';
-        }
-      });
-
-      $("button[name=registerFirstButton]").on('click', function(e){
-        e.preventDefault();
-        ch();
-        $('#exampleModalLabel').append('你的id為'+isUpdate);
-      });
-      $("button[name=registerButton]").on('click', function(){
-        if($("[name=password]").val() == checkPassword){
-          modify();
-        }else{
-          $("#checkRegisterModel").empty();
-          $("#checkRegisterModel").append("密碼錯誤");
-          $('[name=registerButton]').hide();
-        }
-      });
-    
-    
+        },complete:loadType
+    });
+    $("button[name=registerFirstButton]").on('click', function(e){
+      e.preventDefault();
+      ch();
+    });
+    $("button[name=registerButton]").on('click', function(){
+      modify();
+    });
   }else{
+    loadType();
     $("button[name=registerFirstButton]").on('click', function(e){
       e.preventDefault();
       ch();
@@ -387,6 +377,7 @@
     $('#exampleModalLabel').empty();
     $('#checkRegisterModel').empty();
     var data = new Object();
+    data['staff_id'] = isUpdate;
     $('input').each(function(eachid,eachdata){
       data[eachdata.name] = $(eachdata).val();
     });
@@ -402,14 +393,13 @@
       dataType:'json',
       success:function(data){
         var i = 0;
-        console.log(data.content.split(" "));
         // var JdataJSON.parse(options.cartlist);
         var Jdata =data.content.split(" ");
         // $('#exampleModalLabel').empty();
         
         // $('#exampleModalLabel').append('你的id為'+ staff_department + staff_position + count);
         $.each(Jdata, function() {
-          $("#checkRegisterModel").append(Jdata[i]);
+          $("#checkRegisterModel").append(Jdata[i]+"</br>");
           i++;
         });
         if(data.status == false){ 
@@ -419,21 +409,24 @@
         }else{
           $('#exampleModalLabel').text('訊息');
           $('[name=registerButton]').show();
-          var staff_department = $('[name=buttonDepartment]').val();
-          var staff_position = $('[name=buttonPosition]').val();
-          var count;
-          $.ajax({
-            url:'/staff/staffNum/get',
-            type:'get',
-            async: false,
-            dataType:'json',
-            success:function(response){
-              count = paddingLeft(response.num,4); 
-              $('#checkRegisterModel').prepend('你的id為'+ staff_department + staff_position + count+"</br>");
-              $('#basicExampleModal').modal('show');
-            } 
-          });  
+
+          if (isUpdate == null){
+            var staff_department = $('[name=buttonDepartment]').val();
+            var staff_position = $('[name=buttonPosition]').val();
+            var count;
+            $.ajax({
+              url:'/staff/staffNum/get',
+              type:'get',
+              async: false,
+              dataType:'json',
+              success:function(response){
+                count = paddingLeft(response.num,4); 
+                $('#checkRegisterModel').prepend('你的id為'+ staff_department + staff_position + count+"</br>");
+              } 
+            });  
+          }
         }
+        $('#basicExampleModal').modal('show');
       },
       error:function(jqXHR, textStatus, errorThrown){
         console.log(jqXHR);
@@ -481,7 +474,7 @@
   function modify(){
     var count;
       $.ajax({
-        url:'staff/staffNum/get',
+        url:'/staff/staffNum/get',
         async: false,
         type:'get',
         dataType:'json',
@@ -500,7 +493,7 @@
       $.ajax({
         url:'/staff/modify/post',
         type:'POST',
-        data:{data:JSON.stringify()},        
+        data:{data:JSON.stringify(data)},        
         dataType:'json',
         success:function(data){
            console.log("success");
@@ -519,18 +512,19 @@
     else
       return paddingLeft("0" +str,lenght);
   }
-  $(function(){
+  function loadType(){
 
     $.ajax({
         url:'/staff/department/get',
         type:'get',
         dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
+          $(response).each(function(eachid){
             $('[name=buttonDepartment]').append('<option value="'+this.department_id+'">'+this.department_name+'</option>');
+            if($('[name=selectDepartment]').text()==this.department_name){
+              $($('[name=buttonDepartment] option')[eachid+1]).attr('selected',true);
+            }
           });
-
         } 
       });
 
@@ -539,9 +533,11 @@
       type:'get',
       dataType:'json',
       success:function(response){
-        console.log(response);
-        $(response).each(function(){
+        $(response).each(function(eachid){
           $('[name=buttonPosition]').append('<option value="'+this.position_id+'">'+this.position_name+'</option>');
+            if($('[name=selectPosition]').text()==this.position_name){
+              $($('[name=buttonPosition] option')[eachid+1]).attr('selected',true);
+            }
         });
       } 
     }); 
@@ -551,9 +547,11 @@
       type:'get',
       dataType:'json',
       success:function(response){
-        console.log(response);
-        $(response).each(function(){
-          $('[name=buttonGender]').append('<option value="'+this.type+'">'+this.type+'</option>');
+        $(response).each(function(eachid){
+          $('[name=buttonGender]').append('<option value="'+this.id+'">'+this.type+'</option>');
+          if($('[name=selectGender]').text()==this.type){
+            $($('[name=buttonGender] option')[eachid+1]).attr('selected',true);
+          }
         });
       } 
     }); 
@@ -563,9 +561,11 @@
         type:'get',
         dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonMarriage]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          $(response).each(function(eachid){
+            $('[name=buttonMarriage]').append('<option value="'+this.id+'">'+this.type+'</option>');
+            if($('[name=selectMarriage]').text()==this.type){
+              $($('[name=buttonMarriage] option')[eachid+1]).attr('selected',true);
+            }
           });
         } 
       }); 
@@ -575,9 +575,11 @@
         type:'get',
         dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonInsuredcompany]').append('<option value="'+this.companyName+'">'+this.companyName+'</option>');
+          $(response).each(function(eachid){
+            $('[name=buttonInsuredCompany]').append('<option value="'+this.companyId+'">'+this.companyName+'</option>');
+            if($('[name=selectInsuredCompany]').text()==this.companyName){
+              $($('[name=buttonInsuredCompany] option')[eachid+1]).attr('selected',true);
+            }
           });
         } 
       }); 
@@ -587,9 +589,11 @@
         type:'get',
         dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonWorkstatus]').append('<option value="'+this.status+'">'+this.status+'</option>');
+          $(response).each(function(eachid){
+            $('[name=buttonWorkstatus]').append('<option value="'+this.id+'">'+this.status+'</option>');
+            if($('[name=selectWorkStatus]').text()==this.status){
+              $($('[name=buttonWorkstatus] option')[eachid+1]).attr('selected',true);
+            }
           });
         } 
       }); 
@@ -599,9 +603,11 @@
         type:'get',
         dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonStafftype]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          $(response).each(function(eachid){
+            $('[name=buttonStafftype]').append('<option value="'+this.id+'">'+this.type+'</option>');
+            if($('[name=selectStaffType]').text()==this.type){
+              $($('[name=buttonStafftype] option')[eachid+1]).attr('selected',true);
+            }
           });
         } 
       }); 
@@ -611,14 +617,16 @@
         type:'get',
         dataType:'json',
         success:function(response){
-          console.log(response);
-          $(response).each(function(){
-            $('[name=buttonEducationCondition]').append('<option value="'+this.type+'">'+this.type+'</option>');
+          $(response).each(function(eachid){
+            $('[name=buttonEducationCondition]').append('<option value="'+this.id+'">'+this.type+'</option>');
+            if($('[name=selectEducationCondition]').text()==this.type){
+              $($('[name=buttonEducationCondition] option')[eachid+1]).attr('selected',true);
+            }
           });
         } 
       });
     
-  });
+  }
 </script>
 
  

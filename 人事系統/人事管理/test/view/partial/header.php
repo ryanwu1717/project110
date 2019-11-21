@@ -44,7 +44,7 @@
 
       <!-- Nav Item - Dashboard -->
       <li class="nav-item">
-        <a class="nav-link" href="/page/home">
+        <a class="nav-link" href="/">
           <i class="fas fa-fw fa-tachometer-alt"></i>
           <span>首頁</span></a>
       </li>
@@ -57,9 +57,9 @@
         功能
       </div>
       <li class="nav-item">
-        <a class="nav-item" href="#">
+        <a class="nav-link" href="/home">
           <i class="fas fa-envelope fa-fw"></i>
-          <span>設定</span>
+          <span>訊息</span>
         </a>
       </li>
       <!-- Nav Item - Pages Collapse Menu -->
@@ -129,14 +129,14 @@
           <span>圖表</span></a>
       </li> -->
       <li class="nav-item">
-        <a class="nav-link" href="/page/register">
+        <a class="nav-link" href="/register">
           <i class="fas fa-fw fa-table"></i>
           <span>新增員工</span>
         </a>
       </li>
       <!-- Nav Item - Tables -->
       <li class="nav-item active">
-        <a class="nav-link" href="/page/table">
+        <a class="nav-link" href="/table">
           <i class="fas fa-fw fa-table"></i>
           <span>員工資料表</span>
         </a>
@@ -305,10 +305,10 @@
               </a>
               <!-- Dropdown - User Information -->
               <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
+                <!-- <a class="dropdown-item" href="#">
                   <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                   Profile
-                </a>
+                </a> -->
                 <!-- <a class="dropdown-item" href="#">
                   <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                   Settings
@@ -317,7 +317,7 @@
                   <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
                   Activity Log
                 </a> -->
-                <div class="dropdown-divider"></div>
+                <!-- <div class="dropdown-divider"></div> -->
                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                   <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                   登出

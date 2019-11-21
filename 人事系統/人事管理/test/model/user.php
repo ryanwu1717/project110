@@ -1,14 +1,17 @@
 <?php
 	Class User{
 		var $result;   
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
 		function login()
 		{ 
-			global $conn;
 			$_POST=json_decode($_POST['data'],true);
 		   	$loginStaffId = $_POST['loginStaffId'];
 			$loginPassword = $_POST['loginPassword'];		 	
 			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
-			$sth = $conn->prepare($sql);
+			$sth = $this->conn->prepare($sql);
 		   	$sth->bindParam(':staff_id',$loginStaffId);
 		   	$sth->bindParam(':staff_password',$loginPassword);
 			$sth->execute();
@@ -39,21 +42,23 @@
 
 	Class Staff{
 		var $result;   
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
 		function getDepartment()
-		{ 
-			global $conn;			 	
+		{  	
 			$sql ='SELECT * from staff_information.department;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
 		}
 
 		function getPosition()
-		{ 
-			global $conn;			 	
+		{ 			 	
 			$sql ='SELECT * from staff_information.position;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
@@ -61,9 +66,8 @@
 
 		function getGender()
 		{ 
-			global $conn;			 	
 			$sql ='SELECT * from staff_information.gender;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
@@ -71,49 +75,44 @@
 
 		function getMarriage()
 		{ 
-			global $conn;			 	
 			$sql ='SELECT * from staff_information.marriage;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
 		} 
 
 		function getInsuredcompany()
-		{ 
-			global $conn;			 	
+		{ 	 	
 			$sql ='SELECT * from staff_salary.insuredcompany;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
 		} 
 
 		function getWorkStatus()
-		{ 
-			global $conn;			 	
+		{  	
 			$sql ='SELECT * from staff_salary."workStatus";';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
 		} 
 
 		function getStaffType()
-		{ 
-			global $conn;			 	
+		{ 	 	
 			$sql ='SELECT * from staff_salary."staffType";';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
 		} 
 
 		function getEducationCondition()
-		{ 
-			global $conn;			 	
+		{ 	
 			$sql ='SELECT * from staff_education.condition;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
@@ -121,9 +120,8 @@
 
 		function getStaffNum()
 		{
-			global $conn;			 	
 			$sql ='SELECT COUNT (*) as num FROM staff.staff;';	
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchColumn(0);			
 			return $row;
@@ -153,7 +151,7 @@
 	        //D. 檢查是不是全為英文字串
 	        $standard_D = "/^([A-Za-z]+)$/"; 
 	        //E. 檢查是不是英數混和字串
-	        $standard_E = "/^([0-9A-Za-z]+)$/";
+	        $standard_E = "/^(?=.*\d)(?=.*[a-zA-Z]).{8,30}$/";
 	        //F. 檢查是不是中文
 	        $standard_F = "/^([\x7f-\xff]+)$/"; 
 	        //G. 檢查是不是電子信箱格式
@@ -289,7 +287,7 @@
 					break;
 				case '密碼':
        				if(($this -> checkString($input, $standard_E)) == 0){
-						return $field."不符合格式";
+						return $field."至少8個英數混合";
 					}else if($inputLen < 8){
 						return $field."至少8個英數混合";
 					}
@@ -320,7 +318,7 @@
 			$check['checkContactHomeAddress'] = $this -> check("戶籍地址",$_POST['homeAddress']);
 			$check['checkContactContactAddress'] = $this -> check("通訊地址",$_POST['contactAddress']);
 
-			$check['checkInsuredCompany'] = $this -> check("投保公司",$_POST['buttonInsuredcompany']);
+			$check['checkInsuredCompany'] = $this -> check("投保公司",$_POST['buttonInsuredCompany']);
 			$check['checkWorkStatus'] = $this -> check("在職狀態",$_POST['buttonWorkstatus']);
 			$check['checkStaffType'] = $this -> check("員工類型",$_POST['buttonStafftype']);
 			$check['checkEndDate'] = $this -> check("到職日期",$_POST['endDate']);
@@ -336,11 +334,16 @@
 			$check['checkEducationType'] = $this -> check("學制",$_POST['educationType']);
 			$check['checkEducationSchool'] = $this -> check("學校",$_POST['schoolName']);
 			$check['checkEducationDepartment'] = $this -> check("科系",$_POST['schoolDepartment']);
-		
-			$ack = array(
-				'status' => true,
-				'content' => '確認新增此帳號'	
-			);
+			if(empty($_POST['staff_id']))
+				$ack = array(
+					'status' => true,
+					'content' => '確認新增此帳號'	
+				);
+			else
+				$ack = array(
+					'status' => true,
+					'content' => '確認修改此帳號'	
+				);
 			foreach($check as $ch){
 				// echo $ch;
 				if($ch != 'success'){
@@ -357,7 +360,6 @@
 		}
 
 		function register(){
-			global $conn;
 			try
 				{
 					
@@ -384,7 +386,7 @@
 							 		:education_time, :education_type, :education_school,
 							 		:education_department, :education_status, :staff_password
 							 		) ';
-					$sth = $conn->prepare($sql);
+					$sth = $this->conn->prepare($sql);
 
 					//var_dump($_POST);
 			   		//require_once('dbconnect.php');//引入資料庫連結設定檔
@@ -408,7 +410,7 @@
 					$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
 					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
 
-					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredcompany']);
+					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
 					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
@@ -440,7 +442,6 @@
 				return $ack;
 		}
 		function modify(){
-			global $conn;
 			try
 				{
 					
@@ -462,12 +463,13 @@
 								 education_school = :education_school, education_department = :education_department,
 								 education_status = :education_status, staff_password = :staff_password
 							WHERE "staff_id" = :staff_id;';
-					$sth = $conn->prepare($sql);
+					$sth = $this->conn->prepare($sql);
 
 					//var_dump($_POST);
 			   		//require_once('dbconnect.php');//引入資料庫連結設定檔
 			   		$_POST=json_decode($_POST['data'],true);
 			   		//var_dump($_POST);
+
 					$sth->bindParam(':staff_id',$_POST['staff_id']);
 					$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 					$sth->bindParam(':staff_position',$_POST['buttonPosition']);
@@ -485,7 +487,7 @@
 					$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
 					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
 
-					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredcompany']);
+					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
 					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
@@ -513,6 +515,7 @@
 				{
 					$ack = array(
 						'status' => 'failed', 
+						'message'=>$e
 					);
 				}
 				return $ack;
@@ -521,9 +524,11 @@
 
 	Class Table{
 		var $result; 
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
 		function getTable(){
-			global $conn;
-
 			$sql =' SELECT DISTINCT s."staff_name" as name ,x."position_name" as position,
    									d."department_name" as department,s."contact_phoneNumber" as phonenumber,
    									s."seniority_endDate" as enddate,s."seniority_staffType" as stafftype,
@@ -531,23 +536,27 @@
 					from staff.staff as s,staff_information.department as d,staff_information.position as x
 					where s."staff_position" = x."position_id" and s."staff_department" = d."department_id"
 					ORDER BY position DESC;';
-			$statement = $conn->prepare($sql);
+			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();
 			
 			return $row;
 		}
 		function allInfo(){
-			global $conn;
 			$_POST=json_decode($_POST['data'],true);
 
-			$sql =' SELECT *
-					FROM(SELECT * 
-						FROM staff.staff 
-						WHERE "staff_id" = :staff_id)as s
-					LEFT JOIN staff_information.department on s.staff_department=staff_information.department.department_id
-					LEFT JOIN staff_information.position on s.staff_position=staff_information.position.position_id;';
-			$statement = $conn->prepare($sql);
+			$sql ='SELECT staff_id, department.department_name as staff_department, staff_name, staff_birthday, "staff_TWid", "contact_homeNumber", "contact_phoneNumber", "contact_companyNumber", "contact_homeAddress", "contact_contactAddress", "seniority_endDate", "seniority_leaveDate", "contactPerson_name", "contactPerson_homeNumber", "contactPerson_phone", "contactPerson_relation", "contactPerson_more", education_time, education_type, education_school, education_department, staff_password, staff_delete, gender.type as staff_gender, marriage.type as staff_marriage, insuredcompany."companyName" as "seniority_insuredCompany","workStatus"."status" as "seniority_workStatus", "staffType"."type" as "seniority_staffType",condition.type as education_status,position.position_name as staff_position
+				FROM staff.staff as s
+				LEFT JOIN staff_information.department on s.staff_department=staff_information.department.department_id
+				LEFT JOIN staff_information.position on s.staff_position=staff_information.position.position_id
+				LEFT JOIN staff_information.gender on s.staff_gender=staff_information.gender.id
+				LEFT JOIN staff_information.marriage on s.staff_marriage=staff_information.marriage.id
+				LEFT JOIN staff_education.condition on s.education_status=staff_education.condition.id
+				LEFT JOIN staff_salary.insuredcompany on s."seniority_insuredCompany"=staff_salary.insuredcompany."companyId"
+				LEFT JOIN staff_salary."staffType" on s."seniority_staffType"=staff_salary."staffType"."id"
+				LEFT JOIN staff_salary."workStatus" on s."seniority_workStatus"=staff_salary."workStatus"."id"
+				WHERE "staff_id" = :staff_id;';
+			$statement = $this->conn->prepare($sql);
 			$statement->bindParam(':staff_id',$_POST['staff_id']);
 			$statement->execute();
 			$row = $statement->fetchAll();
@@ -602,6 +611,130 @@
 				);
 			}
 			return $ack;
+		}
+	}
+	Class Chat{
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function getChatroom(){
+			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread"
+						FROM(
+							SELECT "chatWith"."chatID","chatToWhom"
+							FROM(
+								SELECT "chatID", "time", "UID"
+								FROM staff_chat."chatHistory"
+								where "UID"= :UID
+								)as "chatWith" 
+								LEFT JOIN (
+											SELECT "cH3"."chatID","UID" as "chatToWhom"
+											FROM(
+												SELECT "couUID","chatID","time"
+												FROM(
+													SELECT "chatID" as "cID", COUNT("UID")as "couUID"
+													FROM staff_chat."chatHistory"
+													group by "chatID") as "cUID"
+													LEFT JOIN staff_chat."chatHistory" as "cH2"
+													on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
+											LEFT join staff_chat."chatHistory" as "cH3"
+											on "check"."chatID"="cH3"."chatID"
+											where "UID"!= :UID
+											)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
+								LEFT JOIN (
+											SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
+											FROM(
+												SELECT "chatID",MAX("sentTime")as "LastTime"
+												FROM staff_chat."chatContent"
+												Group by "chatID")as "cILT" 
+								LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
+								where "LastTime"="sentTime")as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
+								LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
+								LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
+								LEFT JOIN (SELECT "chatID","UID",COUNT("c")as "CountUnread"
+											FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+												FROM staff_chat."chatHistory"
+												join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+												where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
+											group by "chatID","UID") as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+								order by "LastTime1" desc;';
+			$sth = $this->conn->prepare($sql);
+			$UID =$_SESSION['id'];
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
+		}
+		function getChatContent($chatID){
+			$sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
+					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID ;';
+			$sth = $this->conn->prepare($sql);
+			$UID =$_SESSION['id'];
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+
+			$body = array('chatID'=>$chatID);
+			$this->updateLastReadTime($body);
+
+			return $row;
+		}
+		function updateMessage($body){
+			$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
+					VALUES ( :Msg , :UID , NOW(), :chatID );';
+			$sth = $this->conn->prepare($sql);
+			$UID =$_SESSION['id'];
+			$chatID=$body['chatID'];
+			$Msg=$body['Msg'];
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
+			$sth->execute();
+			
+			$ack = array(
+				'status'=>'success'
+			);
+			return $ack;
+		}
+		function updateLastReadTime($body){
+			$sql = 'UPDATE staff_chat."chatHistory" SET "time"= NOW() WHERE "chatHistory"."chatID"= :chatID AND "chatHistory"."UID"= :UID ;';
+			$sth = $this->conn->prepare($sql);
+			$UID =$_SESSION['id'];
+			$chatID=$body['chatID'];
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->execute();
+			
+			$ack = array(
+				'status'=>'success'
+			);
+			return $ack;
+		}
+		function createChatroom($body){
+			$body=json_decode($body['data'],true);
+			$sql = 'INSERT INTO staff_chat."chatroomInfo"( "chatName") VALUES (:chatName);';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':chatName',$body['title'],PDO::PARAM_STR);
+			$sth->execute();
+			
+			$chatID=$this->conn->lastInsertId();
+			array_push(
+				$body['member'], array('UID'=>$_SESSION['id'])
+			);
+			foreach ($body['member'] as $key => $value) {
+				$sql = 'INSERT INTO staff_chat."chatHistory"("chatID", "time", "UID") VALUES (:chatID, NOW(), :UID);';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$value['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				$sth->execute();
+			}
+
+			$ack = array(
+				'status'=>'success'
+			);
+			return $ack;
+
 		}
 	}
 ?>
