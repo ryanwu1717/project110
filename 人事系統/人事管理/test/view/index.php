@@ -205,7 +205,7 @@ img{ max-width:100%;}
     <div class="mesgs">
       <div class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
-          <a class="navbar-brand" name="navbarChatroomTitle">Navbar</a>
+          <a class="navbar-brand" name="navbarChatroomTitle"></a>
         </nav>
       </div>
       <div class="msg_history" name=chatBox>

@@ -1,11 +1,13 @@
 <?php
-require '../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
+require_once __DIR__.'/../model/user.php';
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\PhpRenderer;
 
-require_once '../model/user.php';
 $app = new \Slim\App;
+require_once __DIR__.'/../route/management.php';
+
 $container = $app->getContainer();
 
 // Register component on container
@@ -88,20 +90,11 @@ $app->group('', function () use ($app) {
 	$app->get('/login', function (Request $request, Response $response, array $args) {	
 		session_destroy();
 		session_start();
-		return $this->view->render($response, '/login.html', []);
+		return $this->view->render($response, '/login.php', []);
 	});
 });
 
 $app->group('/user', function () use ($app) {
-	$app->get('/view', function (Request $request, Response $response, array $args) {
-		$a = array(
-			"abc"=>"abc"
-		);		
-		var_dump($a);
-		return $this->view->render($response, '/404.html', [
-	    ]);
-	});
-
 	$app->post('/login', function (Request $request, Response $response, array $args) {		
 	    $user = new User($this->db);
 	    $result = $user->login();

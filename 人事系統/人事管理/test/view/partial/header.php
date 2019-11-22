@@ -41,7 +41,7 @@
 
       <!-- Nav Item - Dashboard -->
       <li class="nav-item">
-        <a class="nav-link" href="/">
+        <a class="nav-link" href="<?=$url?>/">
           <i class="fas fa-fw fa-tachometer-alt"></i>
           <span>首頁</span></a>
       </li>
@@ -54,7 +54,7 @@
         功能
       </div>
       <li class="nav-item">
-        <a class="nav-link" href="/home">
+        <a class="nav-link" href="<?=$url?>/home">
           <i class="fas fa-envelope fa-fw"></i>
           <span>訊息</span>
         </a>
@@ -126,14 +126,14 @@
           <span>圖表</span></a>
       </li> -->
       <li class="nav-item">
-        <a class="nav-link" href="/register">
+        <a class="nav-link" href="<?=$url?>/register">
           <i class="fas fa-fw fa-table"></i>
           <span>新增員工</span>
         </a>
       </li>
       <!-- Nav Item - Tables -->
       <li class="nav-item active">
-        <a class="nav-link" href="/table">
+        <a class="nav-link" href="<?=$url?>/table">
           <i class="fas fa-fw fa-table"></i>
           <span>員工資料表</span>
         </a>
