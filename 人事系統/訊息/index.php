@@ -515,6 +515,38 @@ img{ max-width:100%;}
 
       </div>
       <!-- End of Main Content -->
+<div class="modal fade" id="ReadOrNot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">已讀清單</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+          <div class="modal-body" >
+            <h5>看過LA~~~</h5>
+            <div name="readList">
+              
+            </div>
+            
+            <hr>
+            <h5>等我一下我馬上看</h5>
+            <div name="unreadList">
+              
+            </div>
+            
+          </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+          <a class="btn btn-primary" href="login.html">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
 
       <!-- Footer -->
       <footer class="sticky-footer bg-white">
@@ -556,6 +588,7 @@ img{ max-width:100%;}
     </div>
   </div>
 
+
   <!-- Bootstrap core JavaScript-->
   <script src="vendor/jquery/jquery.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -574,9 +607,9 @@ setTimeout(function(){
     searchChatroom();
     searchChat();},200);
 
-// setInterval(function(){
-//   searchChatroom();
-//   searchChat();},5000);
+setInterval(function(){
+  searchChatroom();
+  searchChat();},5000);
 
 function updateLastReadTime(){
   $.ajax({
@@ -609,16 +642,16 @@ function searchChatroom(){
           haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> '
         }
         else{
-          haveUnread ='';
+          haveUnread='';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget(this);" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+this.LastTime+'</span></h5>                  <p>'+this.content+'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getChatID(this);" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+this.LastTime+'</span></h5>                  <p>'+this.content+'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
 
 }
 var chatID=-1;
-function getTarget(div){
+function getChatID(div){
   console.log($(div).attr("data-name"));
   chatID=$(div).attr("data-name");
   searchChat();
@@ -636,10 +669,10 @@ function searchChat(){
       $('[name=chatBox]').html("");
       $(response).each(function(){
         if(this.diff!='me'){
-          $('[name=chatBox]').append('<div class="incoming_msg">              <div class="incoming_msg_img">  '+this.UID+'</div>              <div class="received_msg">                <div class="received_withd_msg">                  <p>'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
+          $('[name=chatBox]').append('<div class="incoming_msg">              <div class="incoming_msg_img">  '+this.UID+'</div>              <div class="received_msg">                <div class="received_withd_msg" >                  <p onclick="showModal(this)"  data-content="'+this.content+'" >'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
         }
         else{
-          $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">                <p>'+this.content+'</p>                <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
+          $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">              <p onclick="showModal(this)" data-content="'+this.content+'">  '+this.content+'  </p>             <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
         }
 
       });
@@ -647,6 +680,48 @@ function searchChat(){
     }
   })
 }
+
+function showModal(p){
+  $('#ReadOrNot').modal('show');
+  whichTalk=$(p).attr("data-content");
+  getReadList();
+  getUnreadList();
+}
+var whichTalk='';
+function getReadList(){
+  $.ajax({
+    url:'chat.php/readlist/get',
+    type:'get',
+    data:{whichTalk:whichTalk,
+          checkread:'true',
+          chatID:chatID},
+    dataType:'json',
+    success:function(response){
+      $('[name=readList]').html("");
+      $(response).each(function(){        
+        $('[name=readList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  })
+}
+function getUnreadList(){
+  $.ajax({
+    url:'chat.php/readlist/get',
+    type:'get',
+    data:{whichTalk:whichTalk,
+          checkread:'false',
+          chatID:chatID},
+    dataType:'json',
+    success:function(response){
+      $('[name=unreadList]').html("");
+      $(response).each(function(){        
+        $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  })
+}
+
+
 var Msg ="";
 
 $("#textinput").keyup(function(e){

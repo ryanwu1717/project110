@@ -25,7 +25,7 @@ $_SESSION['id'] = 'A10000';
 });
 $app->get('/session_id2', function (Request $request, Response $response, array $args) {
 	
-$_SESSION['id'] = 'A10001';
+$_SESSION['id'] = 'A10002';
     return $response;
 });
 $app->get('/list/get', function (Request $request, Response $response, array $args) {
@@ -123,6 +123,32 @@ $app->post('/updateLastReadTime', function (Request $request, Response $response
 		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 		$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 		$sth->execute();
+		
+		header("Content-Type: application/json");
+    return $response;
+});
+$app->GET('/readlist/get', function (Request $request, Response $response, array $args) {
+
+	$sql = 'SELECT "staff_name","staff_id"
+			FROM(SELECT content, "chatHistory"."UID", "chatHistory"."chatID",case when "time" > "sentTime" then \'true\' else \'false\' end as "checkread"
+					FROM staff_chat."chatContent" as "chatContent"
+					join staff_chat."chatHistory" as "chatHistory" on "chatContent"."chatID"="chatHistory"."chatID"
+					where content=:whichTalk and "chatHistory"."chatID"=:chatID)as "checkUnread"
+			left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
+			where "checkread"= :checkread and "staff_id"!=:UID
+			group by"staff_name","staff_id";';
+		$sth = $this->db->prepare($sql);
+		$whichTalk=$_GET['whichTalk'];
+		$checkread=$_GET['checkread'];
+		$chatID=$_GET['chatID'];
+		$UID =$_SESSION['id'];
+		$sth->bindParam(':whichTalk',$whichTalk,PDO::PARAM_STR);
+		$sth->bindParam(':checkread',$checkread,PDO::PARAM_STR);
+		$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+		$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+		$sth->execute();
+		$row = $sth->fetchAll();
+		echo(json_encode($row));
 		
 		header("Content-Type: application/json");
     return $response;
