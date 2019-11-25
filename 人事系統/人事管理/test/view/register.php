@@ -463,7 +463,9 @@
         data:{data:JSON.stringify(data)},        
         dataType:'json',
         success:function(data){
-           console.log("success");
+           if(data.status=='success'){
+            window.location='/table';
+           }
         },
         error:function(jqXHR, textStatus, errorThrown){
           console.log("failed");

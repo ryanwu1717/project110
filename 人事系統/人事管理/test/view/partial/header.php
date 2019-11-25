@@ -45,7 +45,7 @@
           <i class="fas fa-fw fa-tachometer-alt"></i>
           <span>首頁</span></a>
       </li>
-
+<?php if(is_null($url)){ ?>
       <!-- Divider -->
       <hr class="sidebar-divider">
 
@@ -90,7 +90,7 @@
           </div>
         </div>
       </li> -->
-
+<?php }else{ ?>
       <!-- Divider -->
       <hr class="sidebar-divider">
 
@@ -138,7 +138,7 @@
           <span>員工資料表</span>
         </a>
       </li>
-
+<?php } ?>
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block">
 

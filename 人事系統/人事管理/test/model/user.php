@@ -667,7 +667,7 @@
 		}
 		function getChatContent($chatID){
 			$sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
-					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID ;';
+					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID order by "sentTime" asc;';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);

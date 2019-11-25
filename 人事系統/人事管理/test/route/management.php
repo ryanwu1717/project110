@@ -17,8 +17,12 @@ class ManagementMiddleware
 	}
     public function __invoke($request, $response, $next)
     {
-		$viewParam = array();
-		$viewParam['url'] = '/management/';
+    	if(!is_null($request->getAttribute('viewParam'))){
+			$viewParam = $request->getAttribute('viewParam');			
+    	}else{
+			$viewParam = array();		
+    	}
+		$viewParam['url'] = '/management';
 		$viewParam['placeholderAccount'] = '管理員帳號';
 		$request = $request->withAttribute('viewParam', $viewParam);
     	$response = $next($request, $response);
@@ -34,13 +38,17 @@ class ManagementViewMiddleware
     public function __invoke($request, $response, $next)
     {
     	if(isset($_SESSION['management']['id'])){
-   //  		$management = new Management($this->conn);
-	  //   	$name = $management->getName();
-			// $viewParam = $request->getAttribute('viewParam');		
-	  //   	if(count($name)==1){
-	  //   		$viewParam['name'] = $name[0]['id'];
-	  //   	}
-    		// $request = $request->withAttribute('viewParam', $viewParam);
+    		$management = new Management($this->conn);
+	    	// $name = $management->getName();
+	    	if(!is_null($request->getAttribute('viewParam'))){
+				$viewParam = $request->getAttribute('viewParam');			
+	    	}else{
+				$viewParam = array();		
+	    	}
+	    	if(count($name)==1){
+	    		$viewParam['name'] = $name[0]['id'];
+	    	}
+    		$request = $request->withAttribute('viewParam', $viewParam);
         	$response = $next($request, $response);
     	}
     	else{
@@ -58,7 +66,7 @@ $app->group('/management', function () use ($app) {
 		$app->group('', function () use ($app) {
 			$app->get('/home', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');	
-				return $this->view->render($response, '/index.php', $viewParam);
+				return $this->view->render($response, '/tables.php', $viewParam);
 			});
 			$app->get('/register', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		

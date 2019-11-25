@@ -34,7 +34,7 @@
 			$staff_id = $_SESSION['management']['id'];
 			$sql ="SELECT account as staff_name FROM management.\"user\" WHERE id = :id;";
 			$sth = $this->conn->prepare($sql);
-		   	$sth->bindParam(':account',$staff_id,PDO::PARAM_STR);
+		   	$sth->bindParam(':id',$staff_id,PDO::PARAM_INT);
 			$sth->execute();
 			$row = $sth->fetchAll();
 			return $row;
