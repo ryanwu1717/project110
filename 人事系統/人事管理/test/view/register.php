@@ -25,14 +25,14 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">中文姓名</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="staffName" placeholder="中文姓名">
+                        <input required type="text" class="form-control form-control-user" name="staffName" placeholder="ex.王大明">
                       </div>
                     </div>
 
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">身分證字號</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="TWid" placeholder="身分證字號">
+                        <input required type="text" class="form-control form-control-user" name="TWid" placeholder="ex.A123456789">
                       </div>
                     </div>
 
@@ -57,7 +57,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">密碼</label>
                       <div class="col-md-8">  
-                        <input required type="password" class="form-control form-control-user" name="password" placeholder="密碼">
+                        <input required type="password" class="form-control form-control-user" name="password" placeholder="ex.aaaa0000">
                       </div>
                     </div>
                     <div class="form-group row">
@@ -72,7 +72,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">出生日期</label>
                       <div class="col-md-8">  
-                        <input required type="date" class="form-control" name="staffBirthday" placeholder="出生日期"> 
+                        <input required type="date" class="form-control" name="staffBirthday"> 
                       </div>
                     </div>
                 </div>
@@ -86,15 +86,15 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group row">
-                      <label class="col-form-label col-md-4">住家電話</label>
+                      <label class="col-form-label col-md-4">公司聯絡電話</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="公司聯絡電話">
+                        <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="ex.077172930">
                       </div>
                     </div>
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">手機號碼</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="phoneNumber" placeholder="手機號碼">
+                        <input required type="text" class="form-control form-control-user" name="phoneNumber" placeholder="ex.0900000000">
                       </div>
                     </div> 
                 </div>
@@ -102,7 +102,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">住家電話</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="homeNumber" placeholder="住家電話">
+                        <input required type="text" class="form-control form-control-user" name="homeNumber" placeholder="ex.077172930">
                       </div>
                     </div>
                 </div>
@@ -110,13 +110,13 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-2">通訊地址</label>
                       <div class="col-md-10">
-                        <input required type="text" class="form-control form-control-user" name="contactAddress" placeholder="通訊地址">
+                        <input required type="text" class="form-control form-control-user" name="contactAddress" placeholder="ex.高雄市燕巢區深中路62號">
                       </div>
                     </div>
                     <div class="form-group row">
                       <label class="col-form-label col-md-2">戶籍地址</label>
                       <div class="col-md-10">
-                        <input required type="text" class="form-control form-control-user" name="homeAddress" placeholder="戶籍地址">
+                        <input required type="text" class="form-control form-control-user" name="homeAddress" placeholder="ex.高雄市燕巢區深中路62號">
                       </div>
                     </div>
                 </div>
@@ -178,19 +178,19 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">姓名</label>
                       <div class="col-md-8">
-                        <input required type="text" class="form-control form-control-user" name="contactPersonName" placeholder="姓名">
+                        <input required type="text" class="form-control form-control-user" name="contactPersonName" placeholder="ex.大明媽">
                       </div>
                     </div>
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">手機</label>
                       <div class="col-md-8">
-                        <input required type="text" class="form-control form-control-user" name="contactPersonPhone" placeholder="手機">
+                        <input required type="text" class="form-control form-control-user" name="contactPersonPhone" placeholder="ex.0900000000">
                       </div>
                     </div>
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">備註</label>
                       <div class="col-md-8">
-                        <input required type="text" class="form-control form-control-user" name="contactPersonMore" placeholder="備註">
+                        <input required type="text" class="form-control form-control-user" name="contactPersonMore" placeholder="ex.無">
                       </div>
                     </div>
                 </div>
@@ -198,13 +198,13 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">電話</label>
                       <div class="col-md-8">
-                        <input required type="text" class="form-control form-control-user" name="contactPersonHomeNumber" placeholder="電話">
+                        <input required type="text" class="form-control form-control-user" name="contactPersonHomeNumber" placeholder="ex.077172930">
                       </div>
                     </div>
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">關係</label>
                       <div class="col-md-8">
-                        <input required type="text" class="form-control form-control-user" name="contactPersonRelation" placeholder="關係">
+                        <input required type="text" class="form-control form-control-user" name="contactPersonRelation" placeholder="ex.母子">
                       </div>
                     </div>
                 </div>
@@ -218,13 +218,13 @@
                       <div class="form-group row">
                         <label class="col-form-label col-md-4">就學期間</label>
                         <div class="col-md-8">
-                          <input required type="number" class="form-control" name="educationTime" placeholder="就學期間">
+                          <input required type="number" class="form-control" name="educationTime" placeholder="ex.90-106">
                         </div>
                       </div>
                       <div class="form-group row">
                         <label class="col-form-label col-md-4">學校</label>
                         <div class="col-md-8">
-                          <input required type="text" class="form-control" name="schoolName" placeholder="學校">
+                          <input required type="text" class="form-control" name="schoolName" placeholder="ex.高雄師範大學">
                         </div>
                       </div>
                       <div class="form-group row">
@@ -240,13 +240,13 @@
                       <div class="form-group row">
                         <label class="col-form-label col-md-4">學制</label>
                         <div class="col-md-8">
-                          <input required type="text" class="form-control" name="educationType" placeholder="學制">
+                          <input required type="text" class="form-control" name="educationType" placeholder="ex.12年國教">
                         </div>
                       </div>
                       <div class="form-group row">
                         <label class="col-form-label col-md-4">科系</label>
                         <div class="col-md-8">
-                          <input required type="text" class="form-control" name="schoolDepartment" placeholder="科系">
+                          <input required type="text" class="form-control" name="schoolDepartment" placeholder="ex.軟體工程與管理學系">
                         </div>
                       </div>
                   </div>
@@ -410,21 +410,21 @@
           $('#exampleModalLabel').text('訊息');
           $('[name=registerButton]').show();
 
-          if (isUpdate == null){
-            var staff_department = $('[name=buttonDepartment]').val();
-            var staff_position = $('[name=buttonPosition]').val();
-            var count;
-            $.ajax({
-              url:'/staff/staffNum/get',
-              type:'get',
-              async: false,
-              dataType:'json',
-              success:function(response){
-                count = paddingLeft(response.num,4); 
-                $('#checkRegisterModel').prepend('你的id為'+ staff_department + staff_position + count+"</br>");
-              } 
-            });  
-          }
+        //   if (isUpdate == null){
+        //     var staff_department = $('[name=buttonDepartment]').val();
+        //     var staff_position = $('[name=buttonPosition]').val();
+        //     var count;
+        //     $.ajax({
+        //       url:'/staff/staffNum/get',
+        //       type:'get',
+        //       async: false,
+        //       dataType:'json',
+        //       success:function(response){
+        //         count = paddingLeft(response.num,4); 
+        //         $('#checkRegisterModel').prepend('你的id為'+ staff_department + staff_position + count+"</br>");
+        //       } 
+        //     });  
+        //   }
         }
         $('#basicExampleModal').modal('show');
       },
@@ -439,70 +439,55 @@
     });
   }
   function regis(){
-    var count;
-      $.ajax({
-        url:'/staff/staffNum/get',
-        async: false,
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          count = paddingLeft(response.num,4);
-        }
-      });
-      var data = new Object();
-      data['staff_id'] = $('[name=buttonDepartment]').val() + $('[name=buttonPosition]').val() + count;
-      $('input').each(function(eachid,eachdata){
-        data[eachdata.name] = $(eachdata).val();
-      });
-      $('select').each(function(eachid,eachdata){
-        data[eachdata.name] = $(eachdata).val();
-      });
-      $.ajax({
-        url:'/staff/register/post',
-        type:'POST',
-        data:{data:JSON.stringify(data)},        
-        dataType:'json',
-        success:function(data){
-           console.log("success");
-        },
-        error:function(jqXHR, textStatus, errorThrown){
-          console.log("failed");
-          // window.location.href='register.html';
-        }
-      });
+    var data = new Object();
+    $('input').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $('select').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $.ajax({
+      url:'/staff/register/post',
+      type:'POST',
+      data:{data:JSON.stringify(data)},        
+      dataType:'json',
+      success:function(data){
+         if(data.status=='success'){
+          $('#checkRegisterModel').html('你的id為'+ data.staff_id+"</br>");
+          $('button[name=registerButton]').remove();
+          $('#basicExampleModal').on('hide.bs.modal',function(){
+            window.location='<?=$url?>/table';
+          });
+         }
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        console.log("failed");
+        // window.location.href='register.html';
+      }
+    });
   }
   function modify(){
-    var count;
-      $.ajax({
-        url:'/staff/staffNum/get',
-        async: false,
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          count = paddingLeft(response.num,4);      
-        } 
-      });
-      var data = new Object();
-      data['staff_id'] = isUpdate;
-      $('input').each(function(eachid,eachdata){
-        data[eachdata.name] = $(eachdata).val();
-      });
-      $('select').each(function(eachid,eachdata){
-        data[eachdata.name] = $(eachdata).val();
-      });
-      $.ajax({
-        url:'/staff/modify/post',
-        type:'POST',
-        data:{data:JSON.stringify(data)},        
-        dataType:'json',
-        success:function(data){
-           console.log("success");
-        },
-        error:function(jqXHR, textStatus, errorThrown){
-          console.log("failed");
-          // window.location.href='register.html';
-        }
-      });
+    var data = new Object();
+    data['staff_id'] = isUpdate;
+    $('input').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $('select').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $.ajax({
+      url:'/staff/modify/post',
+      type:'POST',
+      data:{data:JSON.stringify(data)},        
+      dataType:'json',
+      success:function(data){
+         console.log("success");
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        console.log("failed");
+        // window.location.href='register.html';
+      }
+    });
   }
 
 
