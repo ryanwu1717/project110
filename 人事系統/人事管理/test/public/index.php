@@ -1,12 +1,11 @@
 <?php
-require __DIR__.'/../vendor/autoload.php';
-require_once __DIR__.'/../model/user.php';
+require '../vendor/autoload.php';
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\PhpRenderer;
 
+require_once '../model/user.php';
 $app = new \Slim\App;
-
 $container = $app->getContainer();
 
 // Register component on container
@@ -34,38 +33,15 @@ $container['db'] = function ($container) {
 	}
 	return $conn;
 };
-$container['notFoundHandler'] = function ($container) {
-    return function ($request, $response) use ($container) {
-        return $response->withStatus(404)
-            ->withHeader('Content-Type', 'text/html')
-            ->write('Page not found');
-    };
-};
-$container['ViewMiddleware'] = function($container) {
-    return new ViewMiddleware($container->db);
-};
 session_start();
-require_once __DIR__.'/../route/management.php';
 
 
 class ViewMiddleware
 {
-	private $conn;
-	function __construct($db){
-		$this->conn = $db;
-	}
     public function __invoke($request, $response, $next)
     {
-    	if(isset($_SESSION['id'])){
-    		$user = new User($this->conn);
-	    	$name = $user->getName();
-    		$viewParam = array();
-	    	if(count($name)==1){
-	    		$viewParam['name'] = $name[0]['staff_name'];
-	    	}
-    		$request = $request->withAttribute('viewParam', $viewParam);
+    	if(isset($_SESSION['id']))
         	$response = $next($request, $response);
-    	}
     	else{
 			header("Location: /login"); 	
     	}
@@ -77,31 +53,45 @@ $app->get('/', function (Request $request, Response $response, array $args) {
 });
 $app->group('', function () use ($app) {
 	$app->group('', function () use ($app) {
-		$app->get('/home', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');	
-			return $this->view->render($response, '/index.php', $viewParam);
+		$app->get('/home', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/index.php', [
+		    ]);
 		});
-		// $app->get('/register', function (Request $request, Response $response, array $args) {	
-		// 	$viewParam = $request->getAttribute('viewParam');		
-		// 	return $this->view->render($response, '/register.php', $viewParam);
-		// });
-		// $app->get('/table', function (Request $request, Response $response, array $args) {	
-		// 	$viewParam = $request->getAttribute('viewParam');		
-		// 	return $this->view->render($response, '/tables.php', $viewParam);
-		// });
-		// $app->get('/modify', function (Request $request, Response $response, array $args) {	
-		// 	$viewParam = $request->getAttribute('viewParam');		
-		// 	return $this->view->render($response, '/register.php', $viewParam);
-		// });
-	})->add('ViewMiddleware');
+		$app->get('/register', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/register.php', [
+		    ]);
+		});
+		$app->get('/table', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/tables.php', [
+		    ]);
+		});
+		$app->get('/modify', function (Request $request, Response $response, array $args) {		
+			return $this->view->render($response, '/register.php', [
+		    ]);
+		});
+	})->add( new ViewMiddleware() );
 	$app->get('/login', function (Request $request, Response $response, array $args) {	
 		session_destroy();
 		session_start();
-		return $this->view->render($response, '/login.php', []);
+		return $this->view->render($response, '/login.html', [
+	    ]);
+	});
+	$app->get('/add', function (Request $request, Response $response, array $args) {	
+		return $this->view->render($response, '/add.php', [
+	    ]);
 	});
 });
 
 $app->group('/user', function () use ($app) {
+	$app->get('/view', function (Request $request, Response $response, array $args) {
+		$a = array(
+			"abc"=>"abc"
+		);		
+		var_dump($a);
+		return $this->view->render($response, '/404.html', [
+	    ]);
+	});
+
 	$app->post('/login', function (Request $request, Response $response, array $args) {		
 	    $user = new User($this->db);
 	    $result = $user->login();
@@ -262,66 +252,30 @@ $app->group('/table', function () use ($app) {
 	
 });
 
+$app->group('/add', function () use ($app) {
+	$app->post('/item/post', function (Request $request, Response $response, array $args) {
+		$add = new Add($this->db);
+		$result = $add->addItem();
+		$response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);  
+	    return $response;
+	});
+});
+
 $app->group('/chat', function () use ($app) {
-	$app->get('/list', function (Request $request, Response $response, array $args) {
+	$app->get('/chatroom', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->getList();
+		$result = $chat->getChatroom();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->get('/list/{chatID}', function (Request $request, Response $response, array $args) {
+	$app->post('/chatroom', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->getList($args['chatID']);
+		$result = $chat->createChatroom($request->getParsedBody());
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	});
-	$app->get('/member/{chatID}', function (Request $request, Response $response, array $args) {
-		$chat = new Chat($this->db);
-		$result = $chat->getMember($args['chatID']);
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;
-	});
-	$app->group('/chatroom', function () use ($app) {
-		$app->get('', function (Request $request, Response $response, array $args) {
-			$chat = new Chat($this->db);
-			$result = $chat->getChatroom();
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		});
-		$app->post('', function (Request $request, Response $response, array $args) {
-			$chat = new Chat($this->db);
-			$result = $chat->createChatroom($request->getParsedBody());
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		});
-		$app->patch('', function (Request $request, Response $response, array $args) {
-			$chat = new Chat($this->db);
-			$result = $chat->updateChatroom($request->getParsedBody());
-			$result = array("status"=>"success");
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		});
-		$app->delete('', function (Request $request, Response $response, array $args) {
-			$chat = new Chat($this->db);
-			$result = $chat->deleteChatroom($request->getParsedBody());
-			$result = array("status"=>"success");
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		});
-		$app->get('/title/{chatID}', function (Request $request, Response $response, array $args) {
-			$chat = new Chat($this->db);
-			$result = $chat->getChatroomTitle($args['chatID']);
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		});
 	});
 	$app->get('/content/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);

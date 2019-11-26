@@ -195,7 +195,7 @@ img{ max-width:100%;}
             </span> </div>
         </div> -->
         <div class="tool_bar btn-group">
-          <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal" data-type="create">+</button>
+          <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal">+</button>
         </div>
       </div>
       <div class="inbox_chat" name=inbox_chat>
@@ -203,11 +203,6 @@ img{ max-width:100%;}
       </div>
     </div>
     <div class="mesgs">
-      <div class="sticky-top">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
-          <a class="navbar-brand" name="navbarChatroomTitle"></a>
-        </nav>
-      </div>
       <div class="msg_history" name=chatBox>
         
         
@@ -247,7 +242,6 @@ img{ max-width:100%;}
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
-var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-600>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
@@ -315,20 +309,17 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p>'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>                  <p>'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
 
 }
 var chatID=-1;
-var chatName = '';
-function getTarget(_chatID,_chatName){
+function getTarget(_chatID){
   // console.log($(div).attr("data-name"));
   // chatID=$(div).attr("data-name");
   chatID = _chatID;
-  chatName = _chatName;
-  $('[name=navbarChatroomTitle]').text(chatName);
   updateLastReadTime();
   clearTimeout(queue);
   schedule();
@@ -378,164 +369,24 @@ function sendMsg(){
             chatID:chatID,_METHOD:'PATCH'},
       dataType:'json',
       success:function(response){
-        getTarget(chatID,chatName);
+        getTarget(chatID);
     }
   })
 
 }
-$('#basicModal').on('show.bs.modal',function(e){
-  $('#basicModal .modal-footer').html(basicModalFooter);
-  var type = $(e.relatedTarget).data('type');
-  if(type=='create'){
-    Chatroom(type);
-  }else if(type=='update'){
-    Chatroom(type);
-  }else if(type=='member'){
-    getMember();
-  }else if(type=='delete'){
-    Chatroom(type);
-  }
-});
-function getMember(){
-  $('#basicModal .modal-title').text('議題成員');
-  $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
-  $.ajax({
-    url:'/chat/member/'+chatID,
-    type:'get',
-    dataType:'json',
-    success:function(response){
-      $('#basicModal .modal-body').html('');
-      $('#basicModal .modal-body').append(
-        '<div class="card">'+
-          '<div class="card-body">'+
-            '<button class="btn btn-secondary" onclick="Chatroom(\'update\');">修改議題</button>'+
-            '<p class="card-text">'+
-              '<h6 class="card-subtitle mb-2 text-muted listBox">'+
-              '</h6>'+
-            '</p>'+
-          '</div>'+
-        '</div>'
-      );
-      $(response).each(function(){
-        $('#basicModal .listBox').append(
-          '<div class="input-group mb-3 listItem">'+
-            '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
-            '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
-          '</div>'
-        );
-      });
-    }
-  });
-}
-function Chatroom(type){
-  var _chatID = '';
-  if(type=='delete'){
-    $('#basicModal .modal-title').text('離開議題');
-    $('#basicModal .modal-body').html('');
-    $('#basicModal .modal-body').append('確定要離開此議題嗎？');
-    $('#basicModal .modal-footer').prepend('<button class="btn btn-dark" name="buttonDeleteChatroom">確認</button>');
-    $('[name=buttonDeleteChatroom]').unbind().on('click',function(){
-      var data = new Object();
-      data['chatID'] = chatID;
-      $.ajax({
-        url:'/chat/chatroom',
-        type:'post',
-        data:{data:JSON.stringify(data),_METHOD:'DELETE'},
-        dataType:'json',
-        success:function(response){
-          $('#basicModal').modal('hide');
-        }
-      });
-    });
-    return;
-  }else if(type=='create'){
-    $('#basicModal .modal-title').text('新增議題');
-    $('#basicModal .modal-body').html('');
-    $('#basicModal .modal-body').append(
-      '<div class="sticky-top">'+
-        '<div class="input-group mb-3">'+
-          '<div class="input-group-prepend">'+
-            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-          '</div>'+
-          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-          '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
-        '</div>'+
-      '</div>'
-    ); 
-    $('#basicModal .buttonChatroomCreate').unbind().on('click',function(){
-      var data = new Object();
-      data['title'] = $('#basicModal [name=inputChatroomTitle]').val();
-      data['member'] = [];
-      $('#basicModal .checkItem:checked').each(function(){
-        var member = new Object();
-        member['UID'] = $(this).data('name');
-        data['member'].push(member);
-      });
-      $.ajax({
-        url:'/chat/chatroom',
-        type:'post',
-        data:{data:JSON.stringify(data)},
-        dataType:'json',
-        success:function(response){
-          if(response.status=='success'){
-            $('#basicModal').modal('hide');
-          }else{
-            $('#basicModal').modal('hide');
-          }
-        }
-      });
-    });
-  }else if(type=='update'){
-    _chatID = '/'+chatID;
-    $('#basicModal .modal-title').text('修改議題');
-    $('#basicModal .modal-body').html('');
-    $('#basicModal .modal-body').append(
-      '<div class="sticky-top">'+
-        '<div class="input-group mb-3">'+
-          '<div class="input-group-prepend">'+
-            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-          '</div>'+
-          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-          '<button type="button" class="btn btn-dark buttonChatroomUpdate">修改</button>'+
-        '</div>'+
-      '</div>'
-    );
-    $.ajax({
-      url:'/chat/chatroom/title/'+chatID,
-      type:'get',
-      dataType:'json',
-      success:function(response){
-        if(response.length>0){
-          $('#basicModal [name=inputChatroomTitle]').val(response[0]['chatName']);
-        }
-      }
-    });
-    $('#basicModal .buttonChatroomUpdate').unbind().on('click',function(){
-      var data = new Object();
-      data['title'] = $('#basicModal [name=inputChatroomTitle]').val();
-      data['member'] = [];
-      data['chatID'] = chatID;
-      $('#basicModal .checkItem:checked').each(function(){
-        var member = new Object();
-        member['UID'] = $(this).data('name');
-        data['member'].push(member);
-      });
-      $.ajax({
-        url:'/chat/chatroom',
-        type:'post',
-        data:{data:JSON.stringify(data),_METHOD:'PATCH'},
-        dataType:'json',
-        success:function(response){
-          if(response.status=='success'){
-            $('#basicModal').modal('hide');
-          }else{
-            $('#basicModal').modal('hide');
-          }
-        }
-      });
-    });
-  }
+$('#basicModal').on('show.bs.modal',function(){
+  $('#basicModal .modal-title').text('新增議題');
+  $('#basicModal .modal-body').html('');
   $('#basicModal .modal-body').append(
+    '<div class="sticky-top">'+
+      '<div class="input-group mb-3">'+
+        '<div class="input-group-prepend">'+
+          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+        '</div>'+
+        '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+        '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
+      '</div>'+
+    '</div>'+
     '<div class="card">'+
       '<div class="card-body">'+
         '<h5 class="card-title">'+
@@ -568,8 +419,31 @@ function Chatroom(type){
       });
     },300);
   });
+  $('#basicModal .buttonChatroomCreate').on('click',function(){
+    var data = new Object();
+    data['title'] = $('#basicModal [name=inputChatroomTitle]').val();
+    data['member'] = [];
+    $('#basicModal .checkItem:checked').each(function(){
+      var member = new Object();
+      member['UID'] = $(this).data('name');
+      data['member'].push(member);
+    });
+    $.ajax({
+      url:'/chat/chatroom',
+      type:'post',
+      data:{data:JSON.stringify(data)},
+      dataType:'json',
+      success:function(response){
+        if(response.status=='success'){
+          $('#basicModal').modal('hide');
+        }else{
+          $('#basicModal').modal('hide');
+        }
+      }
+    });
+  });
   $.ajax({
-    url:'/chat/list'+_chatID,
+    url:'/table/getTable',
     type:'get',
     dataType:'json',
     success:function(response){
@@ -581,12 +455,12 @@ function Chatroom(type){
                 '<input type="checkbox" class="checkItem" data-name='+this.id+'>'+
               '</div>'+
             '</div>'+
-            '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
+            '<input type="text" class="form-control listName" disabled value='+this.id+'>'+
             '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
           '</div>'
         );
       });
     }
   });
-}
+});
 </script>

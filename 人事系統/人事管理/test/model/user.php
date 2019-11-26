@@ -29,15 +29,15 @@
 			return $ack;
 		} 
 
-		function getName(){ 
-			$staff_id = $_SESSION['id'];
-			$sql ="SELECT staff_name FROM staff.staff WHERE staff_id = :staff_id;";
-			$sth = $this->conn->prepare($sql);
-		   	$sth->bindParam(':staff_id',$staff_id,PDO::PARAM_STR);
-			$sth->execute();
-			$row = $sth->fetchAll();
-			return $row;
+		function get(){ 
+			$result = $_SESSION['id'];
+			return $result;
 		} 
+
+		function initial(){
+			$result = $_SESSION['id'];		
+			return $result;
+		}
 	}
 
 	Class Staff{
@@ -48,7 +48,7 @@
 		}
 		function getDepartment()
 		{  	
-			$sql ='SELECT * from staff_information.department;';	
+			$sql ='SELECT * from staff_information.department ORDER BY department_id ASC ;';	
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
@@ -127,37 +127,14 @@
 			return $row;
 		}
 
-        function paddingLeft($str,$strLenght){
-            $len = strlen($str);
-            if($len >= $strLenght)
-              return $str;
-            else
-              return $this->paddingLeft("0".$str,$strLenght);
-        }
-        function staffId($staff_department,$staff_position)
-        {   
-            $dp = $staff_department.$staff_position.'%';         
-            $sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';    
-            $statement = $this->conn->prepare($sql);
-            $statement->bindParam(':dp',$dp);
-            $statement->execute();
-            $row = $statement->fetchColumn(0);
-            $row += 1;
-            $row = (string)$row;
-            $newId = $this->paddingLeft($row,4);
-            $newId = $staff_department.$staff_position.$newId;
-            // echo $newId;    
-            return $newId;
-        }
-
-       	function checkString($strings, $standard){
+       function checkString($strings, $standard){
        		// echo "inCheck";
            if(preg_match($standard, $strings, $hereArray)) {
             	return 1;
            } else {
            		return 0;
            }
-       	}
+       }
 
        public function check($field,$input){
        		if(empty($input)){
@@ -383,8 +360,11 @@
 		}
 
 		function register(){
-			try{
-				$sql = 'INSERT INTO staff.staff("staff_id","staff_department","staff_position","staff_name",
+			try
+				{
+					
+
+					$sql = 'INSERT INTO staff.staff("staff_id","staff_department","staff_position","staff_name",
 													  "staff_birthday","staff_gender","staff_marriage","staff_TWid",
 													  "contact_homeNumber","contact_phoneNumber","contact_companyNumber",
 													  "contact_homeAddress","contact_contactAddress",
@@ -406,63 +386,67 @@
 							 		:education_time, :education_type, :education_school,
 							 		:education_department, :education_status, :staff_password
 							 		) ';
-				$sth = $this->conn->prepare($sql);
+					$sth = $this->conn->prepare($sql);
 
-				//var_dump($_POST);
-		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
-		   		$_POST=json_decode($_POST['data'],true);
-		   		//var_dump($_POST);
-		   		$staff_id = $this->staffId($_POST['buttonDepartment'],$_POST['buttonPosition']);
-				$sth->bindParam(':staff_id',$staff_id);
-				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
-				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
-				$sth->bindParam(':staff_name',$_POST['staffName']);
-				$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
-				$sth->bindParam(':staff_gender',$_POST['buttonGender']);
-				$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
-				$sth->bindParam(':staff_TWid',$_POST['TWid']);
-				$sth->bindParam(':staff_password',$_POST['password']);
+					//var_dump($_POST);
+			   		//require_once('dbconnect.php');//引入資料庫連結設定檔
+			   		$_POST=json_decode($_POST['data'],true);
+			   		//var_dump($_POST);
+
+					$sth->bindParam(':staff_id',$_POST['staff_id']);
+					$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
+					$sth->bindParam(':staff_position',$_POST['buttonPosition']);
+					$sth->bindParam(':staff_name',$_POST['staffName']);
+					$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
+					$sth->bindParam(':staff_gender',$_POST['buttonGender']);
+					$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
+					$sth->bindParam(':staff_TWid',$_POST['TWid']);
+					$sth->bindParam(':staff_password',$_POST['password']);
 
 
-				$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
-				$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
-				$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
-				$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
-				$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
+					$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
+					$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
+					$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
+					$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
+					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
 
-				$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
-				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
-				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
-				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
+					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
+					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
+					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
+					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
 
-				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
-				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
-				$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
-				$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
-				$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
+					$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
+					$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
+					$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
+					$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
+					$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
 
-				$sth->bindParam(':education_time',$_POST['educationTime']);
-				$sth->bindParam(':education_type',$_POST['educationType']);
-				$sth->bindParam(':education_school',$_POST['schoolName']);
-				$sth->bindParam(':education_department',$_POST['schoolDepartment']);
-				$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
+					$sth->bindParam(':education_time',$_POST['educationTime']);
+					$sth->bindParam(':education_type',$_POST['educationType']);
+					$sth->bindParam(':education_school',$_POST['schoolName']);
+					$sth->bindParam(':education_department',$_POST['schoolDepartment']);
+					$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
 
-				$sth->execute();
-				$ack = array(
-					'status' => 'success', 
-					'staff_id' => $staff_id
-				);
-			}catch(PDOException $e){
-				$ack = array(
-					'status' => 'failed', 
-				);
-			}
-			return $ack;
+					$sth->execute();
+					$ack = array(
+						'status' => 'success', 
+					);
+				}
+				catch(PDOException $e)
+				{
+					$ack = array(
+						'status' => 'failed', 
+					);
+				}
+				return $ack;
 		}
 		function modify(){
-			try{
-				$sql = 'UPDATE staff.staff
+			try
+				{
+					
+
+					$sql = 'UPDATE staff.staff
 							SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
 								 staff_birthday=:staff_birthday, staff_gender = :staff_gender, staff_marriage = :staff_marriage,
 								 "staff_TWid" = :staff_TWid,
@@ -479,60 +463,62 @@
 								 education_school = :education_school, education_department = :education_department,
 								 education_status = :education_status, staff_password = :staff_password
 							WHERE "staff_id" = :staff_id;';
-				$sth = $this->conn->prepare($sql);
+					$sth = $this->conn->prepare($sql);
 
-				//var_dump($_POST);
-		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
-		   		$_POST=json_decode($_POST['data'],true);
-		   		//var_dump($_POST);
+					//var_dump($_POST);
+			   		//require_once('dbconnect.php');//引入資料庫連結設定檔
+			   		$_POST=json_decode($_POST['data'],true);
+			   		//var_dump($_POST);
 
-				$sth->bindParam(':staff_id',$_POST['staff_id']);
-				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
-				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
-				$sth->bindParam(':staff_name',$_POST['staffName']);
-				$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
-				$sth->bindParam(':staff_gender',$_POST['buttonGender']);
-				$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
-				$sth->bindParam(':staff_TWid',$_POST['TWid']);
-				$sth->bindParam(':staff_password',$_POST['password']);
-
-
-				$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
-				$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
-				$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
-				$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
-				$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
-
-				$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
-				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
-				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
-				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
-
-				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
-				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
-				$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
-				$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
-				$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
-
-				$sth->bindParam(':education_time',$_POST['educationTime']);
-				$sth->bindParam(':education_type',$_POST['educationType']);
-				$sth->bindParam(':education_school',$_POST['schoolName']);
-				$sth->bindParam(':education_department',$_POST['schoolDepartment']);
-				$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
+					$sth->bindParam(':staff_id',$_POST['staff_id']);
+					$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
+					$sth->bindParam(':staff_position',$_POST['buttonPosition']);
+					$sth->bindParam(':staff_name',$_POST['staffName']);
+					$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
+					$sth->bindParam(':staff_gender',$_POST['buttonGender']);
+					$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
+					$sth->bindParam(':staff_TWid',$_POST['TWid']);
+					$sth->bindParam(':staff_password',$_POST['password']);
 
 
-				$sth->execute();
-				$ack = array(
-					'status' => 'success', 
-				);
-			}catch(PDOException $e){
-				$ack = array(
-					'status' => 'failed', 
-					'message'=>$e
-				);
-			}
-			return $ack;
+					$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
+					$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
+					$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
+					$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
+					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
+
+					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
+					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
+					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
+					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
+					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+
+					$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
+					$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
+					$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
+					$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
+					$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
+
+					$sth->bindParam(':education_time',$_POST['educationTime']);
+					$sth->bindParam(':education_type',$_POST['educationType']);
+					$sth->bindParam(':education_school',$_POST['schoolName']);
+					$sth->bindParam(':education_department',$_POST['schoolDepartment']);
+					$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
+
+
+					$sth->execute();
+					$ack = array(
+						'status' => 'success', 
+					);
+				}
+				catch(PDOException $e)
+				{
+					$ack = array(
+						'status' => 'failed', 
+						'message'=>$e
+					);
+				}
+				return $ack;
 		}
 	}
 
@@ -559,7 +545,7 @@
 		function allInfo(){
 			$_POST=json_decode($_POST['data'],true);
 
-			$sql ='SELECT staff_id, department.department_name as staff_department, staff_name, staff_birthday, "staff_TWid", "contact_homeNumber", "contact_phoneNumber", "contact_companyNumber", "contact_homeAddress", "contact_contactAddress", "seniority_endDate", "seniority_leaveDate", "contactPerson_name", "contactPerson_homeNumber", "contactPerson_phone", "contactPerson_relation", "contactPerson_more", education_time, education_type, education_school, education_department, staff_delete, gender.type as staff_gender, marriage.type as staff_marriage, insuredcompany."companyName" as "seniority_insuredCompany","workStatus"."status" as "seniority_workStatus", "staffType"."type" as "seniority_staffType",condition.type as education_status,position.position_name as staff_position
+			$sql ='SELECT staff_id, department.department_name as staff_department, staff_name, staff_birthday, "staff_TWid", "contact_homeNumber", "contact_phoneNumber", "contact_companyNumber", "contact_homeAddress", "contact_contactAddress", "seniority_endDate", "seniority_leaveDate", "contactPerson_name", "contactPerson_homeNumber", "contactPerson_phone", "contactPerson_relation", "contactPerson_more", education_time, education_type, education_school, education_department, staff_password, staff_delete, gender.type as staff_gender, marriage.type as staff_marriage, insuredcompany."companyName" as "seniority_insuredCompany","workStatus"."status" as "seniority_workStatus", "staffType"."type" as "seniority_staffType",condition.type as education_status,position.position_name as staff_position
 				FROM staff.staff as s
 				LEFT JOIN staff_information.department on s.staff_department=staff_information.department.department_id
 				LEFT JOIN staff_information.position on s.staff_position=staff_information.position.position_id
@@ -627,20 +613,246 @@
 			return $ack;
 		}
 	}
+	Class Add{
+		var $conn;
+		var $result; 
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function addItem(){
+			$_POST=json_decode($_POST['data'],true);
+			switch ($_POST['type']){
+				case '部門':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_information.department;';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);
+						$newId = 'A';
+						for ($n=0; $n<$row; $n++) {
+						   ++$newId . PHP_EOL;
+						}	
+						$sql = 'INSERT INTO staff_information.department(department_name, department_id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':id',$newId);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+
+				case '職位':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_information.position;';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO staff_information.position(position_name, position_id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':id',$row);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+
+				case '性別':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_information.gender;';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO staff_information.gender(type, id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->bindParam(':id',$row);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+				case '婚姻狀態':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_information.marriage;';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO staff_information.marriage(type, id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->bindParam(':id',$row);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+				case '投保公司':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_salary.insuredcompany;';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO staff_salary.insuredcompany("companyName", "companyId")
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->bindParam(':id',$row);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+				case '在職狀態':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_salary."workStatus";';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO staff_salary."workStatus"(status, id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->bindParam(':id',$row);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+				case '員工類型':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM staff_salary."staffType";';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO staff_salary."staffType"(type, id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->bindParam(':id',$row);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+				case '就學狀態':
+					try{
+						$countsql = 'SELECT Count (*)
+										 FROM  staff_education.condition';
+						$statement = $this->conn->prepare($countsql);
+						$statement->execute();
+						$row = $statement->fetchColumn(0);	
+						$row++;				
+						$sql = 'INSERT INTO  staff_education.condition(type, id)
+									VALUES (:name, :id);';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->bindParam(':id',$row);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+				default:
+       			$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);
+					}	
+					return $ack;
+
+			
+		}
+
+			
+
+	}
 	Class Chat{
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
-		}
-		function getChatroomTitle($chatID){
-			$sql = 'SELECT "chatName" FROM staff_chat."chatHistory" LEFT JOIN staff_chat."chatroomInfo" on "chatroomInfo"."chatID" = "chatHistory"."chatID" WHERE "chatroomInfo"."chatID"=:chatID and "UID" = :UID';
-			$sth = $this->conn->prepare($sql);
-			$UID =$_SESSION['id'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->execute();
-			$row = $sth->fetchAll();
-			return $row;
 		}
 		function getChatroom(){
 			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread"
@@ -689,18 +901,9 @@
 			$row = $sth->fetchAll();
 			return $row;
 		}
-		function getMember($chatID){
-			$sql = 'SELECT staff_name as name,"UID" as id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" WHERE "chatID"= :chatID;';
-			$sth = $this->conn->prepare($sql);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->execute();
-			$row = $sth->fetchAll();
-
-			return $row;
-		}
 		function getChatContent($chatID){
 			$sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
-					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID order by "sentTime" asc;';
+					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID ;';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
@@ -768,60 +971,6 @@
 			);
 			return $ack;
 
-		}
-		function updateChatroom($body){
-			$body=json_decode($body['data'],true);
-			$chatID=$body['chatID'];
-			$sql = 'UPDATE staff_chat."chatroomInfo" SET "chatName"=:chatName WHERE "chatID"=:chatID;';
-			$sth = $this->conn->prepare($sql);
-			$sth->bindParam(':chatName',$body['title'],PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
-			$sth->execute();
-
-			foreach ($body['member'] as $key => $value) {
-				$sql = 'INSERT INTO staff_chat."chatHistory"("chatID", "time", "UID") VALUES (:chatID, NOW(), :UID);';
-				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':UID',$value['UID'],PDO::PARAM_STR);
-				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-				$sth->execute();
-			}
-
-			$ack = array(
-				'status'=>'success'
-			);
-			return $ack;
-		}
-		function deleteChatroom($body){
-			$body=json_decode($body['data'],true);
-			$chatID=$body['chatID'];
-			$sql = 'DELETE FROM staff_chat."chatHistory" WHERE "chatID"=:chatID and "UID" = :staff_id;';
-			$sth = $this->conn->prepare($sql);
-			$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
-			$sth->execute();
-
-			$ack = array(
-				'status'=>'success'
-			);
-			return $ack;
-		}
-
-		function getList($chatID=null){
-			if(is_null($chatID)){
-				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id;";
-				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
-				$sth->execute();
-				$row = $sth->fetchAll();	
-			}else{
-				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id;';
-				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
-				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-				$sth->execute();
-				$row = $sth->fetchAll();	
-			}
-			return $row;
 		}
 	}
 ?>

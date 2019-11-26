@@ -25,10 +25,10 @@
             <span aria-hidden="true">×</span>
           </button>
         </div>
-        <div class="modal-body">登出前，請確認!</div>
+        <div class="modal-body">燈出前，請確認!</div>
         <div class="modal-footer">
           <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
-          <a class="btn btn-primary" href="<?=$url?>/login">登出</a>
+          <a class="btn btn-primary" href="/login">登出</a>
         </div>
       </div>
     </div>
