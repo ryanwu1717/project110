@@ -32,7 +32,7 @@
     <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
       <!-- Sidebar - Brand -->
-      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?=$url?>/">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?=@$url?>/">
         <div class="sidebar-brand-text mx-3">麗文文化事業機構</div>
       </a>
 
@@ -41,11 +41,11 @@
 
       <!-- Nav Item - Dashboard -->
       <li class="nav-item">
-        <a class="nav-link" href="<?=$url?>/">
+        <a class="nav-link" href="<?=@$url?>/">
           <i class="fas fa-fw fa-tachometer-alt"></i>
           <span>首頁</span></a>
       </li>
-<?php if(is_null($url)){ //user start?>
+<?php if(is_null(@$url)){ //user start?>
       <!-- Divider -->
       <hr class="sidebar-divider">
 
@@ -54,7 +54,7 @@
         功能
       </div>
       <li class="nav-item">
-        <a class="nav-link" href="<?=$url?>/home">
+        <a class="nav-link" href="<?=@$url?>/home">
           <i class="fas fa-envelope fa-fw"></i>
           <span>訊息</span>
         </a>
@@ -126,14 +126,14 @@
           <span>圖表</span></a>
       </li> -->
       <li class="nav-item">
-        <a class="nav-link" href="<?=$url?>/register">
+        <a class="nav-link" href="<?=@$url?>/register">
           <i class="fas fa fa-user-plus"></i>
           <span>新增員工</span>
         </a>
       </li>
       <!-- Nav Item - Tables -->
       <li class="nav-item active">
-        <a class="nav-link" href="<?=$url?>/table">
+        <a class="nav-link" href="<?=@$url?>/table">
           <i class="fas fa-fw fa-table"></i>
           <span>員工資料表</span>
         </a>
@@ -297,7 +297,7 @@
             <!-- Nav Item - User Information -->
             <li class="nav-item dropdown no-arrow">
               <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?=$name?></span>
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?=@$name?></span>
                 <img class="img-profile rounded-circle" src="/img/user-profile.png">
               </a>
               <!-- Dropdown - User Information -->

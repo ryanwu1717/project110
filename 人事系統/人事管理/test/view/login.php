@@ -41,7 +41,7 @@
                   </div>
                   <form class="user">
                     <div class="form-group">
-                      <input type="text" class="form-control form-control-user" name="inputStaffId" aria-describedby="emailHelp" placeholder="請輸入<?php if(is_null($placeholderAccount)) echo '員工編號'; else echo $placeholderAccount; ?>">
+                      <input type="text" class="form-control form-control-user" name="inputStaffId" aria-describedby="emailHelp" placeholder="請輸入<?php if(is_null(@$placeholderAccount)) echo '員工編號'; else echo $placeholderAccount; ?>">
                     </div>
                     <div class="form-group">
                       <input type="password" class="form-control form-control-user" name="inputPassword" placeholder="密碼">
@@ -117,7 +117,7 @@
       var loginPassword = $('[name=inputPassword]').val();
 
       $.ajax({
-        url:'<?=$url?>/user/login',
+        url:'<?=@$url?>/user/login',
         type:'POST',
         data:{data:JSON.stringify({
             loginStaffId: loginStaffId,
@@ -125,7 +125,7 @@
         })},
         success:function(data){
           if(data.status=='success'){
-            window.location.href='<?=$url?>/'; 
+            window.location.href='<?=@$url?>/'; 
           }else{
             $('#basicModal .modal-title').text('錯誤');
             $('#basicModal .modal-body').text('帳號或密碼錯誤');

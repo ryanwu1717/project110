@@ -83,7 +83,6 @@ $app->group('/management', function () use ($app) {
 		})->add('ManagementViewMiddleware');
 		$app->get('/login', function (Request $request, Response $response, array $args) {	
 			session_destroy();
-			session_start();
 			$viewParam = $request->getAttribute('viewParam');		
 			return $this->view->render($response, '/login.php', $viewParam);
 		});
