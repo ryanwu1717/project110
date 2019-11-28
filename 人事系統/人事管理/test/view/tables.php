@@ -86,7 +86,7 @@
              this.department+'</td> <td>'+
              this.phonenumber+'</td> <td>'+
              '<button type="button" class="btn btn-primary" data-id="'+this.id+'" data-toggle="modal" data-target="#basicModal"><i class="far fa-eye"></i></button>'+
-             '<button type="button" class="btn btn-success" onclick="window.location.href=\'<?=$url?>/register?id='+this.id+'\'"><i class="fas fa-edit" name="updateButton" ></i></button>'+
+             '<button type="button" class="btn btn-success" onclick="window.location.href=\'<?=@$url?>/register?id='+this.id+'\'"><i class="fas fa-edit" name="updateButton" ></i></button>'+
              ' <button type="button" class="btn btn-danger"><i class="far fa-trash-alt"></i></button>  </td> </tr>');
         });
         $('#dataTable').DataTable({  
@@ -120,11 +120,8 @@
   $('#basicModal').on('show.bs.modal',function(e){
     var staff_id = $(e.relatedTarget).data('id');
     $.ajax({
-        url:'/table/profile/get',
-        type:'POST',
-        data:{
-          data:JSON.stringify({staff_id : staff_id})
-        },
+        url:'/table/profile/view/'+staff_id,
+        type:'GET',
         dataType:'json',
         success:function(response){
           $('#basicModal .modal-title').text('個人資料');

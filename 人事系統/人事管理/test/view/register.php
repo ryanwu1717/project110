@@ -298,11 +298,8 @@
     $('[name=typeUpdate]').empty();
     $('[name=typeUpdate]').append("修改資料");
     $.ajax({
-        url:'/table/update/post',
-        type:'POST',
-        data:{data:JSON.stringify({
-            staff_id : isUpdate
-        })},
+        url:'/table/profile/'+isUpdate,
+        type:'GET',
         dataType:'json',
         success:function(data){
           console.log(data);
@@ -456,7 +453,7 @@
           $('#checkRegisterModel').html('你的id為'+ data.staff_id+"</br>");
           $('button[name=registerButton]').remove();
           $('#basicExampleModal').on('hide.bs.modal',function(){
-            window.location='<?=$url?>/table';
+            window.location='<?=@$url?>/table';
           });
          }
       },

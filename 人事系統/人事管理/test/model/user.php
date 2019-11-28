@@ -38,6 +38,49 @@
 			$row = $sth->fetchAll();
 			return $row;
 		} 
+		function changePassword(){
+			$_POST=json_decode($_POST['data'],true);
+			if($_POST['inputPasswordNew']!=$_POST['inputPasswordNewCheck']){
+				$ack = array(
+					'status' => 'failed',
+					'input' => 'inputPasswordNewCheck',
+					'message' => '密碼不一致'
+				);	
+			}else{
+				$staff = new Staff($this->conn);
+				if($staff -> check("密碼",$_POST['inputPasswordNew'])!='success'){
+					$ack = array(
+						'status' => 'failed',
+						'input' => 'inputPasswordNew',
+						'message' => '密碼格式不符'
+					);	
+				}else{
+					$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
+					$sth = $this->conn->prepare($sql);
+				   	$sth->bindParam(':staff_id',$_SESSION['id']);
+				   	$sth->bindParam(':staff_password',$_POST['inputPasswordOrg']);
+					$sth->execute();
+					$row = $sth->fetchAll();
+					if(count($row)!=1){
+						$ack = array(
+							'status' => 'failed',
+							'input' => 'inputPasswordOrg',
+							'message' => '原密碼錯誤'
+						);	
+					}else{
+						$sql ="UPDATE staff.staff SET staff_password = :staff_password WHERE staff_id = :staff_id;";
+						$sth = $this->conn->prepare($sql);
+					   	$sth->bindParam(':staff_id',$_SESSION['id']);
+					   	$sth->bindParam(':staff_password',$_POST['inputPasswordNew']);
+						$sth->execute();
+						$ack = array(
+							'status' => 'success'
+						);		
+					}
+				}
+			}
+			return $ack;
+		}
 	}
 
 	Class Staff{
@@ -556,9 +599,7 @@
 			
 			return $row;
 		}
-		function allInfo(){
-			$_POST=json_decode($_POST['data'],true);
-
+		function allInfo($staff_id){
 			$sql ='SELECT staff_id, department.department_name as staff_department, staff_name, staff_birthday, "staff_TWid", "contact_homeNumber", "contact_phoneNumber", "contact_companyNumber", "contact_homeAddress", "contact_contactAddress", "seniority_endDate", "seniority_leaveDate", "contactPerson_name", "contactPerson_homeNumber", "contactPerson_phone", "contactPerson_relation", "contactPerson_more", education_time, education_type, education_school, education_department, staff_delete, gender.type as staff_gender, marriage.type as staff_marriage, insuredcompany."companyName" as "seniority_insuredCompany","workStatus"."status" as "seniority_workStatus", "staffType"."type" as "seniority_staffType",condition.type as education_status,position.position_name as staff_position
 				FROM staff.staff as s
 				LEFT JOIN staff_information.department on s.staff_department=staff_information.department.department_id
@@ -571,14 +612,14 @@
 				LEFT JOIN staff_salary."workStatus" on s."seniority_workStatus"=staff_salary."workStatus"."id"
 				WHERE "staff_id" = :staff_id;';
 			$statement = $this->conn->prepare($sql);
-			$statement->bindParam(':staff_id',$_POST['staff_id']);
+			$statement->bindParam(':staff_id',$staff_id);
 			$statement->execute();
 			$row = $statement->fetchAll();
 			// echo $row.staff_department;
 			return $row;
 		}
-		function getProfile(){
-			$profile = $this->allInfo();
+		function getProfile($staff_id){
+			$profile = $this->allInfo($staff_id);
 			if(count($profile)==1){
 				$data = array();
 				foreach ($profile[0] as $key => $value) {
