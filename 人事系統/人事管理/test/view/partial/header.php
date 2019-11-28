@@ -138,6 +138,13 @@
           <span>員工資料表</span>
         </a>
       </li>
+      <!-- Nav Item - Add -->
+      <li class="nav-item active">
+        <a class="nav-link" href="<?=@$url?>/add">
+          <i class="fas fa-fw fa-table"></i>
+          <span>新增欄位</span>
+        </a>
+      </li>
 <?php } //management end?>
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block">

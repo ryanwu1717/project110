@@ -80,6 +80,10 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/register.php', $viewParam);
 			});
+			$app->get('/add', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/add.php', $viewParam);
+			});
 		})->add('ManagementViewMiddleware');
 		$app->get('/login', function (Request $request, Response $response, array $args) {	
 			session_destroy();
@@ -87,6 +91,17 @@ $app->group('/management', function () use ($app) {
 			return $this->view->render($response, '/login.php', $viewParam);
 		});
 	})->add('ManagementMiddleware');
+
+	$app->group('/add', function () use ($app) {
+		$app->post('/item/post', function (Request $request, Response $response, array $args) {
+			$add = new Add($this->db);
+			$result = $add->addItem();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);  
+		    return $response;
+		});
+	});
+
 
 	$app->group('/user', function () use ($app) {
 		$app->post('/login', function (Request $request, Response $response, array $args) {		
