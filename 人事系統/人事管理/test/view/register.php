@@ -298,11 +298,8 @@
     $('[name=typeUpdate]').empty();
     $('[name=typeUpdate]').append("修改資料");
     $.ajax({
-        url:'/table/update/post',
-        type:'POST',
-        data:{data:JSON.stringify({
-            staff_id : isUpdate
-        })},
+        url:'/table/allInfo/' + isUpdate,
+        type:'get',
         dataType:'json',
         success:function(data){
           console.log(data);

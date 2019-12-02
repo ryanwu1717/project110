@@ -556,9 +556,7 @@
 			
 			return $row;
 		}
-		function allInfo(){
-			$_POST=json_decode($_POST['data'],true);
-
+		function allInfo($staff_id){
 			$sql ='SELECT staff_id, department.department_name as staff_department, staff_name, staff_birthday, "staff_TWid", "contact_homeNumber", "contact_phoneNumber", "contact_companyNumber", "contact_homeAddress", "contact_contactAddress", "seniority_endDate", "seniority_leaveDate", "contactPerson_name", "contactPerson_homeNumber", "contactPerson_phone", "contactPerson_relation", "contactPerson_more", education_time, education_type, education_school, education_department, staff_delete, gender.type as staff_gender, marriage.type as staff_marriage, insuredcompany."companyName" as "seniority_insuredCompany","workStatus"."status" as "seniority_workStatus", "staffType"."type" as "seniority_staffType",condition.type as education_status,position.position_name as staff_position
 				FROM staff.staff as s
 				LEFT JOIN staff_information.department on s.staff_department=staff_information.department.department_id
@@ -571,20 +569,20 @@
 				LEFT JOIN staff_salary."workStatus" on s."seniority_workStatus"=staff_salary."workStatus"."id"
 				WHERE "staff_id" = :staff_id;';
 			$statement = $this->conn->prepare($sql);
-			$statement->bindParam(':staff_id',$_POST['staff_id']);
+			$statement->bindParam(':staff_id',$staff_id);
 			$statement->execute();
 			$row = $statement->fetchAll();
 			// echo $row.staff_department;
 			return $row;
 		}
-		function getProfile(){
-			$profile = $this->allInfo();
+		function getProfile($staff_id){
+			$profile = $this->allInfo($staff_id);
 			if(count($profile)==1){
 				$data = array();
 				foreach ($profile[0] as $key => $value) {
-					if($key=='department_name') $data['部門']=$value;
+					if($key=='staff_department') $data['部門']=$value;
 					else if($key=='staff_id') $data['職員編號']=$value;
-					else if($key=='position_name') $data['職位']=$value;
+					else if($key=='staff_position') $data['職位']=$value;
 					else if($key=='staff_name') $data['中文名字']=$value;
 					else if($key=='staff_password') $data['密碼']=$value;
 					else if($key=='staff_birthday') $data['生日']=$value;

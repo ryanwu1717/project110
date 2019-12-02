@@ -110,7 +110,7 @@ $app->group('/management', function () use ($app) {
 	});
 
 	$app->group('/profile', function () use ($app) {
-		$app->post('/delete', function (Request $request, Response $response, array $args) {	
+		$app->delete('', function (Request $request, Response $response, array $args) {	
 		    $table = new Tables($this->db);
 		    $result = $table->deleteStaff();
 		    $response = $response->withHeader('Content-type', 'application/json' );

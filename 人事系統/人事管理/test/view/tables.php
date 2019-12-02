@@ -141,11 +141,8 @@
   $('#basicModal').on('show.bs.modal',function(e){
     var staff_id = $(e.relatedTarget).data('id');
     $.ajax({
-        url:'/table/profile/get',
-        type:'POST',
-        data:{
-          data:JSON.stringify({staff_id : staff_id})
-        },
+        url:'/table/profile/'+staff_id,
+        type:'get',
         dataType:'json',
         success:function(response){
           $('#basicModal .modal-title').text('個人資料');
@@ -162,10 +159,10 @@
     var staff_id = $(e.relatedTarget).data('id');
     $("button[name=deleteButton]").on('click', function(e){
       $.ajax({
-          url:'/management/profile/delete',
+          url:'/management/profile',
           type:'POST',
           data:{
-            data:JSON.stringify({staff_id : staff_id})
+            data:JSON.stringify({staff_id : staff_id}),_METHOD:'delete'
           },
           dataType:'json',
           success:function(response){

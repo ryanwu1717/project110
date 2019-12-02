@@ -233,11 +233,10 @@ $app->group('/table', function () use ($app) {
 	    return $response;
 	    
 	});
-	$app->post('/update/post', function (Request $request, Response $response, array $args) {
+	$app->get('/allInfo/{staff_id}', function (Request $request, Response $response, array $args) {
 		
 	    $staff = new Table($this->db);
-	    $result = $staff->allInfo();
-	    
+	    $result = $staff->allInfo($args['staff_id']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 
@@ -245,11 +244,10 @@ $app->group('/table', function () use ($app) {
 	    return $response;
 	    
 	});
-	$app->post('/profile/get', function (Request $request, Response $response, array $args) {
+	$app->get('/profile/{staff_id}', function (Request $request, Response $response, array $args) {
 		
 	    $staff = new Table($this->db);
-	    $result = $staff->getProfile();
-	    
+	    $result = $staff->getProfile($args['staff_id']);  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 
