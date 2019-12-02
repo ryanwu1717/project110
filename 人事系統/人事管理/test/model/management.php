@@ -40,11 +40,213 @@
 			return $row;
 		} 
 	}
+
+	Class Tables{
+		var $result;   
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function deleteStaff()
+		{ 
+			try{
+				$_POST=json_decode($_POST['data'],true);		 	
+				$sql ="UPDATE staff.staff
+						SET staff_delete = true
+						WHERE staff_id= :staff;";
+				$sth = $this->conn->prepare($sql);
+			   	$sth->bindParam(':staff',$_POST['staff_id']);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				$ack = array(
+					'status' => 'success', 
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'message'=> $e
+				);
+			}	
+			return $ack;
+		} 
+	}
+
 	Class Add{
 		var $conn;
 		var $result; 
 		function __construct($db){
 			$this->conn = $db;
+		}
+		function deleteItem(){
+			$_POST=json_decode($_POST['data'],true);
+			switch($_POST['type']){
+				case 'department':
+					try{
+						$sql = 'DELETE FROM staff_information.department
+									WHERE department_name=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'position':
+					try{
+						$sql = 'DELETE FROM staff_information.position
+									WHERE position_name=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'gender':
+					try{
+						$sql = 'DELETE FROM staff_information.gender
+									WHERE type=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'marriage':
+					try{
+						$sql = 'DELETE FROM staff_information.marriage
+									WHERE type=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'insuredcompany':
+					try{
+						$sql = 'DELETE FROM staff_salary.insuredcompany
+									WHERE "companyName"=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'workStatus':
+					try{
+						$sql = 'DELETE FROM staff_salary."workStatus"
+									WHERE status=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'staffType':
+					try{
+						$sql = 'DELETE FROM staff_salary."staffType"
+									WHERE type=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				case 'educationCondition':
+					try{
+						$sql = 'DELETE FROM staff_education.condition
+									WHERE type=:deleteItem; ';
+						$statement = $this->conn->prepare($sql);
+						$statement->bindParam(':deleteItem',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);
+
+					}catch(PDOException $e)
+					{
+						$ack = array(
+							'status' => 'failed', 
+							'message'=> '資料重複'
+						);
+					}	
+					return $ack;
+				default:
+       			$ack = array(
+							'status' => 'failed', 
+							'message'=> $e
+						);	
+					return $ack;
+			}
 		}
 		function addItem(){
 			$_POST=json_decode($_POST['data'],true);
@@ -70,8 +272,7 @@
 							'status' => 'success', 
 							'message' => '新增成功'
 						);
-					}catch(PDOException $e)
-					{
+					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 
 							'message'=> '資料重複'

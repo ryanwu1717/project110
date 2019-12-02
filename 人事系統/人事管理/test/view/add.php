@@ -181,6 +181,28 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="deleteModel" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" name="deleteModalLabel"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body"  name = "messageModel">
+          確認刪除此資料?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" name ="closeButton">關閉</button>
+          <button type="button" class="btn btn-primary" name = "deleteButton">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <?php
   include('partial/footer.php');
 ?>
@@ -199,7 +221,7 @@
       $("button[name=firstBtn]").on('click', function(){
         var newItem= $("[name=addItem]").val();
         $.ajax({
-          url:'/management/add/item/post',
+          url:'/management/item/add/post',
           type:'post',
           data:{data:JSON.stringify({
               type : addType, 
@@ -226,13 +248,33 @@
       window.location.href='/management/add'; 
     });
 
+    $('#deleteModel').on('show.bs.modal',function(e){
+      var deleteType = $(e.relatedTarget).data('type');
+      var deleteValue = $(e.relatedTarget).data('id');
+      console.log(deleteType+" "+deleteValue);
+      $("button[name=deleteButton]").on('click', function(e){
+        $.ajax({
+          url:'/management/item/delete/post',
+          type:'post',
+          data:{data:JSON.stringify({
+              type : deleteType, 
+              item : deleteValue
+          })},
+          dataType:'json',
+          success:function(data){    
+            window.location.href='/management/add'; 
+          } 
+        });
+      });
+    });
+
     $.ajax({
         url:'/staff/department/get',
         type:'get',
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showDepartment]').append('<li class="list-group-item">'+this.department_id+'\t'+this.department_name);
+            $('[name=showDepartment]').append('<li class="list-group-item">'+this.department_id+'\t'+this.department_name+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="department" data-id="'+this.department_name+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -244,7 +286,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showPosition]').append('<li class="list-group-item">'+this.position_id+'\t'+this.position_name);
+            $('[name=showPosition]').append('<li class="list-group-item">'+this.position_id+'\t'+this.position_name+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="position" data-id="'+this.position_name+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -256,7 +298,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showGender]').append('<li class="list-group-item">'+this.id+'\t'+this.type);
+            $('[name=showGender]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="gender" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -268,7 +310,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showMarriage]').append('<li class="list-group-item">'+this.id+'\t'+this.type);
+            $('[name=showMarriage]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="marriage" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -280,7 +322,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showInsuredCompany]').append('<li class="list-group-item">'+this.companyId+'\t'+this.companyName);
+            $('[name=showInsuredCompany]').append('<li class="list-group-item">'+this.companyId+'\t'+this.companyName+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="insuredcompany" data-id="'+this.companyName+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -292,7 +334,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showWorkStatus]').append('<li class="list-group-item">'+this.id+'\t'+this.status);
+            $('[name=showWorkStatus]').append('<li class="list-group-item">'+this.id+'\t'+this.status+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="workStatus" data-id="'+this.status+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -303,7 +345,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showStaffType]').append('<li class="list-group-item">'+this.id+'\t'+this.type);
+            $('[name=showStaffType]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="staffType" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -315,7 +357,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showEducationCondition]').append('<li class="list-group-item">'+this.id+'\t'+this.type);
+            $('[name=showEducationCondition]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="educationCondition" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 

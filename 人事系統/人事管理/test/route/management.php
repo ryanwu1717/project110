@@ -92,16 +92,32 @@ $app->group('/management', function () use ($app) {
 		});
 	})->add('ManagementMiddleware');
 
-	$app->group('/add', function () use ($app) {
-		$app->post('/item/post', function (Request $request, Response $response, array $args) {
+	$app->group('/item', function () use ($app) {
+		$app->post('/add/post', function (Request $request, Response $response, array $args) {
 			$add = new Add($this->db);
 			$result = $add->addItem();
 			$response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);  
 		    return $response;
 		});
+		$app->post('/delete/post', function (Request $request, Response $response, array $args) {
+			$add = new Add($this->db);
+			$result = $add->deleteItem();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);  
+		    return $response;
+		});
 	});
 
+	$app->group('/profile', function () use ($app) {
+		$app->post('/delete', function (Request $request, Response $response, array $args) {	
+		    $table = new Tables($this->db);
+		    $result = $table->deleteStaff();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+	});
 
 	$app->group('/user', function () use ($app) {
 		$app->post('/login', function (Request $request, Response $response, array $args) {		

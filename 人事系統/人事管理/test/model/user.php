@@ -48,7 +48,7 @@
 		}
 		function getDepartment()
 		{  	
-			$sql ='SELECT * from staff_information.department;';	
+			$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
@@ -548,7 +548,7 @@
    									s."seniority_endDate" as enddate,s."seniority_staffType" as stafftype,
    									s."staff_id" as id
 					from staff.staff as s,staff_information.department as d,staff_information.position as x
-					where s."staff_position" = x."position_id" and s."staff_department" = d."department_id"
+					where s."staff_position" = x."position_id" and s."staff_department" = d."department_id" and s."staff_delete"=false
 					ORDER BY position DESC;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
