@@ -33,7 +33,7 @@
           <div class="card-body p-0">
             <!-- Nested Row within Card Body -->
             <div class="row">
-              <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+              <div class="col-lg-6 d-none d-lg-block" style="background:url(https://tem.fi/documents/1410877/2127184/Hahmot-maapallo/ebfc43d7-3349-43f6-a23b-1b28a9cce164?t=1456743096000)"></div>
               <div class="col-lg-6">
                 <div class="p-5">
                   <div class="text-center">

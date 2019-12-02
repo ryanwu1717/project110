@@ -67,16 +67,16 @@ class ViewMiddleware
         	$response = $next($request, $response);
     	}
     	else{
-			header("Location: /login"); 	
+			return $response->withRedirect('/login', 301);
     	}
         return $response;
     }
 }
-$app->get('/', function (Request $request, Response $response, array $args) {		
-	return $response->withRedirect('/home', 301);
-});
 $app->group('', function () use ($app) {
 	$app->group('', function () use ($app) {
+		$app->get('/', function (Request $request, Response $response, array $args) {		
+			return $response->withRedirect('/home', 301);
+		});
 		$app->get('/home', function (Request $request, Response $response, array $args) {	
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/index.php', $viewParam);
@@ -112,6 +112,13 @@ $app->group('/user', function () use ($app) {
 	$app->get('/logout', function (Request $request, Response $response, array $args) {		
 		return $response;
  	});
+	$app->patch('/password', function (Request $request, Response $response, array $args) {		
+	    $user = new User($this->db);
+	    $result = $user->changePassword();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+		return $response;
+	});
 });
 
 $app->group('/staff', function () use ($app) {
@@ -225,41 +232,36 @@ $app->group('/staff', function () use ($app) {
 $app->group('/table', function () use ($app) {
 	$app->get('/getTable', function (Request $request, Response $response, array $args) {
 		
-	    $staff = new Table($this->db);
-	    $result = $staff->getTable();
+	    $table = new Table($this->db);
+	    $ack = $table->getTable();
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 	    return $response;
 	    
 	});
-	$app->post('/update/post', function (Request $request, Response $response, array $args) {
+	$app->get('/profile/{staff_id}', function (Request $request, Response $response, array $args) {
 		
-	    $staff = new Table($this->db);
-	    $result = $staff->allInfo();
+	    $table = new Table($this->db);
+	    $ack = $table->allInfo($args['staff_id']);
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 
 	    
 	    return $response;
 	    
 	});
-	$app->post('/profile/get', function (Request $request, Response $response, array $args) {
+	$app->get('/profile/view/{staff_id}', function (Request $request, Response $response, array $args) {
 		
-	    $staff = new Table($this->db);
-	    $result = $staff->getProfile();
+	    $table = new Table($this->db);
+	    $ack = $table->getProfile($args['staff_id']);
 	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 
-	    
-	    return $response;
-	    
+	    return $response; 
 	});
-
-
-	
 });
 
 $app->group('/chat', function () use ($app) {
