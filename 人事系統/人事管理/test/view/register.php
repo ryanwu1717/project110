@@ -453,7 +453,7 @@
           $('#checkRegisterModel').html('你的id為'+ data.staff_id+"</br>");
           $('button[name=registerButton]').remove();
           $('#basicExampleModal').on('hide.bs.modal',function(){
-            window.location='<?=$url?>/table';
+            window.location='<?=@$url?>/table';
           });
          }
       },

@@ -66,7 +66,7 @@ img{ max-width:100%;}
   margin: 0;
   padding: 18px 16px 10px;
 }
-.inbox_chat { height: 550px; overflow-y: scroll;}
+.inbox_chat { height: 560px; overflow-y: scroll;}
 
 .active_chat{ background:#ebebeb;}
 
@@ -217,8 +217,8 @@ img{ max-width:100%;}
         </a>
       <div class="type_msg">
         <div class="input_msg_write">
-          <!-- <textarea style="word-wrap:break-word;width:100%;"placeholder="Type a message" id="textinput"></textarea> -->
-          <input id="textinput"type="text" />
+          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，SHIFT+ENTER可以換行" id="textinput"></textarea>
+          <!-- <input id="textinput"type="text" /> -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
       </div>
@@ -315,7 +315,7 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p>'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
@@ -344,10 +344,10 @@ function searchChat(){
         $('[name=chatBox]').html("");
         $(response).each(function(){
           if(this.diff!='me'){
-            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg">                  <p>'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
+            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg">                  <p class="text-break">'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
           }
           else{
-            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">                <p>'+this.content+'</p>                <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
+            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">                <p class="text-break">'+this.content+'</p>                <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
           }
         });
         if(!scrollable)
@@ -358,19 +358,26 @@ function searchChat(){
 }
 var Msg ="";
 $('.msg_send_btn').on('click',function(){
-  if($("#textinput").val()!="" && !$.trim($("#textarea").val()) && chatID!=-1){
+  if(!$.trim($("#textarea").val()) && $("#textinput").val()!="" && chatID!=-1){
     sendMsg();
     $("#textinput").val("");
   }
 });
+$("#textinput").keypress(function(e){
+  var code=e.which;
+  if(!(code&&e.shiftKey) &&code==13){
+    e.preventDefault();
+  }
+});
 $("#textinput").keyup(function(e){
   var code=e.which;
-  if(code==13){
+  if(!(code&&e.shiftKey) &&code==13){
     $('.msg_send_btn').click();
   }
 });
 function sendMsg(){
   Msg=$("#textinput").val();
+  Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
       url:'/chat/message',
       type:'post',

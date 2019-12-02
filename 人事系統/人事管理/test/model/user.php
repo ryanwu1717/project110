@@ -38,6 +38,49 @@
 			$row = $sth->fetchAll();
 			return $row;
 		} 
+		function changePassword(){
+			$_POST=json_decode($_POST['data'],true);
+			if($_POST['inputPasswordNew']!=$_POST['inputPasswordNewCheck']){
+				$ack = array(
+					'status' => 'failed',
+					'input' => 'inputPasswordNewCheck',
+					'message' => '密碼不一致'
+				);	
+			}else{
+				$staff = new Staff($this->conn);
+				if($staff -> check("密碼",$_POST['inputPasswordNew'])!='success'){
+					$ack = array(
+						'status' => 'failed',
+						'input' => 'inputPasswordNew',
+						'message' => '密碼格式不符'
+					);	
+				}else{
+					$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
+					$sth = $this->conn->prepare($sql);
+				   	$sth->bindParam(':staff_id',$_SESSION['id']);
+				   	$sth->bindParam(':staff_password',$_POST['inputPasswordOrg']);
+					$sth->execute();
+					$row = $sth->fetchAll();
+					if(count($row)!=1){
+						$ack = array(
+							'status' => 'failed',
+							'input' => 'inputPasswordOrg',
+							'message' => '原密碼錯誤'
+						);	
+					}else{
+						$sql ="UPDATE staff.staff SET staff_password = :staff_password WHERE staff_id = :staff_id;";
+						$sth = $this->conn->prepare($sql);
+					   	$sth->bindParam(':staff_id',$_SESSION['id']);
+					   	$sth->bindParam(':staff_password',$_POST['inputPasswordNew']);
+						$sth->execute();
+						$ack = array(
+							'status' => 'success'
+						);		
+					}
+				}
+			}
+			return $ack;
+		}
 	}
 
 	Class Staff{
