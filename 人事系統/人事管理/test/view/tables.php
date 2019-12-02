@@ -62,6 +62,27 @@
       </div>
     </div>
   </div>
+  <!-- Delete Modal-->
+  <div class="modal fade" id="deleteModel" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" name="deleteModalLabel"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body"  name = "messageModel">
+          確認刪除此資料?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" name ="closeButton">關閉</button>
+          <button type="button" class="btn btn-primary" name = "deleteButton">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
 <?php
   include('partial/footer.php');
 ?>
@@ -85,9 +106,8 @@
              this.position+'</td> <td>'+
              this.department+'</td> <td>'+
              this.phonenumber+'</td> <td>'+
-             '<button type="button" class="btn btn-primary" data-id="'+this.id+'" data-toggle="modal" data-target="#basicModal"><i class="far fa-eye"></i></button>'+
              '<button type="button" class="btn btn-success" onclick="window.location.href=\'<?=@$url?>/register?id='+this.id+'\'"><i class="fas fa-edit" name="updateButton" ></i></button>'+
-             ' <button type="button" class="btn btn-danger"><i class="far fa-trash-alt"></i></button>  </td> </tr>');
+             ' <button type="button" class="btn btn-danger" data-id="'+this.id+'" data-toggle="modal" data-target="#deleteModel"><i class="far fa-trash-alt"></i></button>  </td> </tr>');
         });
         $('#dataTable').DataTable({  
           language: {
@@ -120,8 +140,8 @@
   $('#basicModal').on('show.bs.modal',function(e){
     var staff_id = $(e.relatedTarget).data('id');
     $.ajax({
-        url:'/table/profile/view/'+staff_id,
-        type:'GET',
+        url:'/table/profile/'+staff_id,
+        type:'get',
         dataType:'json',
         success:function(response){
           $('#basicModal .modal-title').text('個人資料');
@@ -131,6 +151,23 @@
           });
           $('#basicModal .modal-body').html(content);
         }
+    });
+  });
+
+  $('#deleteModel').on('show.bs.modal',function(e){
+    var staff_id = $(e.relatedTarget).data('id');
+    $("button[name=deleteButton]").on('click', function(e){
+      $.ajax({
+          url:'/management/profile',
+          type:'POST',
+          data:{
+            data:JSON.stringify({staff_id : staff_id}),_METHOD:'delete'
+          },
+          dataType:'json',
+          success:function(response){
+            window.location.href='/management/table'; 
+          }
+      });
     });
   });
 </script>

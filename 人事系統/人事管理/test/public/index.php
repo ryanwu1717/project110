@@ -240,11 +240,10 @@ $app->group('/table', function () use ($app) {
 	    return $response;
 	    
 	});
-	$app->get('/profile/{staff_id}', function (Request $request, Response $response, array $args) {
+	$app->get('/allInfo/{staff_id}', function (Request $request, Response $response, array $args) {
 		
-	    $table = new Table($this->db);
-	    $ack = $table->allInfo($args['staff_id']);
-	    
+	    $staff = new Table($this->db);
+	    $result = $staff->allInfo($args['staff_id']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 
@@ -252,11 +251,11 @@ $app->group('/table', function () use ($app) {
 	    return $response;
 	    
 	});
-	$app->get('/profile/view/{staff_id}', function (Request $request, Response $response, array $args) {
+
+	$app->get('/profile/{staff_id}', function (Request $request, Response $response, array $args) {
 		
-	    $table = new Table($this->db);
-	    $ack = $table->getProfile($args['staff_id']);
-	    
+	    $staff = new Table($this->db);
+	    $result = $staff->getProfile($args['staff_id']);  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 
