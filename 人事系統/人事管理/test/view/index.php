@@ -192,7 +192,8 @@ img{ max-width:100%;}
             <input type="text" class="search-bar"  placeholder="Search" >
             <span class="input-group-addon">
             <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
-            </span> </div>
+            </span> 
+          </div>
         </div> -->
         <div class="tool_bar btn-group">
           <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal" data-type="create">+</button>
@@ -463,9 +464,9 @@ function Chatroom(type){
         '<div class="input-group mb-3">'+
           '<div class="input-group-prepend">'+
             '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+            '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+            '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
           '</div>'+
-          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-          '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
         '</div>'+
       '</div>'
     ); 
@@ -587,9 +588,9 @@ function Chatroom(type){
               '<div class="input-group-text">'+
                 '<input type="checkbox" class="checkItem" data-name='+this.id+'>'+
               '</div>'+
+              '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
+              '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
             '</div>'+
-            '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
-            '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
           '</div>'
         );
       });
