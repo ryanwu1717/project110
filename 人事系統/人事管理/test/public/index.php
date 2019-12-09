@@ -245,7 +245,7 @@ $app->group('/table', function () use ($app) {
 	    $staff = new Table($this->db);
 	    $result = $staff->allInfo($args['staff_id']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($ack);
+		$response = $response->withJson($result);
 
 	    
 	    return $response;
@@ -257,7 +257,7 @@ $app->group('/table', function () use ($app) {
 	    $staff = new Table($this->db);
 	    $result = $staff->getProfile($args['staff_id']);  
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($ack);
+		$response = $response->withJson($result);
 
 	    return $response; 
 	});
