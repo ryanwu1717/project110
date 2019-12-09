@@ -615,7 +615,6 @@
 			$statement->bindParam(':staff_id',$staff_id);
 			$statement->execute();
 			$row = $statement->fetchAll();
-			// echo $row.staff_department;
 			return $row;
 		}
 		function getProfile($staff_id){
