@@ -428,10 +428,8 @@ function getMember(){
       $(response).each(function(){
         $('#basicModal .listBox').append(
           '<div class="input-group mb-3 listItem">'+
-            '<div class="input-group-prepend">'+
-              '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
-              '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
-            '</div>'+
+            '<input type="text" class="form-control listID" disabled value='+this.id+'>'+
+            '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
           '</div>'
         );
       });
@@ -455,8 +453,6 @@ function Chatroom(type){
         dataType:'json',
         success:function(response){
           $('#basicModal').modal('hide');
-          $('body').removeClass('modal-open');
-          $(".modal-backdrop").remove();
         }
       });
     });
@@ -467,11 +463,9 @@ function Chatroom(type){
     $('#basicModal .modal-body').append(
       '<div class="sticky-top">'+
         '<div class="input-group mb-3">'+
-          '<div class="input-group-prepend">'+
-            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-            '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-            '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
-          '</div>'+
+          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+          '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
         '</div>'+
       '</div>'
     ); 
@@ -495,23 +489,19 @@ function Chatroom(type){
           }else{
             $('#basicModal').modal('hide');
           }
-          $('body').removeClass('modal-open');
-          $(".modal-backdrop").remove();
         }
       });
     });
-  }else if(type=='update'){
+  }else if(type=='update'){ 
     _chatID = '/'+chatID;
     $('#basicModal .modal-title').text('修改議題');
     $('#basicModal .modal-body').html('');
     $('#basicModal .modal-body').append(
       '<div class="sticky-top">'+
         '<div class="input-group mb-3">'+
-          '<div class="input-group-prepend">'+
-            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-            '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-            '<button type="button" class="btn btn-dark buttonChatroomUpdate">修改</button>'+
-          '</div>'+
+          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+          '<button type="button" class="btn btn-dark buttonChatroomUpdate">修改</button>'+
         '</div>'+
       '</div>'
     );
@@ -546,8 +536,6 @@ function Chatroom(type){
           }else{
             $('#basicModal').modal('hide');
           }
-          $('body').removeClass('modal-open');
-          $(".modal-backdrop").remove();
         }
       });
     });
@@ -555,12 +543,14 @@ function Chatroom(type){
   $('#basicModal .modal-body').append(
     '<div class="card">'+
       '<div class="card-body">'+
-        '<h5 class="card-title">'+
-          '<div class="input-group mb-3">'+
-            '<div class="input-group-prepend">'+
-              '<input type="text" class="form-control searchInput" placeholder="搜尋" >'+
-              '<span class="input-group-text">'+
-                '<i class="fa fa-search" aria-hidden="true"></i>'+
+        '<h5 class="card-title">'+ 
+          '<div class="srch_bar">'+
+            '<div class="stylish-input-group">'+
+              '<input type="text" class="search-bar searchInput" placeholder="搜尋" >'+
+              '<span class="input-group-addon">'+
+                '<button type="button">'+
+                  '<i class="fa fa-search" aria-hidden="true"></i>'+
+                '</button>'+
               '</span>'+
             '</div>'+
           '</div>'+
