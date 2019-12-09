@@ -100,7 +100,7 @@
 
 		function getPosition()
 		{ 			 	
-			$sql ='SELECT * from staff_information.position;';	
+			$sql ='SELECT * from staff_information.position ORDER BY position_id;';	
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			

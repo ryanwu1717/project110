@@ -106,6 +106,7 @@
              this.position+'</td> <td>'+
              this.department+'</td> <td>'+
              this.phonenumber+'</td> <td>'+
+             '<button type="button" class="btn btn-primary" data-id="'+this.id+'" data-toggle="modal" data-target="#basicModal"><i class="far fa-eye"></i></button>'+
              '<button type="button" class="btn btn-success" onclick="window.location.href=\'<?=@$url?>/register?id='+this.id+'\'"><i class="fas fa-edit" name="updateButton" ></i></button>'+
              ' <button type="button" class="btn btn-danger" data-id="'+this.id+'" data-toggle="modal" data-target="#deleteModel"><i class="far fa-trash-alt"></i></button>  </td> </tr>');
         });

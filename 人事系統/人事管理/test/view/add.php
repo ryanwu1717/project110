@@ -298,7 +298,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showGender]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="gender" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
+            $('[name=showGender]').append('<li class="list-group-item">'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="gender" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -310,7 +310,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showMarriage]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="marriage" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
+            $('[name=showMarriage]').append('<li class="list-group-item">'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="marriage" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -322,7 +322,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showInsuredCompany]').append('<li class="list-group-item">'+this.companyId+'\t'+this.companyName+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="insuredcompany" data-id="'+this.companyName+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
+            $('[name=showInsuredCompany]').append('<li class="list-group-item">'+this.companyName+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="insuredcompany" data-id="'+this.companyName+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -334,7 +334,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showWorkStatus]').append('<li class="list-group-item">'+this.id+'\t'+this.status+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="workStatus" data-id="'+this.status+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
+            $('[name=showWorkStatus]').append('<li class="list-group-item">'+this.status+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="workStatus" data-id="'+this.status+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -345,7 +345,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showStaffType]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="staffType" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
+            $('[name=showStaffType]').append('<li class="list-group-item">'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="staffType" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
@@ -357,7 +357,7 @@
         dataType:'json',
         success:function(response){
           $(response).each(function(eachid){
-            $('[name=showEducationCondition]').append('<li class="list-group-item">'+this.id+'\t'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="educationCondition" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
+            $('[name=showEducationCondition]').append('<li class="list-group-item">'+this.type+'<button type="button" class="btn  btn-xs pull-right"  data-toggle="modal" data-target="#deleteModel" data-type="educationCondition" data-id="'+this.type+'" ><i class="glyphicon glyphicon-remove-circle"></i></button>');
             
           });
         } 
