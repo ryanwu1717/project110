@@ -406,6 +406,9 @@
         }else{
           $('#exampleModalLabel').text('訊息');
           $('[name=registerButton]').show();
+          $('#basicExampleModal').on('hide.bs.modal',function(){
+            window.location='<?=@$url?>/table';
+          });
 
         //   if (isUpdate == null){
         //     var staff_department = $('[name=buttonDepartment]').val();
@@ -478,7 +481,13 @@
       data:{data:JSON.stringify(data)},        
       dataType:'json',
       success:function(data){
-         console.log("success");
+         if(data.status=='success'){
+          $('#checkRegisterModel').html("修改完成</br>");
+          $('button[name=registerButton]').remove();
+          $('#basicExampleModal').on('hide.bs.modal',function(){
+            window.location='<?=@$url?>/table';
+          });
+         }
       },
       error:function(jqXHR, textStatus, errorThrown){
         console.log("failed");
