@@ -203,6 +203,15 @@ $app->group('/staff', function () use ($app) {
 	    return $response;  
 	});
 
+	$app->get('/checkStaffId/{staff_id}', function (Request $request, Response $response, array $args) {
+	    $staff = new Staff($this->db);
+	    $result = $staff->checkStaffId($args['staff_id']);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+		//echo $response['num'];
+	    return $response;  
+	});
+
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
 	    $result = $staff->checkRegister();
@@ -221,9 +230,9 @@ $app->group('/staff', function () use ($app) {
 
 	});
 
-	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
+	$app->post('/modify/{staff_id}', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $ack = $staff->modify();  
+	    $ack = $staff->modify($args['staff_id']);  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 	    return $response;   
