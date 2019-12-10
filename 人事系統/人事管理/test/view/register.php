@@ -19,7 +19,7 @@
                         <input required type="text" class="form-control form-control-user" name="staffId" placeholder="ex.L001">
                       </div>
                       <div class="col-md-2">  
-                        <button type="button" class="btn btn-success" name="checkStaffId">V</button>
+                        <button type="button" class="btn btn-danger" name="checkStaffId">X</button>
                       </div>
                     </div>
                     <div class="form-group row">
@@ -420,9 +420,6 @@
         }else{
           $('#exampleModalLabel').text('訊息');
           $('[name=registerButton]').show();
-          $('#basicExampleModal').on('hide.bs.modal',function(){
-            window.location='<?=@$url?>/table';
-          });
 
         //   if (isUpdate == null){
         //     var staff_department = $('[name=buttonDepartment]').val();

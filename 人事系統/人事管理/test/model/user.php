@@ -465,6 +465,7 @@
 		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
 		   		$_POST=json_decode($_POST['data'],true);
 		   		//var_dump($_POST);
+		   		$staff_id = $_POST['staffId'];
 				$sth->bindParam(':staff_id',$_POST['staffId']);
 				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
@@ -486,7 +487,11 @@
 				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']==''?null:$_POST['leaveDate']);
+				if($_POST['leaveDate']==''){
+					$sth->bindValue(':seniority_leaveDate',null,PDO::PARAM_INT);
+				}else{
+					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+				}
 
 				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
 				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
@@ -507,7 +512,7 @@
 				);
 			}catch(PDOException $e){
 				$ack = array(
-					'status' => 'failed', 
+					'status' => 'failed'
 				);
 			}
 			return $ack;
