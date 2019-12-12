@@ -41,10 +41,10 @@
                   </div>
                   <form class="user">
                     <div class="form-group">
-                      <input type="text" class="form-control" name="inputStaffId" aria-describedby="emailHelp" placeholder="請輸入<?php if(is_null(@$placeholderAccount)) echo '員工編號'; else echo $placeholderAccount; ?>">
+                      <input type="text" class="form-control form-control-user" name="inputStaffId" aria-describedby="emailHelp" placeholder="請輸入<?php if(is_null(@$placeholderAccount)) echo '員工編號'; else echo $placeholderAccount; ?>">
                     </div>
                     <div class="form-group">
-                      <input type="password" class="form-control" name="inputPassword" placeholder="密碼">
+                      <input type="password" class="form-control form-control-user" name="inputPassword" placeholder="密碼">
                     </div>
                     <!-- <div class="form-group">
                       <div class="custom-control custom-checkbox small">
