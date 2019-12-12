@@ -253,35 +253,16 @@
 			switch ($_POST['type']){
 				case '部門':
 					try{
-						$newId = 'A';
-						for($i=0;$i<=26;$i++){
-							++$newId . PHP_EOL;
-							$sql ='SELECT EXISTS(SELECT 1 FROM staff_information.department WHERE department_id=:id)';
-							$sth = $this->conn->prepare($sql);
-						   $sth->bindParam(':id',$newId);
-							$sth->execute();
-							$row = $sth->fetchColumn(0);
-							if($i==26){
-								$ack = array(
-									'status' => 'failed', 
-									'message' => '多餘10筆資料'
-								);
-								return $ack;
-							}
-							if(!$row){
-								$addsql = 'INSERT INTO staff_information.department(department_id,department_name)
-										VALUES (:id,:name);';
-								$statement = $this->conn->prepare($addsql);
-								$statement->bindParam(':id',$newId);
-								$statement->bindParam(':name',$_POST['item']);
-								$statement->execute();
-								$ack = array(
-									'status' => 'success', 
-									'message' => '新增成功'
-								);		
-								return $ack;
-							}
-						}
+						$addsql = 'INSERT INTO staff_information.department(department_name)
+								VALUES (,:name);';
+						$statement = $this->conn->prepare($addsql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);		
+						return $ack;
 					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 
@@ -292,33 +273,16 @@
 
 				case '職位':
 					try{
-						for($i=1;$i<=10;$i++){
-							$sql ='SELECT EXISTS(SELECT 1 FROM staff_information.position WHERE position_id=:id)';
-							$sth = $this->conn->prepare($sql);
-						   $sth->bindParam(':id',$i);
-							$sth->execute();
-							$row = $sth->fetchColumn(0);
-							if($i==10){
-								$ack = array(
-									'status' => 'failed', 
-									'message' => '多餘10筆資料'
-								);
-								return $ack;
-							}
-							if(!$row){
-								$addsql = 'INSERT INTO staff_information.position(position_id,position_name)
-										VALUES (:id,:name);';
-								$statement = $this->conn->prepare($addsql);
-								$statement->bindParam(':id',$i);
-								$statement->bindParam(':name',$_POST['item']);
-								$statement->execute();
-								$ack = array(
-									'status' => 'success', 
-									'message' => '新增成功'
-								);		
-								return $ack;
-							}
-						}
+						$addsql = 'INSERT INTO staff_information.position(position_name)
+								VALUES (,:name);';
+						$statement = $this->conn->prepare($addsql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);		
+						return $ack;
 					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 

@@ -91,7 +91,7 @@
 		}
 		function getDepartment()
 		{  	
-			$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
+			$sql ='SELECT * from staff_information.department ORDER BY department_name desc;';	
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
@@ -177,20 +177,23 @@
             else
               return $this->paddingLeft("0".$str,$strLenght);
         }
-        function staffId($staff_department,$staff_position)
-        {   
-            $dp = $staff_department.$staff_position.'%';         
-            $sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';    
+        function checkStaffId($staff_id)
+        {        
+            $sql ='SELECT staff_id FROM staff.staff WHERE staff_id = :staff_id;';    
             $statement = $this->conn->prepare($sql);
-            $statement->bindParam(':dp',$dp);
+            $statement->bindParam(':staff_id',$staff_id);
             $statement->execute();
-            $row = $statement->fetchColumn(0);
-            $row += 1;
-            $row = (string)$row;
-            $newId = $this->paddingLeft($row,4);
-            $newId = $staff_department.$staff_position.$newId;
-            // echo $newId;    
-            return $newId;
+            $row = $statement->fetchAll();
+            if(count($row)!=0){
+            	$ack = array(
+            		"status"=>false
+            	);
+            }else{
+            	$ack = array(
+            		"status"=>true
+            	);
+            }
+            return $ack;
         }
 
        	function checkString($strings, $standard){
@@ -359,6 +362,12 @@
 					}
 					return "success";
 					break;
+				case '確認密碼':
+       				if($_POST['password'] != $input){
+						return $field."密碼不一致";
+					}
+					return "success";
+					break;
        			default:
        				return "success";
        				break;
@@ -373,6 +382,7 @@
 			$check['checkPosition'] = $this -> check('職位',$_POST['buttonPosition']);
 			$check['checkName'] = $this -> check('中文名字',$_POST['staffName']);
 			$check['checkPassword'] = $this -> check("密碼",$_POST['password']);
+			$check['checkPassword'] = $this -> check("確認密碼",$_POST['rePassword']);
 			$check['checkBirthday'] = $this -> check('生日',$_POST['staffBirthday']);
 			$check['checkGender'] = $this -> check('性別',$_POST['buttonGender']);
 			$check['checkMarriage'] = $this -> check('婚姻狀況',$_POST['buttonMarriage']);
@@ -455,8 +465,8 @@
 		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
 		   		$_POST=json_decode($_POST['data'],true);
 		   		//var_dump($_POST);
-		   		$staff_id = $this->staffId($_POST['buttonDepartment'],$_POST['buttonPosition']);
-				$sth->bindParam(':staff_id',$staff_id);
+		   		$staff_id = $_POST['staffId'];
+				$sth->bindParam(':staff_id',$_POST['staffId']);
 				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
 				$sth->bindParam(':staff_name',$_POST['staffName']);
@@ -477,7 +487,11 @@
 				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']==''?null:$_POST['leaveDate']);
+				if($_POST['leaveDate']==''){
+					$sth->bindValue(':seniority_leaveDate',null,PDO::PARAM_INT);
+				}else{
+					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+				}
 
 				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
 				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
@@ -498,12 +512,12 @@
 				);
 			}catch(PDOException $e){
 				$ack = array(
-					'status' => 'failed', 
+					'status' => 'failed'
 				);
 			}
 			return $ack;
 		}
-		function modify(){
+		function modify($staff_id){
 			try{
 				$sql = 'UPDATE staff.staff
 							SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
@@ -520,8 +534,8 @@
 								 "contactPerson_more" = :contactPerson_more,
 								 education_time = :education_time, education_type = :education_type,
 								 education_school = :education_school, education_department = :education_department,
-								 education_status = :education_status, staff_password = :staff_password
-							WHERE "staff_id" = :staff_id;';
+								 education_status = :education_status, staff_password = :staff_password, staff_id = :staff_id
+							WHERE "staff_id" = :staff_id_org;';
 				$sth = $this->conn->prepare($sql);
 
 				//var_dump($_POST);
@@ -529,7 +543,8 @@
 		   		$_POST=json_decode($_POST['data'],true);
 		   		//var_dump($_POST);
 
-				$sth->bindParam(':staff_id',$_POST['staff_id']);
+				$sth->bindParam(':staff_id',$_POST['staffId']);
+				$sth->bindParam(':staff_id_org',$staff_id);
 				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
 				$sth->bindParam(':staff_name',$_POST['staffName']);
@@ -623,7 +638,7 @@
 				$data = array();
 				foreach ($profile[0] as $key => $value) {
 					if($key=='staff_department') $data['部門']=$value;
-					else if($key=='staff_id') $data['職員編號']=$value;
+					else if($key=='staff_id') $data['員工編號']=$value;
 					else if($key=='staff_position') $data['職位']=$value;
 					else if($key=='staff_name') $data['中文名字']=$value;
 					else if($key=='staff_password') $data['密碼']=$value;
