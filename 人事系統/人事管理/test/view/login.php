@@ -41,10 +41,10 @@
                   </div>
                   <form class="user">
                     <div class="form-group">
-                      <input type="text" class="form-control form-control-user" name="inputStaffId" aria-describedby="emailHelp" placeholder="請輸入<?php if(is_null(@$placeholderAccount)) echo '員工編號'; else echo $placeholderAccount; ?>">
+                      <input type="text" class="form-control" name="inputStaffId" aria-describedby="emailHelp" placeholder="請輸入<?php if(is_null(@$placeholderAccount)) echo '員工編號'; else echo $placeholderAccount; ?>">
                     </div>
                     <div class="form-group">
-                      <input type="password" class="form-control form-control-user" name="inputPassword" placeholder="密碼">
+                      <input type="password" class="form-control" name="inputPassword" placeholder="密碼">
                     </div>
                     <!-- <div class="form-group">
                       <div class="custom-control custom-checkbox small">
@@ -100,42 +100,40 @@
 
   <!-- Custom scripts for all pages-->
   <script src="/js/sb-admin-2.min.js"></script>
+  <script type="text/javascript">
+    $(function(){
+      $('input').on('keyup',function(e){
+        if(e.keyCode===13)
+          $("button[name=loginButton]").click();
+      });
+      $("button[name=loginButton]").on('click', function(){
+   
+        var loginStaffId = $('[name=inputStaffId]').val();
+        var loginPassword = $('[name=inputPassword]').val();
+
+        $.ajax({
+          url:'<?=@$url?>/user/login',
+          type:'POST',
+          data:{data:JSON.stringify({
+              loginStaffId: loginStaffId,
+              loginPassword: loginPassword
+          })},
+          success:function(data){
+            if(data.status=='success'){
+              window.location.href='<?=@$url?>/'; 
+            }else{
+              $('#basicModal .modal-title').text('錯誤');
+              $('#basicModal .modal-body').text('帳號或密碼錯誤');
+              $('#basicModal').modal('show');
+            }
+          },
+          error:function(jqXHR, textStatus, errorThrown){
+            console.log("failed");
+          }
+        }); 
+      });   
+    });
+  </script>
 
 </body>
-
 </html>
-
-<script type="text/javascript">
-  $(function(){
-    $('input').on('keyup',function(e){
-      if(e.keyCode===13)
-        $("button[name=loginButton]").click();
-    });
-    $("button[name=loginButton]").on('click', function(){
- 
-      var loginStaffId = $('[name=inputStaffId]').val();
-      var loginPassword = $('[name=inputPassword]').val();
-
-      $.ajax({
-        url:'<?=@$url?>/user/login',
-        type:'POST',
-        data:{data:JSON.stringify({
-            loginStaffId: loginStaffId,
-            loginPassword: loginPassword
-        })},
-        success:function(data){
-          if(data.status=='success'){
-            window.location.href='<?=@$url?>/'; 
-          }else{
-            $('#basicModal .modal-title').text('錯誤');
-            $('#basicModal .modal-body').text('帳號或密碼錯誤');
-            $('#basicModal').modal('show');
-          }
-        },
-        error:function(jqXHR, textStatus, errorThrown){
-          console.log("failed");
-        }
-      }); 
-    });   
-  });
-</script>

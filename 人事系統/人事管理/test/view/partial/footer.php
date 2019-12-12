@@ -86,39 +86,39 @@
 
   <!-- Custom scripts for all pages-->
   <script src="/js/sb-admin-2.min.js"></script>
+  <script type="text/javascript">
+    
+    var url = new URL(window.location.href);
+    $('li.nav-item').each(function(){
+      $(this).find('a.nav-link').attr('href')==url.pathname?$(this).addClass('active'):$(this).removeClass('active');
+    });
+    $('#passwordModal [name=buttonSubmit]').unbind().on('click',function(){
+      var data = new Object();
+      $('#passwordModal input').each(function(){
+        $(this).removeClass('is-invalid');
+        data[this.name] = this.value;
+      });
+      $.ajax({
+        url:'/user/password',
+        type:'post',
+        data:{data:JSON.stringify(data),_METHOD:'PATCH'},
+        dataType:'json',
+        success:function(response){
+          if(response.status=='failed'){
+            $('#passwordModal [name='+response.input+']').addClass('is-invalid');
+            $('#passwordModal [name='+response.input+']').next().text(response.message); 
+          }else{
+            $('#passwordModal [name=buttonSubmit]').remove();
+            $('#passwordModal .modal-body').text('修改完成\n請重新登入！');
+            $('#passwordModal').on('hide.bs.modal',function(){
+              window.location='/login';
+            });
+          }
+        }
+      });
+    });
+  </script>
 
 </body>
 
 </html>
-<script type="text/javascript">
-  
-  var url = new URL(window.location.href);
-  $('li.nav-item').each(function(){
-    $(this).find('a.nav-link').attr('href')==url.pathname?$(this).addClass('active'):$(this).removeClass('active');
-  });
-  $('#passwordModal [name=buttonSubmit]').unbind().on('click',function(){
-    var data = new Object();
-    $('#passwordModal input').each(function(){
-      $(this).removeClass('is-invalid');
-      data[this.name] = this.value;
-    });
-    $.ajax({
-      url:'/user/password',
-      type:'post',
-      data:{data:JSON.stringify(data),_METHOD:'PATCH'},
-      dataType:'json',
-      success:function(response){
-        if(response.status=='failed'){
-          $('#passwordModal [name='+response.input+']').addClass('is-invalid');
-          $('#passwordModal [name='+response.input+']').next().text(response.message); 
-        }else{
-          $('#passwordModal [name=buttonSubmit]').remove();
-          $('#passwordModal .modal-body').text('修改完成\n請重新登入！');
-          $('#passwordModal').on('hide.bs.modal',function(){
-            window.location='/login';
-          });
-        }
-      }
-    });
-  });
-</script>
