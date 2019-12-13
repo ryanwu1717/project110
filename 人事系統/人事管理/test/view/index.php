@@ -3,13 +3,36 @@
 ?>
           <!-- Page Heading -->
 <style >
+
+@media (max-width:700px) {
+
+  /* your conditional / responsive CSS inside this condition */
+
+  
+  .inbox_people {
+    background: #f8f8f8 none repeat scroll 0 0;
+    float: left;
+    overflow: hidden;
+    width: 40%; border-right:1px solid #c4c4c4;
+  }
+  .chatContent,.chat_date,.chat_img,.chat_ib button{
+    display:none;
+  }
+
+  .mesgs {
+    float: left;
+    padding: 30px 15px 0 25px;
+    width: 60%;
+  }
+}
+
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
   background: #f8f8f8 none repeat scroll 0 0;
   float: left;
   overflow: hidden;
-  width: 40%; border-right:1px solid #c4c4c4;
+  width: 30%; border-right:1px solid #c4c4c4;
 }
 .inbox_msg {
   border: 1px solid #c4c4c4;
@@ -64,7 +87,7 @@ img{ max-width:100%;}
 .chat_list {
   border-bottom: 1px solid #c4c4c4;
   margin: 0;
-  padding: 18px 16px 10px;
+  padding: 19px 16px 10px;
 }
 .inbox_chat { 
   height: 60vh; overflow-y: scroll;}
@@ -100,7 +123,7 @@ img{ max-width:100%;}
 .mesgs {
   float: left;
   padding: 30px 15px 0 25px;
-  width: 60%;
+  width: 70%;
 }
 
  .sent_msg p {
@@ -250,6 +273,8 @@ img{ max-width:100%;}
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
+  if (window.innerWidth <= 700) $('.navbar-collapse').addClass('collapse');
+  $('.navbar-nav.ml-auto').append('<div class="pos-f-t"><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-600>$(this).scrollTop()){
@@ -318,7 +343,7 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
@@ -368,14 +393,14 @@ $('.msg_send_btn').on('click',function(){
 });
 $("#textinput").keypress(function(e){
   var code=e.which;
-  if(!(code&&e.shiftKey) &&code==13){
-    // e.preventDefault();
+  if((code&&e.shiftKey) &&code==13){
+    e.preventDefault();
+    $('.msg_send_btn').click();
   }
 });
 $("#textinput").keyup(function(e){
   var code=e.which;
   if((code&&e.shiftKey) &&code==13){
-    $('.msg_send_btn').click();
   }
 });
 function sendMsg(){
