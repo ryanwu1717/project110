@@ -66,7 +66,8 @@ img{ max-width:100%;}
   margin: 0;
   padding: 18px 16px 10px;
 }
-.inbox_chat { height: 560px; overflow-y: scroll;}
+.inbox_chat { 
+  height: 60vh; overflow-y: scroll;}
 
 .active_chat{ background:#ebebeb;}
 
@@ -140,7 +141,7 @@ img{ max-width:100%;}
 }
 .messaging { padding: 0 0 50px 0;}
 .msg_history {
-  height: 516px;
+  height: 50vh;
   overflow-y: auto;
 }
 .circleBase {
@@ -218,7 +219,7 @@ img{ max-width:100%;}
         </a>
       <div class="type_msg">
         <div class="input_msg_write">
-          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，SHIFT+ENTER可以換行" id="textinput"></textarea>
+          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
@@ -368,12 +369,12 @@ $('.msg_send_btn').on('click',function(){
 $("#textinput").keypress(function(e){
   var code=e.which;
   if(!(code&&e.shiftKey) &&code==13){
-    e.preventDefault();
+    // e.preventDefault();
   }
 });
 $("#textinput").keyup(function(e){
   var code=e.which;
-  if(!(code&&e.shiftKey) &&code==13){
+  if((code&&e.shiftKey) &&code==13){
     $('.msg_send_btn').click();
   }
 });
