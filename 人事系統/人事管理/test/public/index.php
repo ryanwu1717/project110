@@ -294,6 +294,13 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+	$app->get('/readlist', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getReadList();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);

@@ -269,6 +269,30 @@ img{ max-width:100%;}
     </div>
   </div>
 </div>
+<div class="modal fade" id="ReadOrNot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">已讀清單</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+          <div class="modal-body" >
+            <h5>看過LA~~~</h5>
+            <div name="readList">
+            </div>
+            <hr>
+            <h5>等我一下我馬上看</h5>
+            <div name="unreadList">
+            </div>
+          </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-dismiss="modal">確定</button>
+        </div>
+      </div>
+    </div>
+</div>
 <?php
  include('partial/footer.php')
 ?>
@@ -372,10 +396,10 @@ function searchChat(){
         $('[name=chatBox]').html("");
         $(response).each(function(){
           if(this.diff!='me'){
-            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg">                  <p class="text-break">'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
+            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg" >                  <p>'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'<h6 onclick="showModal(this)" data-content="'+this.content+'">'+this.Read+'</h6>'+'</span></div>              </div>            </div>')
           }
           else{
-            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">                <p class="text-break">'+this.content+'</p>                <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
+            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">              <p>  '+this.content+'  </p>             <span class="time_date" > '+this.sentTime+'<h6 onclick="showModal(this)" data-content="'+this.content+'">'+this.Read+'</h6>'+'</span> </div>            </div>')
           }
         });
         if(!scrollable)
@@ -403,6 +427,48 @@ $("#textinput").keyup(function(e){
   if((code&&e.shiftKey) &&code==13){
   }
 });
+
+function showModal(p){
+  $('#ReadOrNot').modal('show');
+  whichTalk=$(p).attr("data-content");
+  getReadList();
+  getUnreadList();
+}
+var whichTalk='';
+
+function getReadList(){
+  $.ajax({
+    url:'/chat/readlist',
+    type:'get',
+    data:{whichTalk:whichTalk,
+          checkread:'true',
+          chatID:chatID},
+    dataType:'json',
+    success:function(response){
+      $('[name=readList]').html("");
+      $(response).each(function(){        
+        $('[name=readList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  })
+}
+
+function getUnreadList(){
+  $.ajax({
+    url:'/chat/readlist',
+    type:'get',
+    data:{whichTalk:whichTalk,
+          checkread:'false',
+          chatID:chatID},
+    dataType:'json',
+    success:function(response){
+      $('[name=unreadList]').html("");
+      $(response).each(function(){        
+        $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  })
+}
 function sendMsg(){
   Msg=$("#textinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
@@ -431,6 +497,7 @@ $('#basicModal').on('show.bs.modal',function(e){
     Chatroom(type);
   }
 });
+
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');

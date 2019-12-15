@@ -750,12 +750,44 @@
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
 			$row = $sth->fetchAll();
+			return $row;
+		}
+		function getReadList(){
+			$sql = 'SELECT "staff_name","staff_id"
+			FROM(SELECT content, "chatHistory"."UID", "chatHistory"."chatID",case when "time" > "sentTime" then \'true\' else \'false\' end as "checkread"
+					FROM staff_chat."chatContent" as "chatContent"
+					join staff_chat."chatHistory" as "chatHistory" on "chatContent"."chatID"="chatHistory"."chatID"
+					where content=:whichTalk and "chatHistory"."chatID"=:chatID)as "checkUnread"
+			left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
+			where "checkread"= :checkread and "staff_id"!=:UID
+			group by"staff_name","staff_id";';
+			$sth = $this->conn->prepare($sql);
+			$UID =$_SESSION['id'];
+			$sth->bindParam(':whichTalk',$whichTalk,PDO::PARAM_STR);
+			$sth->bindParam(':checkread',$checkread,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
 
 			return $row;
 		}
 		function getChatContent($chatID){
-			$sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
-					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID order by "sentTime" asc;';
+			$sql = 'SELECT "content","sentTime","sentFrom","diff","readCount",staff_name
+					FROM(
+						SELECT "content","sentTime","sentFrom","diff",COUNT("UID") as "readCount"
+						FROM (
+							SELECT content, to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime", "UID" as "sentFrom",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)as "diff","chatID"
+							FROM staff_chat."chatContent"
+							WHERE "chatID"= :chatID)as "display"
+						join (
+							SELECT "chatID", "time", "UID"
+							FROM staff_chat."chatHistory"
+							where "chatID"=:chatID) as "chatHistory" on "display"."chatID"="chatHistory"."chatID"
+						where "UID"!=:UID
+						Group by "content","sentTime","sentFrom","diff"
+						order by "sentTime" asc) as "displayContent"
+					left join staff."staff" on staff.staff_id="displayContent"."sentFrom"';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
