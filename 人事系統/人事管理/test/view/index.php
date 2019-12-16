@@ -26,15 +26,30 @@
   }
 }
 
+@media (max-width:700px) {
+  .time_date {
+    color: #747474;
+    display: inline;
+    font-size: 12px;
+    margin: 8px 0 0;
+  }
+  .read{
+    display: inline;
+  }
+}
+
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
   background: #f8f8f8 none repeat scroll 0 0;
   float: left;
   overflow: hidden;
-  width: 30%; border-right:1px solid #c4c4c4;
+  width: 29%; border-right:1px solid #c4c4c4;
+  margin-left: 1px;
+
 }
 .inbox_msg {
+  margin:auto;
   border: 1px solid #c4c4c4;
   clear: both;
   overflow: hidden;
@@ -115,9 +130,12 @@ img{ max-width:100%;}
 }
 .time_date {
   color: #747474;
-  display: block;
+  display: inline;
   font-size: 12px;
   margin: 8px 0 0;
+}
+.read{
+  display: inline;
 }
 .received_withd_msg { width: 57%;}
 .mesgs {
@@ -126,7 +144,7 @@ img{ max-width:100%;}
   width: 70%;
 }
 
- .sent_msg p {
+.sent_msg p.content {
   background: #05728f none repeat scroll 0 0;
   border-radius: 3px;
   font-size: 14px;
@@ -159,6 +177,19 @@ img{ max-width:100%;}
   height: 33px;
   position: absolute;
   right: 0;
+  top: 11px;
+  width: 33px;
+}
+.msg_attach_btn {
+  background: #05728f none repeat scroll 0 0;
+  border: medium none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  font-size: 17px;
+  height: 33px;
+  position: absolute;
+  right: 33px;
   top: 11px;
   width: 33px;
 }
@@ -244,7 +275,9 @@ img{ max-width:100%;}
         <div class="input_msg_write">
           <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
+          <input style="display:none;" type="file" name="inputFile">
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+          <button class="msg_attach_btn" type="button" name="buttonAttchFile"><i class="fa fa-plus" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -279,11 +312,11 @@ img{ max-width:100%;}
           </button>
         </div>
           <div class="modal-body" >
-            <h5>看過LA~~~</h5>
+            <h5>已讀</h5>
             <div name="readList">
             </div>
             <hr>
-            <h5>等我一下我馬上看</h5>
+            <h5>未讀</h5>
             <div name="unreadList">
             </div>
           </div>
@@ -385,6 +418,19 @@ function getTarget(_chatID,_chatName){
   clearTimeout(queue);
   schedule();
 }
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
+}
 var LastReadTime = null;
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
@@ -396,10 +442,31 @@ function searchChat(){
         $('[name=chatBox]').html("");
         $(response).each(function(){
           if(this.diff!='me'){
-            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg" >                  <p>'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'<h6 onclick="showModal(this)" data-content="'+this.content+'">'+this.Read+'</h6>'+'</span></div>              </div>            </div>')
+            $('[name=chatBox]').append(
+              '<div class="incoming_msg">'+
+                '<div class="">'+this.UID+','+this.staff_name+'</div>'+
+                '<div class="received_msg">'+
+                  '<div class="received_withd_msg">'+
+                    '<p class="text-break">'+this.content+'</p>'+
+                    '<span class="time_date"> '+this.sentTime+'</span>'+
+                    '<span class="read">'+
+                      '<a href="#" data-toggle="modal" data-target="#ReadOrNot" data-content="'+safe_tags_replace(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                    '</span>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'
+            );
           }
           else{
-            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">              <p>  '+this.content+'  </p>             <span class="time_date" > '+this.sentTime+'<h6 onclick="showModal(this)" data-content="'+this.content+'">'+this.Read+'</h6>'+'</span> </div>            </div>')
+            $('[name=chatBox]').append(
+              '<div class="outgoing_msg">'+
+                '<div class="sent_msg">'+
+                  '<p class="text-break content">  '+this.content+'  </p>'+
+                  '<span class="time_date" > '+this.sentTime+'</span>'+
+                  '<a href="#" data-toggle="modal" data-target="#ReadOrNot" data-content="'+safe_tags_replace(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                '</div>'+
+              '</div>'
+            );
           }
         });
         if(!scrollable)
@@ -427,48 +494,49 @@ $("#textinput").keyup(function(e){
   if((code&&e.shiftKey) &&code==13){
   }
 });
-
-function showModal(p){
-  $('#ReadOrNot').modal('show');
-  whichTalk=$(p).attr("data-content");
-  getReadList();
-  getUnreadList();
-}
-var whichTalk='';
-
-function getReadList(){
+$('[name=buttonAttchFile]').on('click',function(){
+  $('[name=inputFile]').click();
+});
+$('[name=inputFile]').on('change',function(){
+  var file_data = $(this).prop('files')[0];
+  var form_data = new FormData();
+  form_data.append('file', file_data);
+  $.ajax({
+    url: '/chat/file',
+    cache: false,
+    contentType: false,
+    processData: false,
+    data: form_data,     //data只能指定單一物件                 
+    type: 'post',
+    success: function(data){
+      
+    }
+  });
+});
+$('#ReadOrNot').on('show.bs.modal',function(e){
+  console.log($(e.relatedTarget));
+  var data = new Object();
+  data['UID'] = $(e.relatedTarget).data('uid');
+  data['sentTime'] = $(e.relatedTarget).data('senttime');
+  data['content'] = $(e.relatedTarget).data('content');
+  data['chatID'] = chatID;
   $.ajax({
     url:'/chat/readlist',
     type:'get',
-    data:{whichTalk:whichTalk,
-          checkread:'true',
-          chatID:chatID},
+    data:{data:JSON.stringify(data)},
     dataType:'json',
     success:function(response){
       $('[name=readList]').html("");
-      $(response).each(function(){        
-        $('[name=readList]').append('<p>'+this.staff_name+'</p>')
-      });
-    }
-  })
-}
-
-function getUnreadList(){
-  $.ajax({
-    url:'/chat/readlist',
-    type:'get',
-    data:{whichTalk:whichTalk,
-          checkread:'false',
-          chatID:chatID},
-    dataType:'json',
-    success:function(response){
       $('[name=unreadList]').html("");
-      $(response).each(function(){        
-        $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      $(response).each(function(){
+        if(this.checkread=='true')
+          $('[name=readList]').append('<p>'+this.staff_name+'</p>')
+        else
+          $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
       });
     }
-  })
-}
+  });
+});
 function sendMsg(){
   Msg=$("#textinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');

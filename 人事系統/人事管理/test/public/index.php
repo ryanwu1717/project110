@@ -44,6 +44,8 @@ $container['notFoundHandler'] = function ($container) {
 $container['ViewMiddleware'] = function($container) {
     return new ViewMiddleware($container->db);
 };
+$container['upload_directory'] = __DIR__ . '/../uploads';
+
 session_start();
 require_once __DIR__.'/../route/management.php';
 
@@ -296,7 +298,7 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->get('/readlist', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->getReadList();
+		$result = $chat->getReadList($_GET);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -357,6 +359,23 @@ $app->group('/chat', function () use ($app) {
 	$app->patch('/lastReadTime', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->updateLastReadTime($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->post('/file', function (Request $request, Response $response, array $args) {
+		$directory = $this->upload_directory;
+
+	    $uploadedFiles = $request->getUploadedFiles();
+
+	    // handle single input with single file upload
+	    $uploadedFile = $uploadedFiles['inputFile'];
+	    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+	        $filename = moveUploadedFile($directory, $uploadedFile);
+	    }
+	    $result = array(
+	    	'status' => 'success'
+	    );
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;

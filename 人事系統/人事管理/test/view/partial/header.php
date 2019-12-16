@@ -32,7 +32,7 @@
   <div id="wrapper">
     <!-- Sidebar -->
     <div class="pos-f-t">
-      <div class="navbar-collapse" id="navbarToggleExternalContent">
+      <div class="navbar-collapse collapse show" id="navbarToggleExternalContent">
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
           <!-- Sidebar - Brand -->
