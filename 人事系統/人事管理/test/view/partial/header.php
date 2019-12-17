@@ -41,7 +41,7 @@
           </a>
 
           <!-- Divider -->
-          <hr clas-divider my-0">
+          <hr class="sidebar-divider my-0">
 
           <!-- Nav Item - Dashboard -->
           <li class="nav-item">

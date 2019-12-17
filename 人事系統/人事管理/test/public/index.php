@@ -363,25 +363,35 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->post('/file', function (Request $request, Response $response, array $args) {
-		$directory = $this->upload_directory;
-
-	    $uploadedFiles = $request->getUploadedFiles();
-
-	    // handle single input with single file upload
-	    $uploadedFile = $uploadedFiles['inputFile'];
-	    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
-	        $filename = moveUploadedFile($directory, $uploadedFile);
-	    }
-	    $result = array(
-	    	'status' => 'success'
-	    );
+	$app->post('/file/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles());
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
 	});
+	$app->get('/file/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->downloadFile($args['fileID']);
+		if(isset($result['data'])){
+	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+		    $response = $response
+		    	->withHeader('Content-Description', 'File Transfer')
+			   	->withHeader('Content-Type', 'application/octet-stream')
+			   	->withHeader('Content-Disposition', 'attachment;filename="'.$result['data']['fileNameClient'].'"')
+			   	->withHeader('Expires', '0')
+			   	->withHeader('Cache-Control', 'must-revalidate')
+			   	->withHeader('Pragma', 'public')
+			   	->withHeader('Content-Length', filesize($file));
+			readfile($file);
+		}else{
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		}
+		return $response;
+	});
 });
-
+	    
 $app->run();
 
 ?>

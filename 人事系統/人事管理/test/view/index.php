@@ -4,7 +4,7 @@
           <!-- Page Heading -->
 <style >
 
-@media (max-width:700px) {
+@media (max-width:550px) {
 
   /* your conditional / responsive CSS inside this condition */
 
@@ -302,39 +302,15 @@ img{ max-width:100%;}
     </div>
   </div>
 </div>
-<div class="modal fade" id="ReadOrNot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">已讀清單</h5>
-          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-          <div class="modal-body" >
-            <h5>已讀</h5>
-            <div name="readList">
-            </div>
-            <hr>
-            <h5>未讀</h5>
-            <div name="unreadList">
-            </div>
-          </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-dismiss="modal">確定</button>
-        </div>
-      </div>
-    </div>
-</div>
 <?php
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
-  if (window.innerWidth <= 700) $('.navbar-collapse').addClass('collapse');
+  if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
   $('.navbar-nav.ml-auto').append('<div class="pos-f-t"><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
-    if($(this)[0].scrollHeight-600>$(this).scrollTop()){
+    if($(this)[0].scrollHeight-500>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
       scrollable = true;
     }else{
@@ -418,19 +394,6 @@ function getTarget(_chatID,_chatName){
   clearTimeout(queue);
   schedule();
 }
-var tagsToReplace = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;'
-};
-
-function replaceTag(tag) {
-    return tagsToReplace[tag] || tag;
-}
-
-function safe_tags_replace(str) {
-    return str.replace(/[&<>]/g, replaceTag);
-}
 var LastReadTime = null;
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
@@ -450,7 +413,7 @@ function searchChat(){
                     '<p class="text-break">'+this.content+'</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read">'+
-                      '<a href="#" data-toggle="modal" data-target="#ReadOrNot" data-content="'+safe_tags_replace(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
                     '</span>'+
                   '</div>'+
                 '</div>'+
@@ -463,7 +426,7 @@ function searchChat(){
                 '<div class="sent_msg">'+
                   '<p class="text-break content">  '+this.content+'  </p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
-                  '<a href="#" data-toggle="modal" data-target="#ReadOrNot" data-content="'+safe_tags_replace(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                  '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
                 '</div>'+
               '</div>'
             );
@@ -500,9 +463,9 @@ $('[name=buttonAttchFile]').on('click',function(){
 $('[name=inputFile]').on('change',function(){
   var file_data = $(this).prop('files')[0];
   var form_data = new FormData();
-  form_data.append('file', file_data);
+  form_data.append('inputFile', file_data);
   $.ajax({
-    url: '/chat/file',
+    url: '/chat/file/'+chatID,
     cache: false,
     contentType: false,
     processData: false,
@@ -510,30 +473,6 @@ $('[name=inputFile]').on('change',function(){
     type: 'post',
     success: function(data){
       
-    }
-  });
-});
-$('#ReadOrNot').on('show.bs.modal',function(e){
-  console.log($(e.relatedTarget));
-  var data = new Object();
-  data['UID'] = $(e.relatedTarget).data('uid');
-  data['sentTime'] = $(e.relatedTarget).data('senttime');
-  data['content'] = $(e.relatedTarget).data('content');
-  data['chatID'] = chatID;
-  $.ajax({
-    url:'/chat/readlist',
-    type:'get',
-    data:{data:JSON.stringify(data)},
-    dataType:'json',
-    success:function(response){
-      $('[name=readList]').html("");
-      $('[name=unreadList]').html("");
-      $(response).each(function(){
-        if(this.checkread=='true')
-          $('[name=readList]').append('<p>'+this.staff_name+'</p>')
-        else
-          $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
-      });
     }
   });
 });
@@ -563,9 +502,42 @@ $('#basicModal').on('show.bs.modal',function(e){
     getMember();
   }else if(type=='delete'){
     Chatroom(type);
+  }else if(type=='readlist'){
+    getReadlist($(e.relatedTarget).data());
   }
 });
 
+function getReadlist(relatedData){
+  $('#basicModal .modal-title').text('已讀清單');
+  $('#basicModal .modal-body').html(
+    '<h5>已讀</h5>'+
+    '<div name="readList"></div>'+
+    '<hr>'+
+    '<h5>未讀</h5>'+
+    '<div name="unreadList"></div>'
+  );
+  var data = new Object();
+  data['UID'] = relatedData['uid'];
+  data['sentTime'] = relatedData['senttime'];
+  data['content'] = decodeURIComponent(relatedData['content']);
+  data['chatID'] = chatID;
+  $.ajax({
+    url:'/chat/readlist',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      $('[name=readList]').html("");
+      $('[name=unreadList]').html("");
+      $(response).each(function(){
+        if(this.checkread=='true')
+          $('[name=readList]').append('<p>'+this.staff_name+'</p>')
+        else
+          $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  });
+}
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');

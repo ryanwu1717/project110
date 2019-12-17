@@ -1,4 +1,5 @@
 <?php
+use Slim\Http\UploadedFile;
 	Class User{
 		var $result;   
 		var $conn;
@@ -925,6 +926,72 @@
 				$row = $sth->fetchAll();	
 			}
 			return $row;
+		}
+		function uploadFile($chatID,$directory,$uploadedFiles){
+			// handle single input with single file upload
+		    $uploadedFile = $uploadedFiles['inputFile'];
+		    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+		        $filename = $this->moveUploadedFile($directory, $uploadedFile);
+		        $UID = $_SESSION['id'];
+				$sql = 'INSERT INTO staff_chat.files("fileName", "UID", "fileNameClient") VALUES (:fileName, :UID, :fileNameClient);';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':fileName',$filename,PDO::PARAM_STR);
+				$sth->bindParam(':fileNameClient',$uploadedFile->getClientFilename(),PDO::PARAM_STR);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->execute();
+
+				$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
+						VALUES ( :Msg , :UID , NOW(), :chatID );';
+				$sth = $this->conn->prepare($sql);
+				$UID = $_SESSION['id'];
+				$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
+				$sth->execute();
+				
+			    $result = array(
+			    	'status' => 'success'
+			    );
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
+		}
+
+		private function moveUploadedFile($directory, UploadedFile $uploadedFile)
+		{
+		    $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+		    $basename = bin2hex(random_bytes(8)); // see http://php.net/manual/en/function.random-bytes.php
+		    $filename = sprintf('%s.%0.8s', $basename, $extension);
+
+		    $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+
+		    return $filename;
+		}
+		function downloadFile($fileID){	
+			$sql = '
+				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"
+				FROM staff_chat.files
+				WHERE id = :fileID;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':fileID',$fileID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row)==1){	
+			    $result = array(
+			    	'status' => 'success',
+			    	'data' => $row[0]
+			    );
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
 		}
 	}
 ?>
