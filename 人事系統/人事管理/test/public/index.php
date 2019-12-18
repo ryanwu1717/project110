@@ -391,7 +391,7 @@ $app->group('/chat', function () use ($app) {
 		return $response;
 	});
 });
-	    
+
 $app->run();
 
 ?>

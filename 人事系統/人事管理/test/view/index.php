@@ -241,15 +241,7 @@ img{ max-width:100%;}
       <div class="headind_srch">
         <div class="recent_heading">
           <h4>議題列表</h4>
-        </div><!-- 
-        <div class="srch_bar">
-          <div class="stylish-input-group">
-            <input type="text" class="search-bar"  placeholder="Search" >
-            <span class="input-group-addon">
-            <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
-            </span> 
-          </div>
-        </div> -->
+        </div>
         <div class="tool_bar btn-group">
           <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal" data-type="create">+</button>
         </div>
@@ -316,28 +308,24 @@ var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dis
     }else{
       $(".scroll-to-down").fadeOut()
     }
+    if($(this).scrollTop()==0){
+      expendLimit();
+    }
   });
   $('.scroll-to-down').unbind().on('click',function(){
       scrollable = false;
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   });
+var limit=20;
 var queue = null;
 var scrollable = false;
 function schedule(){
   searchChatroom();
   searchChat();
   queue = setTimeout(schedule,1000);
-  // var now = new Date();
-  // LastReadTime = now.getUTCFullYear().toString() + "/" +
-  //       (now.getUTCMonth() + 1).toString().padStart(2, '0') +
-  //       "/" + now.getUTCDate().toString().padStart(2, '0') + " " + now.getUTCHours().toString().padStart(2, '0') +
-  //       ":" + now.getUTCMinutes().toString().padStart(2, '0') + ":" + now.getUTCSeconds().toString().padStart(2, '0');
-  // console.log(LastReadTime);
 }
+
 schedule();
-// setInterval(function(){
-//   searchChatroom();
-//   searchChat();},5000);
 
 function updateLastReadTime(){
   $.ajax({
@@ -355,11 +343,6 @@ function searchChatroom(){
     data:{},
     dataType:'json',
     success:function(response){
-      // console.log($($('.chat_list')[0]).attr('data-name'));
-      // console.log(response[0].chatID);
-      // if(parseInt($($('.chat_list')[0]).attr('data-name'))==parseInt(response[0].chatID)){
-      //   return;
-      // }
       $('[name=inbox_chat]').html("");
       $(response).each(function(){
         var chatName ='';
@@ -380,26 +363,52 @@ function searchChatroom(){
       });
     } 
   });
-
 }
+
 var chatID=-1;
+
 var chatName = '';
+
 function getTarget(_chatID,_chatName){
-  // console.log($(div).attr("data-name"));
-  // chatID=$(div).attr("data-name");
   chatID = _chatID;
   chatName = _chatName;
   $('[name=navbarChatroomTitle]').text(chatName);
+  resetLimit();
   updateLastReadTime();
   clearTimeout(queue);
   schedule();
 }
+
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+
+function expendLimit(){
+  limit+=5;
+}
+
+function resetLimit(){
+  limit=20;
+}
+
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
+}
+
 var LastReadTime = null;
+
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
     $.ajax({
       url:'/chat/content/'+chatID,
       type:'get',
+      data:{limit:limit},
       dataType:'json',
       success:function(response){
         $('[name=chatBox]').html("");
@@ -438,13 +447,16 @@ function searchChat(){
     })
   }
 }
+
 var Msg ="";
+
 $('.msg_send_btn').on('click',function(){
   if(!$.trim($("#textarea").val()) && $("#textinput").val()!="" && chatID!=-1){
     sendMsg();
     $("#textinput").val("");
   }
 });
+
 $("#textinput").keypress(function(e){
   var code=e.which;
   if((code&&e.shiftKey) &&code==13){
@@ -452,14 +464,17 @@ $("#textinput").keypress(function(e){
     $('.msg_send_btn').click();
   }
 });
+
 $("#textinput").keyup(function(e){
   var code=e.which;
   if((code&&e.shiftKey) &&code==13){
   }
 });
+
 $('[name=buttonAttchFile]').on('click',function(){
   $('[name=inputFile]').click();
 });
+
 $('[name=inputFile]').on('change',function(){
   var file_data = $(this).prop('files')[0];
   var form_data = new FormData();
@@ -476,6 +491,7 @@ $('[name=inputFile]').on('change',function(){
     }
   });
 });
+
 function sendMsg(){
   Msg=$("#textinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
@@ -489,8 +505,8 @@ function sendMsg(){
         getTarget(chatID,chatName);
     }
   })
-
 }
+
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
   var type = $(e.relatedTarget).data('type');
@@ -516,7 +532,9 @@ function getReadlist(relatedData){
     '<h5>未讀</h5>'+
     '<div name="unreadList"></div>'
   );
+
   var data = new Object();
+
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
   data['content'] = decodeURIComponent(relatedData['content']);
@@ -538,6 +556,7 @@ function getReadlist(relatedData){
     }
   });
 }
+
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
@@ -569,6 +588,7 @@ function getMember(){
     }
   });
 }
+
 function Chatroom(type){
   var _chatID = '';
   if(type=='delete'){
