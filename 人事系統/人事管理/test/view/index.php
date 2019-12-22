@@ -3,15 +3,60 @@
 ?>
           <!-- Page Heading -->
 <style >
+<<<<<<< HEAD
+=======
+
+@media (max-width:550px) {
+
+  /* your conditional / responsive CSS inside this condition */
+
+  
+  .inbox_people {
+    background: #f8f8f8 none repeat scroll 0 0;
+    float: left;
+    overflow: hidden;
+    width: 40%; border-right:1px solid #c4c4c4;
+  }
+  .chatContent,.chat_date,.chat_img,.chat_ib button{
+    display:none;
+  }
+
+  .mesgs {
+    float: left;
+    padding: 30px 15px 0 25px;
+    width: 60%;
+  }
+}
+
+@media (max-width:700px) {
+  .time_date {
+    color: #747474;
+    display: inline;
+    font-size: 12px;
+    margin: 8px 0 0;
+  }
+  .read{
+    display: inline;
+  }
+}
+
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
   background: #f8f8f8 none repeat scroll 0 0;
   float: left;
   overflow: hidden;
+<<<<<<< HEAD
   width: 40%; border-right:1px solid #c4c4c4;
+=======
+  width: 29%; border-right:1px solid #c4c4c4;
+  margin-left: 1px;
+
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 }
 .inbox_msg {
+  margin:auto;
   border: 1px solid #c4c4c4;
   clear: both;
   overflow: hidden;
@@ -91,9 +136,12 @@ img{ max-width:100%;}
 }
 .time_date {
   color: #747474;
-  display: block;
+  display: inline;
   font-size: 12px;
   margin: 8px 0 0;
+}
+.read{
+  display: inline;
 }
 .received_withd_msg { width: 57%;}
 .mesgs {
@@ -102,7 +150,7 @@ img{ max-width:100%;}
   width: 60%;
 }
 
- .sent_msg p {
+.sent_msg p.content {
   background: #05728f none repeat scroll 0 0;
   border-radius: 3px;
   font-size: 14px;
@@ -135,6 +183,19 @@ img{ max-width:100%;}
   height: 33px;
   position: absolute;
   right: 0;
+  top: 11px;
+  width: 33px;
+}
+.msg_attach_btn {
+  background: #05728f none repeat scroll 0 0;
+  border: medium none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  font-size: 17px;
+  height: 33px;
+  position: absolute;
+  right: 33px;
   top: 11px;
   width: 33px;
 }
@@ -186,15 +247,7 @@ img{ max-width:100%;}
       <div class="headind_srch">
         <div class="recent_heading">
           <h4>議題列表</h4>
-        </div><!-- 
-        <div class="srch_bar">
-          <div class="stylish-input-group">
-            <input type="text" class="search-bar"  placeholder="Search" >
-            <span class="input-group-addon">
-            <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
-            </span> 
-          </div>
-        </div> -->
+        </div>
         <div class="tool_bar btn-group">
           <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal" data-type="create">+</button>
         </div>
@@ -220,7 +273,9 @@ img{ max-width:100%;}
         <div class="input_msg_write">
           <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，SHIFT+ENTER可以換行" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
+          <input style="display:none;" type="file" name="inputFile">
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+          <button class="msg_attach_btn" type="button" name="buttonAttchFile"><i class="fa fa-plus" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -248,36 +303,37 @@ img{ max-width:100%;}
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
+<<<<<<< HEAD
+=======
+  if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
+  $('.navbar-nav.ml-auto').append('<div class="pos-f-t"><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>');
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
-    if($(this)[0].scrollHeight-600>$(this).scrollTop()){
+    if($(this)[0].scrollHeight-500>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
       scrollable = true;
     }else{
       $(".scroll-to-down").fadeOut()
+    }
+    if($(this).scrollTop()==0){
+      expendLimit();
     }
   });
   $('.scroll-to-down').unbind().on('click',function(){
       scrollable = false;
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   });
+var limit=20;
 var queue = null;
 var scrollable = false;
 function schedule(){
   searchChatroom();
   searchChat();
   queue = setTimeout(schedule,1000);
-  // var now = new Date();
-  // LastReadTime = now.getUTCFullYear().toString() + "/" +
-  //       (now.getUTCMonth() + 1).toString().padStart(2, '0') +
-  //       "/" + now.getUTCDate().toString().padStart(2, '0') + " " + now.getUTCHours().toString().padStart(2, '0') +
-  //       ":" + now.getUTCMinutes().toString().padStart(2, '0') + ":" + now.getUTCSeconds().toString().padStart(2, '0');
-  // console.log(LastReadTime);
 }
+
 schedule();
-// setInterval(function(){
-//   searchChatroom();
-//   searchChat();},5000);
 
 function updateLastReadTime(){
   $.ajax({
@@ -295,11 +351,6 @@ function searchChatroom(){
     data:{},
     dataType:'json',
     success:function(response){
-      // console.log($($('.chat_list')[0]).attr('data-name'));
-      // console.log(response[0].chatID);
-      // if(parseInt($($('.chat_list')[0]).attr('data-name'))==parseInt(response[0].chatID)){
-      //   return;
-      // }
       $('[name=inbox_chat]').html("");
       $(response).each(function(){
         var chatName ='';
@@ -320,35 +371,89 @@ function searchChatroom(){
       });
     } 
   });
-
 }
+
 var chatID=-1;
+
 var chatName = '';
+
 function getTarget(_chatID,_chatName){
-  // console.log($(div).attr("data-name"));
-  // chatID=$(div).attr("data-name");
   chatID = _chatID;
   chatName = _chatName;
   $('[name=navbarChatroomTitle]').text(chatName);
+  resetLimit();
   updateLastReadTime();
   clearTimeout(queue);
   schedule();
 }
+
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+
+function expendLimit(){
+  limit+=5;
+}
+
+function resetLimit(){
+  limit=20;
+}
+
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
+}
+
 var LastReadTime = null;
+
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
     $.ajax({
       url:'/chat/content/'+chatID,
       type:'get',
+      data:{limit:limit},
       dataType:'json',
       success:function(response){
         $('[name=chatBox]').html("");
         $(response).each(function(){
           if(this.diff!='me'){
+<<<<<<< HEAD
             $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg">                  <p class="text-break">'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
           }
           else{
             $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">                <p class="text-break">'+this.content+'</p>                <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
+=======
+            $('[name=chatBox]').append(
+              '<div class="incoming_msg">'+
+                '<div class="">'+this.UID+','+this.staff_name+'</div>'+
+                '<div class="received_msg">'+
+                  '<div class="received_withd_msg">'+
+                    '<p class="text-break">'+this.content+'</p>'+
+                    '<span class="time_date"> '+this.sentTime+'</span>'+
+                    '<span class="read">'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                    '</span>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'
+            );
+          }
+          else{
+            $('[name=chatBox]').append(
+              '<div class="outgoing_msg">'+
+                '<div class="sent_msg">'+
+                  '<p class="text-break content">  '+this.content+'  </p>'+
+                  '<span class="time_date" > '+this.sentTime+'</span>'+
+                  '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                '</div>'+
+              '</div>'
+            );
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
           }
         });
         if(!scrollable)
@@ -357,25 +462,54 @@ function searchChat(){
     })
   }
 }
+
 var Msg ="";
+
 $('.msg_send_btn').on('click',function(){
   if(!$.trim($("#textarea").val()) && $("#textinput").val()!="" && chatID!=-1){
     sendMsg();
     $("#textinput").val("");
   }
 });
+
 $("#textinput").keypress(function(e){
   var code=e.which;
   if(!(code&&e.shiftKey) &&code==13){
     e.preventDefault();
   }
 });
+
 $("#textinput").keyup(function(e){
   var code=e.which;
   if(!(code&&e.shiftKey) &&code==13){
     $('.msg_send_btn').click();
   }
 });
+<<<<<<< HEAD
+=======
+
+$('[name=buttonAttchFile]').on('click',function(){
+  $('[name=inputFile]').click();
+});
+
+$('[name=inputFile]').on('change',function(){
+  var file_data = $(this).prop('files')[0];
+  var form_data = new FormData();
+  form_data.append('inputFile', file_data);
+  $.ajax({
+    url: '/chat/file/'+chatID,
+    cache: false,
+    contentType: false,
+    processData: false,
+    data: form_data,     //data只能指定單一物件                 
+    type: 'post',
+    success: function(data){
+      
+    }
+  });
+});
+
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 function sendMsg(){
   Msg=$("#textinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
@@ -389,8 +523,8 @@ function sendMsg(){
         getTarget(chatID,chatName);
     }
   })
-
 }
+
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
   var type = $(e.relatedTarget).data('type');
@@ -402,8 +536,48 @@ $('#basicModal').on('show.bs.modal',function(e){
     getMember();
   }else if(type=='delete'){
     Chatroom(type);
+  }else if(type=='readlist'){
+    getReadlist($(e.relatedTarget).data());
   }
 });
+<<<<<<< HEAD
+=======
+
+function getReadlist(relatedData){
+  $('#basicModal .modal-title').text('已讀清單');
+  $('#basicModal .modal-body').html(
+    '<h5>已讀</h5>'+
+    '<div name="readList"></div>'+
+    '<hr>'+
+    '<h5>未讀</h5>'+
+    '<div name="unreadList"></div>'
+  );
+
+  var data = new Object();
+
+  data['UID'] = relatedData['uid'];
+  data['sentTime'] = relatedData['senttime'];
+  data['content'] = decodeURIComponent(relatedData['content']);
+  data['chatID'] = chatID;
+  $.ajax({
+    url:'/chat/readlist',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      $('[name=readList]').html("");
+      $('[name=unreadList]').html("");
+      $(response).each(function(){
+        if(this.checkread=='true')
+          $('[name=readList]').append('<p>'+this.staff_name+'</p>')
+        else
+          $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  });
+}
+
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
@@ -435,6 +609,7 @@ function getMember(){
     }
   });
 }
+
 function Chatroom(type){
   var _chatID = '';
   if(type=='delete'){

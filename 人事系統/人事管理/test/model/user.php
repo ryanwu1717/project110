@@ -1,4 +1,5 @@
 <?php
+use Slim\Http\UploadedFile;
 	Class User{
 		var $result;   
 		var $conn;
@@ -669,10 +670,13 @@
 		}
 	}
 	Class Chat{
+
 		var $conn;
+
 		function __construct($db){
 			$this->conn = $db;
 		}
+
 		function getChatroomTitle($chatID){
 			$sql = 'SELECT "chatName" FROM staff_chat."chatHistory" LEFT JOIN staff_chat."chatroomInfo" on "chatroomInfo"."chatID" = "chatHistory"."chatID" WHERE "chatroomInfo"."chatID"=:chatID and "UID" = :UID';
 			$sth = $this->conn->prepare($sql);
@@ -680,9 +684,11 @@
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
+
 			$row = $sth->fetchAll();
 			return $row;
 		}
+
 		function getChatroom(){
 			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread"
 						FROM(
@@ -727,33 +733,95 @@
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->execute();
+
 			$row = $sth->fetchAll();
 			return $row;
 		}
+
 		function getMember($chatID){
 			$sql = 'SELECT staff_name as name,"UID" as id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" WHERE "chatID"= :chatID;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
 			$row = $sth->fetchAll();
+<<<<<<< HEAD
+=======
+			return $row;
+		}
+
+		function getReadList($body){
+			$data = json_decode($body['data'],true);
+			$sql = '
+				SELECT "staff_name","staff_id","checkread"
+				FROM(
+					SELECT content, "chatHistory"."UID", "chatHistory"."chatID",case when "time" > "sentTime" then \'true\' else \'false\' end as "checkread"
+					FROM staff_chat."chatContent" as "chatContent"
+					join staff_chat."chatHistory" as "chatHistory" on "chatContent"."chatID"="chatHistory"."chatID"
+					Where content=:whichTalk and "chatHistory"."chatID"=:chatID
+				)as "checkUnread"
+				left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
+				where "staff_id"!=:UID
+				group by"staff_name","staff_id","checkread";
+			';
+			$sth = $this->conn->prepare($sql);
+			$UID =$_SESSION['id'];
+			$sth->bindParam(':whichTalk',$data['content'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$data['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 
 			return $row;
 		}
+
 		function getChatContent($chatID){
+<<<<<<< HEAD
 			$sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
 					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID order by "sentTime" asc;';
+=======
+			$sql = '
+				SELECT *
+				FROM(
+					SELECT "chatContent"."content",to_char( "chatContent"."sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+					FROM staff_chat."chatContent"
+					LEFT JOIN
+					(
+						SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
+						FROM (
+							SELECT content, "sentTime", "UID" as "sentFrom","chatID"
+							FROM staff_chat."chatContent"
+							WHERE "chatID"= :chatID)as "display",
+							(
+								SELECT "chatID", "time", "UID"
+								FROM staff_chat."chatHistory"
+								Where "chatID"=:chatID
+							) as "chatHistory" 
+						Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
+						Group by "content","sentTime","sentFrom" 
+					) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
+					LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
+					Where "chatID"=:chatID
+					order by "chatContent"."sentTime" desc 
+					limit :limit ) as "tmpChatContent"
+				order by "tmpChatContent"."sentTime" asc
+			';
+			$limit=$_GET['limit'];
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->bindParam(':limit',$limit,PDO::PARAM_INT);
 			$sth->execute();
-			$row = $sth->fetchAll();
 
+			$row = $sth->fetchAll();
 			$body = array('chatID'=>$chatID);
 			$this->updateLastReadTime($body);
-
 			return $row;
 		}
+
 		function updateMessage($body){
 			$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
 					VALUES ( :Msg , :UID , NOW(), :chatID );';
@@ -765,12 +833,13 @@
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
 			$sth->execute();
-			
+
 			$ack = array(
 				'status'=>'success'
 			);
 			return $ack;
 		}
+
 		function updateLastReadTime($body){
 			$sql = 'UPDATE staff_chat."chatHistory" SET "time"= NOW() WHERE "chatHistory"."chatID"= :chatID AND "chatHistory"."UID"= :UID ;';
 			$sth = $this->conn->prepare($sql);
@@ -778,20 +847,20 @@
 			$chatID=$body['chatID'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->execute();
-			
+			$sth->execute();	
+
 			$ack = array(
 				'status'=>'success'
 			);
 			return $ack;
 		}
+
 		function createChatroom($body){
 			$body=json_decode($body['data'],true);
 			$sql = 'INSERT INTO staff_chat."chatroomInfo"( "chatName") VALUES (:chatName);';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatName',$body['title'],PDO::PARAM_STR);
-			$sth->execute();
-			
+			$sth->execute();			
 			$chatID=$this->conn->lastInsertId();
 			array_push(
 				$body['member'], array('UID'=>$_SESSION['id'])
@@ -802,13 +871,12 @@
 				$sth->bindParam(':UID',$value['UID'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->execute();
-			}
 
+			}
 			$ack = array(
 				'status'=>'success'
 			);
 			return $ack;
-
 		}
 		function updateChatroom($body){
 			$body=json_decode($body['data'],true);
@@ -818,20 +886,20 @@
 			$sth->bindParam(':chatName',$body['title'],PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
 			$sth->execute();
-
 			foreach ($body['member'] as $key => $value) {
 				$sql = 'INSERT INTO staff_chat."chatHistory"("chatID", "time", "UID") VALUES (:chatID, NOW(), :UID);';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':UID',$value['UID'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->execute();
-			}
 
+			}
 			$ack = array(
 				'status'=>'success'
 			);
 			return $ack;
 		}
+
 		function deleteChatroom($body){
 			$body=json_decode($body['data'],true);
 			$chatID=$body['chatID'];
@@ -853,6 +921,7 @@
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->execute();
+
 				$row = $sth->fetchAll();	
 			}else{
 				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id;';
@@ -860,9 +929,76 @@
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->execute();
+
 				$row = $sth->fetchAll();	
 			}
 			return $row;
+		}
+
+		function uploadFile($chatID,$directory,$uploadedFiles){
+			// handle single input with single file upload
+		    $uploadedFile = $uploadedFiles['inputFile'];
+		    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+		        $filename = $this->moveUploadedFile($directory, $uploadedFile);
+		        $UID = $_SESSION['id'];
+				$sql = 'INSERT INTO staff_chat.files("fileName", "UID", "fileNameClient") VALUES (:fileName, :UID, :fileNameClient);';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':fileName',$filename,PDO::PARAM_STR);
+				$sth->bindParam(':fileNameClient',$uploadedFile->getClientFilename(),PDO::PARAM_STR);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->execute();
+
+				$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
+						VALUES ( :Msg , :UID , NOW(), :chatID );';
+				$sth = $this->conn->prepare($sql);
+				$UID = $_SESSION['id'];
+				$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
+				$sth->execute();
+				
+			    $result = array(
+			    	'status' => 'success'
+			    );
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
+		}
+
+		private function moveUploadedFile($directory, UploadedFile $uploadedFile)
+		{
+		    $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+		    $basename = bin2hex(random_bytes(8)); // see http://php.net/manual/en/function.random-bytes.php
+		    $filename = sprintf('%s.%0.8s', $basename, $extension);
+		    $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+		    return $filename;
+		}
+		
+		function downloadFile($fileID){	
+			$sql = '
+				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"
+				FROM staff_chat.files
+				WHERE id = :fileID;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':fileID',$fileID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row)==1){	
+			    $result = array(
+			    	'status' => 'success',
+			    	'data' => $row[0]
+			    );
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
 		}
 	}
 ?>

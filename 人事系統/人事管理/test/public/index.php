@@ -44,6 +44,8 @@ $container['notFoundHandler'] = function ($container) {
 $container['ViewMiddleware'] = function($container) {
     return new ViewMiddleware($container->db);
 };
+$container['upload_directory'] = __DIR__ . '/../uploads';
+
 session_start();
 require_once __DIR__.'/../route/management.php';
 
@@ -285,6 +287,16 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+<<<<<<< HEAD
+=======
+	$app->get('/readlist', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getReadList($_GET);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
@@ -344,6 +356,33 @@ $app->group('/chat', function () use ($app) {
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
+	});
+	$app->post('/file/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/file/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->downloadFile($args['fileID']);
+		if(isset($result['data'])){
+	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+		    $response = $response
+		    	->withHeader('Content-Description', 'File Transfer')
+			   	->withHeader('Content-Type', 'application/octet-stream')
+			   	->withHeader('Content-Disposition', 'attachment;filename="'.$result['data']['fileNameClient'].'"')
+			   	->withHeader('Expires', '0')
+			   	->withHeader('Cache-Control', 'must-revalidate')
+			   	->withHeader('Pragma', 'public')
+			   	->withHeader('Content-Length', filesize($file));
+			readfile($file);
+		}else{
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		}
+		return $response;
 	});
 });
 

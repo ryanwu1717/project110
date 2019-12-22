@@ -42,6 +42,7 @@
   <div id="wrapper">
 
     <!-- Sidebar -->
+<<<<<<< HEAD
     <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
       <!-- Sidebar - Brand -->
@@ -83,6 +84,33 @@
             <h6 class="collapse-header">Custom Components:</h6>
             <a class="collapse-item" href="buttons.html">Buttons</a>
             <a class="collapse-item" href="cards.html">Cards</a>
+=======
+    <div class="pos-f-t">
+      <div class="navbar-collapse collapse show" id="navbarToggleExternalContent">
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+          <!-- Sidebar - Brand -->
+          <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?=@$url?>/">
+            <div class="sidebar-brand-text mx-3">麗文文化事業機構</div>
+          </a>
+
+          <!-- Divider -->
+          <hr class="sidebar-divider my-0">
+
+          <!-- Nav Item - Dashboard -->
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/">
+              <i class="fas fa-fw fa-tachometer-alt"></i>
+              <span>首頁</span></a>
+          </li>
+          <?php if(is_null(@$url)){ //user start?>
+          <!-- Divider -->
+          <hr class="sidebar-divider">
+
+          <!-- Heading -->
+          <div class="sidebar-heading">
+            功能
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
           </div>
         </div>
       </li> -->
