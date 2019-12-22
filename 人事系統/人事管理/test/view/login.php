@@ -100,40 +100,42 @@
 
   <!-- Custom scripts for all pages-->
   <script src="/js/sb-admin-2.min.js"></script>
-  <script type="text/javascript">
-    $(function(){
-      $('input').on('keyup',function(e){
-        if(e.keyCode===13)
-          $("button[name=loginButton]").click();
-      });
-      $("button[name=loginButton]").on('click', function(){
-   
-        var loginStaffId = $('[name=inputStaffId]').val();
-        var loginPassword = $('[name=inputPassword]').val();
-
-        $.ajax({
-          url:'<?=@$url?>/user/login',
-          type:'POST',
-          data:{data:JSON.stringify({
-              loginStaffId: loginStaffId,
-              loginPassword: loginPassword
-          })},
-          success:function(data){
-            if(data.status=='success'){
-              window.location.href='<?=@$url?>/'; 
-            }else{
-              $('#basicModal .modal-title').text('錯誤');
-              $('#basicModal .modal-body').text('帳號或密碼錯誤');
-              $('#basicModal').modal('show');
-            }
-          },
-          error:function(jqXHR, textStatus, errorThrown){
-            console.log("failed");
-          }
-        }); 
-      });   
-    });
-  </script>
 
 </body>
+
 </html>
+
+<script type="text/javascript">
+  $(function(){
+    $('input').on('keyup',function(e){
+      if(e.keyCode===13)
+        $("button[name=loginButton]").click();
+    });
+    $("button[name=loginButton]").on('click', function(){
+ 
+      var loginStaffId = $('[name=inputStaffId]').val();
+      var loginPassword = $('[name=inputPassword]').val();
+
+      $.ajax({
+        url:'<?=@$url?>/user/login',
+        type:'POST',
+        data:{data:JSON.stringify({
+            loginStaffId: loginStaffId,
+            loginPassword: loginPassword
+        })},
+        success:function(data){
+          if(data.status=='success'){
+            window.location.href='<?=@$url?>/'; 
+          }else{
+            $('#basicModal .modal-title').text('錯誤');
+            $('#basicModal .modal-body').text('帳號或密碼錯誤');
+            $('#basicModal').modal('show');
+          }
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+          console.log("failed");
+        }
+      }); 
+    });   
+  });
+</script>

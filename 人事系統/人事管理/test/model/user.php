@@ -91,7 +91,7 @@
 		}
 		function getDepartment()
 		{  	
-			$sql ='SELECT * from staff_information.department ORDER BY department_name desc;';	
+			$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
@@ -177,23 +177,20 @@
             else
               return $this->paddingLeft("0".$str,$strLenght);
         }
-        function checkStaffId($staff_id)
-        {        
-            $sql ='SELECT staff_id FROM staff.staff WHERE staff_id = :staff_id;';    
+        function staffId($staff_department,$staff_position)
+        {   
+            $dp = $staff_department.$staff_position.'%';         
+            $sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';    
             $statement = $this->conn->prepare($sql);
-            $statement->bindParam(':staff_id',$staff_id);
+            $statement->bindParam(':dp',$dp);
             $statement->execute();
-            $row = $statement->fetchAll();
-            if(count($row)!=0){
-            	$ack = array(
-            		"status"=>false
-            	);
-            }else{
-            	$ack = array(
-            		"status"=>true
-            	);
-            }
-            return $ack;
+            $row = $statement->fetchColumn(0);
+            $row += 1;
+            $row = (string)$row;
+            $newId = $this->paddingLeft($row,4);
+            $newId = $staff_department.$staff_position.$newId;
+            // echo $newId;    
+            return $newId;
         }
 
        	function checkString($strings, $standard){
@@ -206,7 +203,7 @@
        	}
 
        public function check($field,$input){
-       		if(empty($input)&&$field!='離職日期'){
+       		if(empty($input)){
        			return $field."不得為空";
        		}
        		$inputLen = strlen($input);
@@ -362,12 +359,6 @@
 					}
 					return "success";
 					break;
-				case '確認密碼':
-       				if($_POST['password'] != $input){
-						return $field."密碼不一致";
-					}
-					return "success";
-					break;
        			default:
        				return "success";
        				break;
@@ -382,7 +373,6 @@
 			$check['checkPosition'] = $this -> check('職位',$_POST['buttonPosition']);
 			$check['checkName'] = $this -> check('中文名字',$_POST['staffName']);
 			$check['checkPassword'] = $this -> check("密碼",$_POST['password']);
-			$check['checkPassword'] = $this -> check("確認密碼",$_POST['rePassword']);
 			$check['checkBirthday'] = $this -> check('生日',$_POST['staffBirthday']);
 			$check['checkGender'] = $this -> check('性別',$_POST['buttonGender']);
 			$check['checkMarriage'] = $this -> check('婚姻狀況',$_POST['buttonMarriage']);
@@ -465,8 +455,8 @@
 		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
 		   		$_POST=json_decode($_POST['data'],true);
 		   		//var_dump($_POST);
-		   		$staff_id = $_POST['staffId'];
-				$sth->bindParam(':staff_id',$_POST['staffId']);
+		   		$staff_id = $this->staffId($_POST['buttonDepartment'],$_POST['buttonPosition']);
+				$sth->bindParam(':staff_id',$staff_id);
 				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
 				$sth->bindParam(':staff_name',$_POST['staffName']);
@@ -487,11 +477,7 @@
 				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				if($_POST['leaveDate']==''){
-					$sth->bindValue(':seniority_leaveDate',null,PDO::PARAM_INT);
-				}else{
-					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
-				}
+				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
 
 				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
 				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
@@ -512,12 +498,12 @@
 				);
 			}catch(PDOException $e){
 				$ack = array(
-					'status' => 'failed'
+					'status' => 'failed', 
 				);
 			}
 			return $ack;
 		}
-		function modify($staff_id){
+		function modify(){
 			try{
 				$sql = 'UPDATE staff.staff
 							SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
@@ -534,8 +520,8 @@
 								 "contactPerson_more" = :contactPerson_more,
 								 education_time = :education_time, education_type = :education_type,
 								 education_school = :education_school, education_department = :education_department,
-								 education_status = :education_status, staff_password = :staff_password, staff_id = :staff_id
-							WHERE "staff_id" = :staff_id_org;';
+								 education_status = :education_status, staff_password = :staff_password
+							WHERE "staff_id" = :staff_id;';
 				$sth = $this->conn->prepare($sql);
 
 				//var_dump($_POST);
@@ -543,8 +529,7 @@
 		   		$_POST=json_decode($_POST['data'],true);
 		   		//var_dump($_POST);
 
-				$sth->bindParam(':staff_id',$_POST['staffId']);
-				$sth->bindParam(':staff_id_org',$staff_id);
+				$sth->bindParam(':staff_id',$_POST['staff_id']);
 				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
 				$sth->bindParam(':staff_name',$_POST['staffName']);
@@ -630,6 +615,7 @@
 			$statement->bindParam(':staff_id',$staff_id);
 			$statement->execute();
 			$row = $statement->fetchAll();
+			// echo $row.staff_department;
 			return $row;
 		}
 		function getProfile($staff_id){
@@ -638,7 +624,7 @@
 				$data = array();
 				foreach ($profile[0] as $key => $value) {
 					if($key=='staff_department') $data['部門']=$value;
-					else if($key=='staff_id') $data['員工編號']=$value;
+					else if($key=='staff_id') $data['職員編號']=$value;
 					else if($key=='staff_position') $data['職位']=$value;
 					else if($key=='staff_name') $data['中文名字']=$value;
 					else if($key=='staff_password') $data['密碼']=$value;
@@ -750,44 +736,12 @@
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
 			$row = $sth->fetchAll();
-			return $row;
-		}
-		function getReadList(){
-			$sql = 'SELECT "staff_name","staff_id"
-			FROM(SELECT content, "chatHistory"."UID", "chatHistory"."chatID",case when "time" > "sentTime" then \'true\' else \'false\' end as "checkread"
-					FROM staff_chat."chatContent" as "chatContent"
-					join staff_chat."chatHistory" as "chatHistory" on "chatContent"."chatID"="chatHistory"."chatID"
-					where content=:whichTalk and "chatHistory"."chatID"=:chatID)as "checkUnread"
-			left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
-			where "checkread"= :checkread and "staff_id"!=:UID
-			group by"staff_name","staff_id";';
-			$sth = $this->conn->prepare($sql);
-			$UID =$_SESSION['id'];
-			$sth->bindParam(':whichTalk',$whichTalk,PDO::PARAM_STR);
-			$sth->bindParam(':checkread',$checkread,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->execute();
-			$row = $sth->fetchAll();
 
 			return $row;
 		}
 		function getChatContent($chatID){
-			$sql = 'SELECT "content","sentTime","sentFrom","diff","readCount",staff_name
-					FROM(
-						SELECT "content","sentTime","sentFrom","diff",COUNT("UID") as "readCount"
-						FROM (
-							SELECT content, to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime", "UID" as "sentFrom",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)as "diff","chatID"
-							FROM staff_chat."chatContent"
-							WHERE "chatID"= :chatID)as "display"
-						join (
-							SELECT "chatID", "time", "UID"
-							FROM staff_chat."chatHistory"
-							where "chatID"=:chatID) as "chatHistory" on "display"."chatID"="chatHistory"."chatID"
-						where "UID"!=:UID
-						Group by "content","sentTime","sentFrom","diff"
-						order by "sentTime" asc) as "displayContent"
-					left join staff."staff" on staff.staff_id="displayContent"."sentFrom"';
+			$sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
+					as "diff",staff_name FROM staff_chat."chatContent" left join "staff"."staff" on staff.staff_id="chatContent"."UID" WHERE "chatID"= :chatID order by "sentTime" asc;';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);

@@ -3,36 +3,13 @@
 ?>
           <!-- Page Heading -->
 <style >
-
-@media (max-width:700px) {
-
-  /* your conditional / responsive CSS inside this condition */
-
-  
-  .inbox_people {
-    background: #f8f8f8 none repeat scroll 0 0;
-    float: left;
-    overflow: hidden;
-    width: 40%; border-right:1px solid #c4c4c4;
-  }
-  .chatContent,.chat_date,.chat_img,.chat_ib button{
-    display:none;
-  }
-
-  .mesgs {
-    float: left;
-    padding: 30px 15px 0 25px;
-    width: 60%;
-  }
-}
-
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
   background: #f8f8f8 none repeat scroll 0 0;
   float: left;
   overflow: hidden;
-  width: 30%; border-right:1px solid #c4c4c4;
+  width: 40%; border-right:1px solid #c4c4c4;
 }
 .inbox_msg {
   border: 1px solid #c4c4c4;
@@ -87,10 +64,9 @@ img{ max-width:100%;}
 .chat_list {
   border-bottom: 1px solid #c4c4c4;
   margin: 0;
-  padding: 19px 16px 10px;
+  padding: 18px 16px 10px;
 }
-.inbox_chat { 
-  height: 60vh; overflow-y: scroll;}
+.inbox_chat { height: 560px; overflow-y: scroll;}
 
 .active_chat{ background:#ebebeb;}
 
@@ -123,7 +99,7 @@ img{ max-width:100%;}
 .mesgs {
   float: left;
   padding: 30px 15px 0 25px;
-  width: 70%;
+  width: 60%;
 }
 
  .sent_msg p {
@@ -164,7 +140,7 @@ img{ max-width:100%;}
 }
 .messaging { padding: 0 0 50px 0;}
 .msg_history {
-  height: 50vh;
+  height: 516px;
   overflow-y: auto;
 }
 .circleBase {
@@ -242,14 +218,13 @@ img{ max-width:100%;}
         </a>
       <div class="type_msg">
         <div class="input_msg_write">
-          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
+          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，SHIFT+ENTER可以換行" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
   </div>
-</div>
 </div>
 
 <!-- Basic Modal-->
@@ -269,36 +244,10 @@ img{ max-width:100%;}
     </div>
   </div>
 </div>
-<div class="modal fade" id="ReadOrNot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">已讀清單</h5>
-          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
-        </div>
-          <div class="modal-body" >
-            <h5>看過LA~~~</h5>
-            <div name="readList">
-            </div>
-            <hr>
-            <h5>等我一下我馬上看</h5>
-            <div name="unreadList">
-            </div>
-          </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-dismiss="modal">確定</button>
-        </div>
-      </div>
-    </div>
-</div>
 <?php
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
-  if (window.innerWidth <= 700) $('.navbar-collapse').addClass('collapse');
-  $('.navbar-nav.ml-auto').append('<div class="pos-f-t"><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-600>$(this).scrollTop()){
@@ -367,7 +316,7 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
@@ -396,10 +345,10 @@ function searchChat(){
         $('[name=chatBox]').html("");
         $(response).each(function(){
           if(this.diff!='me'){
-            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg" >                  <p>'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'<h6 onclick="showModal(this)" data-content="'+this.content+'">'+this.Read+'</h6>'+'</span></div>              </div>            </div>')
+            $('[name=chatBox]').append('<div class="incoming_msg">              <div class="">'+this.UID+','+this.staff_name+'</div>              <div class="received_msg">                <div class="received_withd_msg">                  <p class="text-break">'+this.content+'</p>                  <span class="time_date"> '+this.sentTime+'</span></div>              </div>            </div>')
           }
           else{
-            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">              <p>  '+this.content+'  </p>             <span class="time_date" > '+this.sentTime+'<h6 onclick="showModal(this)" data-content="'+this.content+'">'+this.Read+'</h6>'+'</span> </div>            </div>')
+            $('[name=chatBox]').append('<div class="outgoing_msg">              <div class="sent_msg">                <p class="text-break">'+this.content+'</p>                <span class="time_date"> '+this.sentTime+'</span> </div>            </div>')
           }
         });
         if(!scrollable)
@@ -417,58 +366,16 @@ $('.msg_send_btn').on('click',function(){
 });
 $("#textinput").keypress(function(e){
   var code=e.which;
-  if((code&&e.shiftKey) &&code==13){
+  if(!(code&&e.shiftKey) &&code==13){
     e.preventDefault();
-    $('.msg_send_btn').click();
   }
 });
 $("#textinput").keyup(function(e){
   var code=e.which;
-  if((code&&e.shiftKey) &&code==13){
+  if(!(code&&e.shiftKey) &&code==13){
+    $('.msg_send_btn').click();
   }
 });
-
-function showModal(p){
-  $('#ReadOrNot').modal('show');
-  whichTalk=$(p).attr("data-content");
-  getReadList();
-  getUnreadList();
-}
-var whichTalk='';
-
-function getReadList(){
-  $.ajax({
-    url:'/chat/readlist',
-    type:'get',
-    data:{whichTalk:whichTalk,
-          checkread:'true',
-          chatID:chatID},
-    dataType:'json',
-    success:function(response){
-      $('[name=readList]').html("");
-      $(response).each(function(){        
-        $('[name=readList]').append('<p>'+this.staff_name+'</p>')
-      });
-    }
-  })
-}
-
-function getUnreadList(){
-  $.ajax({
-    url:'/chat/readlist',
-    type:'get',
-    data:{whichTalk:whichTalk,
-          checkread:'false',
-          chatID:chatID},
-    dataType:'json',
-    success:function(response){
-      $('[name=unreadList]').html("");
-      $(response).each(function(){        
-        $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
-      });
-    }
-  })
-}
 function sendMsg(){
   Msg=$("#textinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
@@ -497,7 +404,6 @@ $('#basicModal').on('show.bs.modal',function(e){
     Chatroom(type);
   }
 });
-
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
@@ -556,9 +462,11 @@ function Chatroom(type){
     $('#basicModal .modal-body').append(
       '<div class="sticky-top">'+
         '<div class="input-group mb-3">'+
-          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-          '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
+          '<div class="input-group-prepend">'+
+            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+            '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+            '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
+          '</div>'+
         '</div>'+
       '</div>'
     ); 
@@ -585,14 +493,16 @@ function Chatroom(type){
         }
       });
     });
-  }else if(type=='update'){ 
+  }else if(type=='update'){
     _chatID = '/'+chatID;
     $('#basicModal .modal-title').text('修改議題');
     $('#basicModal .modal-body').html('');
     $('#basicModal .modal-body').append(
       '<div class="sticky-top">'+
         '<div class="input-group mb-3">'+
-          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+          '<div class="input-group-prepend">'+
+            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+          '</div>'+
           '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
           '<button type="button" class="btn btn-dark buttonChatroomUpdate">修改</button>'+
         '</div>'+
@@ -636,7 +546,7 @@ function Chatroom(type){
   $('#basicModal .modal-body').append(
     '<div class="card">'+
       '<div class="card-body">'+
-        '<h5 class="card-title">'+ 
+        '<h5 class="card-title">'+
           '<div class="srch_bar">'+
             '<div class="stylish-input-group">'+
               '<input type="text" class="search-bar searchInput" placeholder="搜尋" >'+
