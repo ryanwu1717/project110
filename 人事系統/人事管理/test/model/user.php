@@ -790,13 +790,11 @@ use Slim\Http\UploadedFile;
 			// for ($i = 0, $timeout = 180; $i < $timeout; $i++ ) {
 
 				$sql = '
-
-					SELECT *
-					FROM(
-						SELECT "chatContent"."content",to_char( "chatContent"."sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+					SELECT "content",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					FROM (
+						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
 						FROM staff_chat."chatContent"
-						LEFT JOIN
-						(
+						LEFT JOIN (
 							SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
 							FROM (
 									SELECT content, "sentTime", "UID" as "sentFrom","chatID"
@@ -813,7 +811,8 @@ use Slim\Http\UploadedFile;
 						LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
 						Where "chatID"=:chatID
 						order by "chatContent"."sentTime" desc 
-						limit :limit ) as "tmpChatContent"
+						limit :limit 
+					) as "tmpChatContent"
 					order by "tmpChatContent"."sentTime" asc
 				';
 	            // $sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
@@ -846,7 +845,7 @@ use Slim\Http\UploadedFile;
 			// array_push($row, array('diff'=>$result));
 
 			$sth = $this->conn->prepare($sql);
-			$UID =$_SESSION['id'];
+			// $UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
