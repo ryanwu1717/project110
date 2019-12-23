@@ -59,7 +59,7 @@
 				$sth->execute();
 				$row = $sth->fetchAll();
 				$ack = array(
-					'status' => 'success', 
+					'status' => 'success'
 				);
 			}catch(PDOException $e){
 				$ack = array(
@@ -67,6 +67,114 @@
 					'message'=> $e
 				);
 			}	
+			return $ack;
+		} 
+	}
+
+	Class Work{
+		var $conn;
+		var $result; 
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function check($staff_name,$todaydate){
+			try{	 	
+				$sql ="SELECT checkin
+						FROM staff.checkin
+						WHERE staff_name= :staff AND checkindate = :checkinDate;";
+				$sth = $this->conn->prepare($sql);
+			   $sth->bindParam(':staff',$staff_name);
+			   $sth->bindParam(':checkinDate',$todaydate);
+				$sth->execute();
+				$row = $sth->fetchColumn(0);
+				$ack = array(
+					'status' => 'success', 
+					'checkin'=> $row
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'checkin'=> false
+				);
+			}	
+			return $ack;
+		} 
+		function checkAll($staff_name,$todaydate){
+			try{	 	
+				$sql ="SELECT checkout
+						FROM staff.checkin
+						WHERE staff_name= :staff AND checkindate = :checkinDate AND checkin = true;";
+				$sth = $this->conn->prepare($sql);
+			   $sth->bindParam(':staff',$staff_name);
+			   $sth->bindParam(':checkinDate',$todaydate);
+				$sth->execute();
+				$row = $sth->fetchColumn(0);
+				$ack = array(
+					'status' => 'success', 
+					'checkin'=> $row
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'checkin'=> false
+				);
+			}	
+			return $ack;
+		} 
+
+		function checkinToday(){
+			$_POST=json_decode($_POST['data'],true);	
+			switch($_POST['type']){
+				case 'start':
+					try{	 	
+						$sql ="INSERT INTO staff.checkin(staff_name, checkintime, checkin, checkout, checkindate,checkinlocation )
+								VALUES (:staff, :checkinTime, true , false, :checkinDate,:checkinlocation);";
+						$sth = $this->conn->prepare($sql);
+					   $sth->bindParam(':staff',$_POST['staff_id']);
+					   $sth->bindParam(':checkinTime',$_POST['checkinTime']);
+					   $sth->bindParam(':checkinDate',$_POST['checkinDate']);
+					   $sth->bindParam(':checkinlocation',$_POST['location']);
+						$sth->execute();
+						$row = $sth->fetchAll();
+						$ack = array(
+							'status' => 'success', 
+						);
+					}catch(PDOException $e){
+						$ack = array(
+							'status' => 'failed', 
+							'checkout' => false,
+							'message'=> $e
+						);
+					}	
+				case 'finish':
+					try{	 	
+						$sql ="UPDATE staff.checkin
+								SET checkouttime=:checkoutTime, checkout = true, checkoutlocation=:checkoutlocation
+								WHERE staff_name= :staff AND checkindate = :checkindate;";
+						$sth = $this->conn->prepare($sql);
+					   $sth->bindParam(':staff',$_POST['staff_id']);
+					   $sth->bindParam(':checkoutTime',$_POST['checkinTime']);
+					   $sth->bindParam(':checkindate',$_POST['checkinDate']);
+					   $sth->bindParam(':checkoutlocation',$_POST['location']);
+						$sth->execute();
+						$row = $sth->fetchAll();
+						$ack = array(
+							'status' => 'success', 
+						);
+					}catch(PDOException $e){
+						$ack = array(
+							'status' => 'failed', 
+							'checkout' => false,
+							'message'=> $e
+						);
+					}
+				default :
+					$ack = array(
+						'status' => 'failed', 
+						'checkout' => "default",
+					);
+			}
+
 			return $ack;
 		} 
 	}
@@ -253,16 +361,35 @@
 			switch ($_POST['type']){
 				case '部門':
 					try{
-						$addsql = 'INSERT INTO staff_information.department(department_name)
-								VALUES (,:name);';
-						$statement = $this->conn->prepare($addsql);
-						$statement->bindParam(':name',$_POST['item']);
-						$statement->execute();
-						$ack = array(
-							'status' => 'success', 
-							'message' => '新增成功'
-						);		
-						return $ack;
+						$newId = 'A';
+						for($i=0;$i<=26;$i++){
+							++$newId . PHP_EOL;
+							$sql ='SELECT EXISTS(SELECT 1 FROM staff_information.department WHERE department_id=:id)';
+							$sth = $this->conn->prepare($sql);
+						   $sth->bindParam(':id',$newId);
+							$sth->execute();
+							$row = $sth->fetchColumn(0);
+							if($i==26){
+								$ack = array(
+									'status' => 'failed', 
+									'message' => '多餘10筆資料'
+								);
+								return $ack;
+							}
+							if(!$row){
+								$addsql = 'INSERT INTO staff_information.department(department_id,department_name)
+										VALUES (:id,:name);';
+								$statement = $this->conn->prepare($addsql);
+								$statement->bindParam(':id',$newId);
+								$statement->bindParam(':name',$_POST['item']);
+								$statement->execute();
+								$ack = array(
+									'status' => 'success', 
+									'message' => '新增成功'
+								);		
+								return $ack;
+							}
+						}
 					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 
@@ -273,16 +400,33 @@
 
 				case '職位':
 					try{
-						$addsql = 'INSERT INTO staff_information.position(position_name)
-								VALUES (,:name);';
-						$statement = $this->conn->prepare($addsql);
-						$statement->bindParam(':name',$_POST['item']);
-						$statement->execute();
-						$ack = array(
-							'status' => 'success', 
-							'message' => '新增成功'
-						);		
-						return $ack;
+						for($i=1;$i<=10;$i++){
+							$sql ='SELECT EXISTS(SELECT 1 FROM staff_information.position WHERE position_id=:id)';
+							$sth = $this->conn->prepare($sql);
+						   $sth->bindParam(':id',$i);
+							$sth->execute();
+							$row = $sth->fetchColumn(0);
+							if($i==10){
+								$ack = array(
+									'status' => 'failed', 
+									'message' => '多餘10筆資料'
+								);
+								return $ack;
+							}
+							if(!$row){
+								$addsql = 'INSERT INTO staff_information.position(position_id,position_name)
+										VALUES (:id,:name);';
+								$statement = $this->conn->prepare($addsql);
+								$statement->bindParam(':id',$i);
+								$statement->bindParam(':name',$_POST['item']);
+								$statement->execute();
+								$ack = array(
+									'status' => 'success', 
+									'message' => '新增成功'
+								);		
+								return $ack;
+							}
+						}
 					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 

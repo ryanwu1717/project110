@@ -205,15 +205,6 @@ $app->group('/staff', function () use ($app) {
 	    return $response;  
 	});
 
-	$app->get('/checkStaffId/{staff_id}', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff($this->db);
-	    $result = $staff->checkStaffId($args['staff_id']);
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-		//echo $response['num'];
-	    return $response;  
-	});
-
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
 	    $result = $staff->checkRegister();
@@ -232,9 +223,9 @@ $app->group('/staff', function () use ($app) {
 
 	});
 
-	$app->post('/modify/{staff_id}', function (Request $request, Response $response, array $args) {
+	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $ack = $staff->modify($args['staff_id']);  
+	    $ack = $staff->modify();  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 	    return $response;   
@@ -256,7 +247,7 @@ $app->group('/table', function () use ($app) {
 	    $staff = new Table($this->db);
 	    $result = $staff->allInfo($args['staff_id']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 
 	    
 	    return $response;
@@ -268,7 +259,7 @@ $app->group('/table', function () use ($app) {
 	    $staff = new Table($this->db);
 	    $result = $staff->getProfile($args['staff_id']);  
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 
 	    return $response; 
 	});
@@ -296,6 +287,8 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+<<<<<<< HEAD
+=======
 	$app->get('/readlist', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getReadList($_GET);
@@ -303,6 +296,7 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+>>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
@@ -426,7 +420,7 @@ $app->group('/chat', function () use ($app) {
 		return $response;
 	});
 });
-	    
+
 $app->run();
 
 ?>
