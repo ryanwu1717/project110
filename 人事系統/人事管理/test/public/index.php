@@ -83,6 +83,10 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/index.php', $viewParam);
 		});
+		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');	
+			return $this->view->render($response, '/checkin.php', $viewParam);
+		});
 		// $app->get('/register', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
 		// 	return $this->view->render($response, '/register.php', $viewParam);
@@ -287,8 +291,6 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-<<<<<<< HEAD
-=======
 	$app->get('/readlist', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getReadList($_GET);
@@ -296,7 +298,6 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
->>>>>>> 6f5147afa03df533b41cc33166fea33dfc053c5a
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
@@ -419,6 +420,34 @@ $app->group('/chat', function () use ($app) {
 		}
 		return $response;
 	});
+});
+
+$app->group('/work', function () use ($app) {
+	$app->get('/check/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
+	    $staff = new Work($this->db);
+	    $result = $staff->check($args['staff_name'],$args['todayDate']);   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+	$app->get('/checkAll/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
+	    $staff = new Work($this->db);
+	    $result = $staff->checkALL($args['staff_name'],$args['todayDate']);   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+	$app->post('/checkin', function (Request $request, Response $response, array $args) {
+	    $staff = new Work($this->db);
+	    $result = $staff->checkinToday();   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+	
 });
 
 $app->run();

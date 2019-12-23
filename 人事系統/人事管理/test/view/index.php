@@ -3,6 +3,7 @@
 ?>
           <!-- Page Heading -->
 <style >
+
 @media (max-width:550px) {
 
   /* your conditional / responsive CSS inside this condition */
@@ -45,6 +46,7 @@ img{ max-width:100%;}
   overflow: hidden;
   width: 29%; border-right:1px solid #c4c4c4;
   margin-left: 1px;
+
 }
 .inbox_msg {
   margin:auto;
@@ -100,9 +102,10 @@ img{ max-width:100%;}
 .chat_list {
   border-bottom: 1px solid #c4c4c4;
   margin: 0;
-  padding: 18px 16px 10px;
+  padding: 19px 16px 10px;
 }
-.inbox_chat { height: 560px; overflow-y: scroll;}
+.inbox_chat { 
+  height: 60vh; overflow-y: scroll;}
 
 .active_chat{ background:#ebebeb;}
 
@@ -138,7 +141,7 @@ img{ max-width:100%;}
 .mesgs {
   float: left;
   padding: 30px 15px 0 25px;
-  width: 60%;
+  width: 70%;
 }
 
 .sent_msg p.content {
@@ -192,7 +195,7 @@ img{ max-width:100%;}
 }
 .messaging { padding: 0 0 50px 0;}
 .msg_history {
-  height: 516px;
+  height: 50vh;
   overflow-y: auto;
 }
 .circleBase {
@@ -238,7 +241,15 @@ img{ max-width:100%;}
       <div class="headind_srch">
         <div class="recent_heading">
           <h4>議題列表</h4>
-        </div>
+        </div><!-- 
+        <div class="srch_bar">
+          <div class="stylish-input-group">
+            <input type="text" class="search-bar"  placeholder="Search" >
+            <span class="input-group-addon">
+            <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
+            </span> 
+          </div>
+        </div> -->
         <div class="tool_bar btn-group">
           <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal" data-type="create">+</button>
         </div>
@@ -262,7 +273,7 @@ img{ max-width:100%;}
         </a>
       <div class="type_msg">
         <div class="input_msg_write">
-          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，SHIFT+ENTER可以換行" id="textinput"></textarea>
+          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
           <input style="display:none;" type="file" name="inputFile">
           <input style="display:none;" type="file" name="inputPicture" accept="image/*" >
@@ -273,6 +284,7 @@ img{ max-width:100%;}
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <!-- Basic Modal-->
@@ -296,7 +308,7 @@ img{ max-width:100%;}
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
-if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
+  if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-500>$(this).scrollTop()){
@@ -325,7 +337,6 @@ function schedule(){
   queue['chatroom'] = setTimeout(searchChatroom,1000);
   queue['chat'] = setTimeout(searchChat,1000);
 }
-
 schedule();
 
 function updateLastReadTime(){
@@ -344,6 +355,11 @@ function searchChatroom(){
     data:{},
     dataType:'json',
     success:function(response){
+      // console.log($($('.chat_list')[0]).attr('data-name'));
+      // console.log(response[0].chatID);
+      // if(parseInt($($('.chat_list')[0]).attr('data-name'))==parseInt(response[0].chatID)){
+      //   return;
+      // }
       $('[name=inbox_chat]').html("");
       $(response).each(function(){
         var chatName ='';
@@ -388,12 +404,10 @@ function searchChatroom(){
       queue['chatroom'] = setTimeout(searchChatroom,1000);
     }
   });
+
 }
-
 var chatID=-1;
-
 var chatName = '';
-
 function getTarget(_chatID,_chatName){
   // console.log($(div).attr("data-name"));
   // chatID=$(div).attr("data-name");
@@ -407,6 +421,14 @@ function getTarget(_chatID,_chatName){
   updateLastReadTime();
   schedule();
 }
+
+function expendLimit(){
+  last['limit']+=5;
+}
+
+function resetLimit(){
+  last['limit']=20;
+}
 var last = new Object();
 last['limit'] = 20;
 last['count'] = 0;
@@ -416,11 +438,11 @@ function searchChat(){
       url:'/chat/content/'+chatID,
       data:{data:JSON.stringify(last)},
       type:'get',
-      data:{limit:limit},
       dataType:'json',
       success:function(response){
+        $('[name=chatBox]').html("");
         $(response).each(function(){
-          last['count'] = last['count']+1;
+          // last['count'] = last['count']+1;
           if(this.diff!='me'){
             $('[name=chatBox]').append(
               '<div class="incoming_msg">'+
@@ -458,27 +480,23 @@ function searchChat(){
     });
   }
 }
-
 var Msg ="";
-
 $('.msg_send_btn').on('click',function(){
   if(!$.trim($("#textarea").val()) && $("#textinput").val()!="" && chatID!=-1){
     sendMsg();
     $("#textinput").val("");
   }
 });
-
 $("#textinput").keypress(function(e){
   var code=e.which;
-  if(!(code&&e.shiftKey) &&code==13){
+  if((code&&e.shiftKey) &&code==13){
     e.preventDefault();
+    $('.msg_send_btn').click();
   }
 });
-
 $("#textinput").keyup(function(e){
   var code=e.which;
-  if(!(code&&e.shiftKey) &&code==13){
-    $('.msg_send_btn').click();
+  if((code&&e.shiftKey) &&code==13){
   }
 });
 function uploadFile(button){
@@ -534,8 +552,8 @@ function sendMsg(){
         // getTarget(chatID,chatName);
     }
   })
-}
 
+}
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
   var type = $(e.relatedTarget).data('type');
@@ -578,9 +596,7 @@ function getReadlist(relatedData){
     '<h5>未讀</h5>'+
     '<div name="unreadList"></div>'
   );
-
   var data = new Object();
-
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
   data['content'] = decodeURIComponent(relatedData['content']);
@@ -602,7 +618,6 @@ function getReadlist(relatedData){
     }
   });
 }
-
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
@@ -634,7 +649,6 @@ function getMember(){
     }
   });
 }
-
 function Chatroom(type){
   var _chatID = '';
   if(type=='delete'){
@@ -662,11 +676,9 @@ function Chatroom(type){
     $('#basicModal .modal-body').append(
       '<div class="sticky-top">'+
         '<div class="input-group mb-3">'+
-          '<div class="input-group-prepend">'+
-            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-            '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
-            '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
-          '</div>'+
+          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
+          '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+          '<button type="button" class="btn btn-dark buttonChatroomCreate">新增</button>'+
         '</div>'+
       '</div>'
     ); 
@@ -693,16 +705,14 @@ function Chatroom(type){
         }
       });
     });
-  }else if(type=='update'){
+  }else if(type=='update'){ 
     _chatID = '/'+chatID;
     $('#basicModal .modal-title').text('修改議題');
     $('#basicModal .modal-body').html('');
     $('#basicModal .modal-body').append(
       '<div class="sticky-top">'+
         '<div class="input-group mb-3">'+
-          '<div class="input-group-prepend">'+
-            '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
-          '</div>'+
+          '<span class="input-group-text" id="inputGroup-sizing-default">議題名稱</span>'+
           '<input type="text" class="form-control" name="inputChatroomTitle" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
           '<button type="button" class="btn btn-dark buttonChatroomUpdate">修改</button>'+
         '</div>'+
@@ -746,7 +756,7 @@ function Chatroom(type){
   $('#basicModal .modal-body').append(
     '<div class="card">'+
       '<div class="card-body">'+
-        '<h5 class="card-title">'+
+        '<h5 class="card-title">'+ 
           '<div class="srch_bar">'+
             '<div class="stylish-input-group">'+
               '<input type="text" class="search-bar searchInput" placeholder="搜尋" >'+

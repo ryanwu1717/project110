@@ -135,33 +135,5 @@ $app->group('/management', function () use ($app) {
 			return $response;
 	 	});
 	});
-
-	$app->group('/work', function () use ($app) {
-		$app->get('/check/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
-		    $staff = new Work($this->db);
-		    $result = $staff->check($args['staff_name'],$args['todayDate']);   
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		    
-		});
-		$app->get('/checkAll/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
-		    $staff = new Work($this->db);
-		    $result = $staff->checkALL($args['staff_name'],$args['todayDate']);   
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		    
-		});
-		$app->post('/checkin', function (Request $request, Response $response, array $args) {
-		    $staff = new Work($this->db);
-		    $result = $staff->checkinToday();   
-		    $response = $response->withHeader('Content-type', 'application/json' );
-			$response = $response->withJson($result);
-		    return $response;
-		    
-		});
-		
-	});
 });
 ?>
