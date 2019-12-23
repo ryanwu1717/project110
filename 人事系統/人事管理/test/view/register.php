@@ -101,7 +101,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">公司聯絡電話</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="ex.077172930">
+                        <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="ex.077172930 or 077172930#9">
                       </div>
                     </div>
                     <div class="form-group row">
@@ -231,7 +231,7 @@
                       <div class="form-group row">
                         <label class="col-form-label col-md-4">就學期間</label>
                         <div class="col-md-8">
-                          <input required type="number" class="form-control" name="educationTime" placeholder="ex.90-106">
+                          <input required type="text" class="form-control" name="educationTime" placeholder="ex.90-106">
                         </div>
                       </div>
                       <div class="form-group row">

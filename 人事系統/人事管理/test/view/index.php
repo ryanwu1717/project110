@@ -276,8 +276,10 @@ img{ max-width:100%;}
           <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
           <input style="display:none;" type="file" name="inputFile">
+          <input style="display:none;" type="file" name="inputPicture" accept="image/*" >
+          <button class="msg_attach_btn" type="button" data-toggle="modal" data-target="#basicModal" data-type="attach"><i class="fa fa-plus" aria-hidden="true"></i></button>
+           <!-- name="buttonAttchFile" -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
-          <button class="msg_attach_btn" type="button" name="buttonAttchFile"><i class="fa fa-plus" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -307,7 +309,6 @@ img{ max-width:100%;}
 ?>
 <script type='text/javascript'>
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
-  $('.navbar-nav.ml-auto').append('<div class="pos-f-t"><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-500>$(this).scrollTop()){
@@ -315,29 +316,25 @@ var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dis
       scrollable = true;
     }else{
       $(".scroll-to-down").fadeOut()
+      scrollable = false;
     }
   });
   $('.scroll-to-down').unbind().on('click',function(){
       scrollable = false;
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   });
-var queue = null;
+var queue = [];
+queue['chatroom'] = null;
 var scrollable = false;
 function schedule(){
-  searchChatroom();
-  searchChat();
-  queue = setTimeout(schedule,1000);
-  // var now = new Date();
-  // LastReadTime = now.getUTCFullYear().toString() + "/" +
-  //       (now.getUTCMonth() + 1).toString().padStart(2, '0') +
-  //       "/" + now.getUTCDate().toString().padStart(2, '0') + " " + now.getUTCHours().toString().padStart(2, '0') +
-  //       ":" + now.getUTCMinutes().toString().padStart(2, '0') + ":" + now.getUTCSeconds().toString().padStart(2, '0');
-  // console.log(LastReadTime);
+  // searchChatroom();
+  // searchChat();
+  clearTimeout(queue['chatroom']);
+  clearTimeout(queue['chat']);
+  queue['chatroom'] = setTimeout(searchChatroom,1000);
+  queue['chat'] = setTimeout(searchChat,1000);
 }
 schedule();
-// setInterval(function(){
-//   searchChatroom();
-//   searchChat();},5000);
 
 function updateLastReadTime(){
   $.ajax({
@@ -376,9 +373,33 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append(
+          '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
+            '<div class="chat_people">'+
+              '<div class="chat_img">'+
+                '<div class="circleBase type2"></div>'+
+              '</div>'+
+              '<div class="chat_ib">'+
+                '<h5>'+chatName+
+                  '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
+                '</h5>'+
+                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete">'+
+                  '<span aria-hidden="true">&times;</span>'+
+                '</button>'+
+                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member">'+
+                  '<span aria-hidden="true">&equiv;</span>'+
+                '</button>'+
+                '<p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>'+
+                haveUnread +
+              '</div>'+
+            '</div>'+
+          '</div>'
+        );
       });
-    } 
+    },
+    complete:function(){
+      queue['chatroom'] = setTimeout(searchChatroom,1000);
+    }
   });
 
 }
@@ -387,23 +408,28 @@ var chatName = '';
 function getTarget(_chatID,_chatName){
   // console.log($(div).attr("data-name"));
   // chatID=$(div).attr("data-name");
+  scrollable = false;
   chatID = _chatID;
-  chatName = _chatName;
+  last['count'] = 0;
+  $('[name=chatBox]').html("");
+  chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
   updateLastReadTime();
-  clearTimeout(queue);
   schedule();
 }
-var LastReadTime = null;
+var last = new Object();
+last['limit'] = 20;
+last['count'] = 0;
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
-    $.ajax({
+    queue['ajaxChat']=$.ajax({
       url:'/chat/content/'+chatID,
+      data:{data:JSON.stringify(last)},
       type:'get',
       dataType:'json',
       success:function(response){
-        $('[name=chatBox]').html("");
         $(response).each(function(){
+          last['count'] = last['count']+1;
           if(this.diff!='me'){
             $('[name=chatBox]').append(
               '<div class="incoming_msg">'+
@@ -434,8 +460,11 @@ function searchChat(){
         });
         if(!scrollable)
           $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
+      },
+      complete:function(){
+        queue['chat'] = setTimeout(searchChat,1000);
       }
-    })
+    });
   }
 }
 var Msg ="";
@@ -457,15 +486,36 @@ $("#textinput").keyup(function(e){
   if((code&&e.shiftKey) &&code==13){
   }
 });
-$('[name=buttonAttchFile]').on('click',function(){
+function uploadFile(button){
+  $('#basicModal').modal('hide');
   $('[name=inputFile]').click();
-});
+}
+function uploadPicture(button){
+  $('#basicModal').modal('hide');
+  $('[name=inputPicture]').click();
+}
 $('[name=inputFile]').on('change',function(){
   var file_data = $(this).prop('files')[0];
   var form_data = new FormData();
   form_data.append('inputFile', file_data);
   $.ajax({
     url: '/chat/file/'+chatID,
+    cache: false,
+    contentType: false,
+    processData: false,
+    data: form_data,     //data只能指定單一物件                 
+    type: 'post',
+    success: function(data){
+      
+    }
+  });
+});
+$('[name=inputPicture]').on('change',function(){
+  var file_data = $(this).prop('files')[0];
+  var form_data = new FormData();
+  form_data.append('inputFile', file_data);
+  $.ajax({
+    url: '/chat/picture/'+chatID,
     cache: false,
     contentType: false,
     processData: false,
@@ -486,7 +536,7 @@ function sendMsg(){
             chatID:chatID,_METHOD:'PATCH'},
       dataType:'json',
       success:function(response){
-        getTarget(chatID,chatName);
+        // getTarget(chatID,chatName);
     }
   })
 
@@ -504,9 +554,26 @@ $('#basicModal').on('show.bs.modal',function(e){
     Chatroom(type);
   }else if(type=='readlist'){
     getReadlist($(e.relatedTarget).data());
+  }else if(type=='attach'){
+    attachType();
   }
 });
 
+function attachType(){
+  $('#basicModal .modal-title').text('檔案類型'); 
+  $('#basicModal .modal-body').html(
+    '<div class="container-fluid">'+
+      '<div class="row">'+
+        '<div class="col-6">'+
+          '<button type="button" class="btn btn-secondary float-right" onclick="uploadPicture(this)">分享圖片</button>'+
+        '</div>'+
+        '<div class="col-6">'+
+          '<button type="button" class="btn btn-secondary" onclick="uploadFile(this)">上傳檔案</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'
+  );
+}
 function getReadlist(relatedData){
   $('#basicModal .modal-title').text('已讀清單');
   $('#basicModal .modal-body').html(
@@ -693,10 +760,10 @@ function Chatroom(type){
       '</div>'+
     '</div>'
   );
-  var searchQueue = null;
+  queue['search'] = null;
   $('.searchInput').unbind().on('keyup',function(){
-    clearTimeout(searchQueue);
-    searchQueue = setTimeout(function(){
+    clearTimeout(queue['search']);
+    queue['search'] = setTimeout(function(){
       $('.listItem').each(function(){
         if($(this).find('.listName').val().indexOf($('.searchInput').val())>-1){
           $(this).show();

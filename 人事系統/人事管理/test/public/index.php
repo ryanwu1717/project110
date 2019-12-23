@@ -344,7 +344,7 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->get('/content/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->getChatContent($args['chatID']);
+		$result = $chat->getChatContent($args['chatID'],$_GET);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -365,7 +365,7 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->post('/file/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles());
+		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles(),false);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -384,6 +384,41 @@ $app->group('/chat', function () use ($app) {
 			   	->withHeader('Pragma', 'public')
 			   	->withHeader('Content-Length', filesize($file));
 			readfile($file);
+		}else{
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		}
+		return $response;
+	});
+	$app->post('/picture/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles(),true);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/picture/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->downloadFile($args['fileID']);
+		if(isset($result['data'])){
+	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+    	    $image = @file_get_contents($file);
+    		$response->write($image);
+		    return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
+		}else{
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		}
+		return $response;
+	});
+	$app->get('/thumbnail/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->downloadFile($args['fileID']);
+		if(isset($result['data'])){
+	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+    	    $image = $chat->thumbnail($file);
+			imagejpeg($image, null, 100);
+		    return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
 		}else{
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);

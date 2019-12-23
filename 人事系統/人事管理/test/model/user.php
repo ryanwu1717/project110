@@ -214,6 +214,10 @@ use Slim\Http\UploadedFile;
        		
        		//A. 檢查是不是數字
 	        $standard_A = "/^([0-9]+)$/"; 
+       		//A. 檢查是不是分機符號
+	        $standard_A_1 = "/^([0-9]+)*(#([0-9]+))?$/"; 
+       		//A. 檢查是不是就學期間
+	        $standard_A_2 = "/^([0-9]{2,3}-[0-9]{2,3})$/"; 
 	        //B. 檢查是不是小寫英文
 	        $standard_B = "/^([a-z]+)$/";
 	        //C. 檢查是不是大寫英文
@@ -277,7 +281,7 @@ use Slim\Http\UploadedFile;
 					return "success";
 					break;
 				case '公司聯絡電話':
-       				if($this -> checkString($input, $standard_A) == 0){
+       				if($this -> checkString($input, $standard_A_1) == 0){
 						return $field."不符合格式";
 					}
 					return "success";
@@ -332,7 +336,7 @@ use Slim\Http\UploadedFile;
 					return "success";
 					break;
 				case '就學期間':
-       				if($inputLen > 20){
+       				if($this -> checkString($input, $standard_A_2) == 0){
 						return $field."不符合格式";
 					}
 					return "success";
@@ -389,9 +393,9 @@ use Slim\Http\UploadedFile;
 			$check['checkMarriage'] = $this -> check('婚姻狀況',$_POST['buttonMarriage']);
 			$check['checkTWid'] = $this-> check('身分證號碼',$_POST['TWid']);
 
-			$check['checkContactCompanyNumber'] = $this -> check("公司聯絡電話",$_POST['homeNumber']);
+			$check['checkContactCompanyNumber'] = $this -> check("公司聯絡電話",$_POST['companyNumber']);
 			$check['checkContactPhoneNumber'] = $this -> check("手機",$_POST['phoneNumber']);
-			$check['checkContactHomeNumber'] = $this -> check("住家電話",$_POST['companyNumber']);
+			$check['checkContactHomeNumber'] = $this -> check("住家電話",$_POST['homeNumber']);
 			$check['checkContactHomeAddress'] = $this -> check("戶籍地址",$_POST['homeAddress']);
 			$check['checkContactContactAddress'] = $this -> check("通訊地址",$_POST['contactAddress']);
 
@@ -566,7 +570,11 @@ use Slim\Http\UploadedFile;
 				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
 				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
 				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+				if($_POST['leaveDate']==''){
+					$sth->bindValue(':seniority_leaveDate',null,PDO::PARAM_INT);
+				}else{
+					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+				}
 
 				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
 				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
@@ -708,35 +716,39 @@ use Slim\Http\UploadedFile;
 								where "UID"= :UID
 								)as "chatWith" 
 								LEFT JOIN (
-											SELECT "cH3"."chatID","UID" as "chatToWhom"
-											FROM(
-												SELECT "couUID","chatID","time"
-												FROM(
-													SELECT "chatID" as "cID", COUNT("UID")as "couUID"
-													FROM staff_chat."chatHistory"
-													group by "chatID") as "cUID"
-													LEFT JOIN staff_chat."chatHistory" as "cH2"
-													on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
-											LEFT join staff_chat."chatHistory" as "cH3"
-											on "check"."chatID"="cH3"."chatID"
-											where "UID"!= :UID
-											)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
+									SELECT "cH3"."chatID","UID" as "chatToWhom"
+									FROM(
+										SELECT "couUID","chatID","time"
+										FROM(
+											SELECT "chatID" as "cID", COUNT("UID")as "couUID"
+											FROM staff_chat."chatHistory"
+											group by "chatID") as "cUID"
+											LEFT JOIN staff_chat."chatHistory" as "cH2"
+											on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
+									LEFT join staff_chat."chatHistory" as "cH3"
+									on "check"."chatID"="cH3"."chatID"
+									where "UID"!= :UID
+									)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
 								LEFT JOIN (
-											SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
-											FROM(
-												SELECT "chatID",MAX("sentTime")as "LastTime"
-												FROM staff_chat."chatContent"
-												Group by "chatID")as "cILT" 
-								LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
-								where "LastTime"="sentTime")as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
+									SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
+									FROM(
+										SELECT "chatID",MAX("sentTime")as "LastTime"
+										FROM staff_chat."chatContent"
+										Group by "chatID"
+									)as "cILT" 
+									LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
+									Where "LastTime"="sentTime"
+								)as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
 								LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
 								LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
-								LEFT JOIN (SELECT "chatID","UID",COUNT("c")as "CountUnread"
-											FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
-												FROM staff_chat."chatHistory"
-												join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
-												where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
-											group by "chatID","UID") as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+								LEFT JOIN (
+									SELECT "chatID","UID",COUNT("c")as "CountUnread"
+									FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+										FROM staff_chat."chatHistory"
+										join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+										where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
+										group by "chatID","UID"
+									) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
 								order by "LastTime1" desc;';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
@@ -777,43 +789,59 @@ use Slim\Http\UploadedFile;
 
 			return $row;
 		}
-		function getChatContent($chatID){
-			$sql = 'SELECT "chatContent"."content",to_char( "chatContent"."sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
-				FROM staff_chat."chatContent"
-				LEFT JOIN
-				(
-					SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
-					FROM (
-						SELECT content, "sentTime", "UID" as "sentFrom","chatID"
-						FROM staff_chat."chatContent"
-						WHERE "chatID"= :chatID)as "display",
-						(
-							SELECT "chatID", "time", "UID"
-							FROM staff_chat."chatHistory"
-							Where "chatID"=:chatID
-						) as "chatHistory" 
-					Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
-					Group by "content","sentTime","sentFrom" 
-				) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
-				LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
-				Where "chatID"=:chatID
-				order by "chatContent"."sentTime" asc';
-            // $sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
-            //         as "diff",staff_name 
-            //         FROM staff_chat."chatContent" 
-            //         left join "staff"."staff" on staff.staff_id="chatContent"."UID" 
-            //         WHERE "chatID"= :chatID 
-            //         order by "sentTime" asc;';
-
-			$sth = $this->conn->prepare($sql);
+		function getChatContent($chatID,$body){
+			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->execute();
-			$row = $sth->fetchAll();
+			session_write_close();
+			for ($i = 0, $timeout = 180; $i < $timeout; $i++ ) {
 
-			$body = array('chatID'=>$chatID);
-			$this->updateLastReadTime($body);
+				$sql = 'SELECT "chatContent"."content",to_char( "chatContent"."sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+					FROM staff_chat."chatContent"
+					LEFT JOIN
+					(
+						SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
+						FROM (
+								SELECT content, "sentTime", "UID" as "sentFrom","chatID"
+								FROM staff_chat."chatContent"
+								WHERE "chatID"= :chatID
+							)as "display",(
+								SELECT "chatID", "time", "UID"
+								FROM staff_chat."chatHistory"
+								Where "chatID"=:chatID
+							) as "chatHistory" 
+						Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
+						Group by "content","sentTime","sentFrom" 
+					) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
+					LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
+					Where "chatID"=:chatID
+					order by "chatContent"."sentTime" asc';
+	            // $sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
+	            //         as "diff",staff_name 
+	            //         FROM staff_chat."chatContent" 
+	            //         left join "staff"."staff" on staff.staff_id="chatContent"."UID" 
+	            //         WHERE "chatID"= :chatID 
+	            //         order by "sentTime" asc;';
+
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				if(count($row)==$data['count']){
+					usleep(1000000);
+				}else{
+					$result = array();
+					for($j=$data['count'];$j<count($row);$j++){
+						array_push($result,$row[$j]);
+					}
+					$body = array('chatID'=>$chatID);
+					$this->updateLastReadTime($body);
+					return $result;
+				}
+			}
+
+			// $result=($row==$data);
+			// array_push($row, array('diff'=>$result));
 
 			return $row;
 		}
@@ -927,7 +955,7 @@ use Slim\Http\UploadedFile;
 			}
 			return $row;
 		}
-		function uploadFile($chatID,$directory,$uploadedFiles){
+		function uploadFile($chatID,$directory,$uploadedFiles,$isPicture){
 			// handle single input with single file upload
 		    $uploadedFile = $uploadedFiles['inputFile'];
 		    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
@@ -944,7 +972,15 @@ use Slim\Http\UploadedFile;
 						VALUES ( :Msg , :UID , NOW(), :chatID );';
 				$sth = $this->conn->prepare($sql);
 				$UID = $_SESSION['id'];
-				$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
+				if($isPicture){
+					$Msg = '
+						<a href="/chat/picture/'.$this->conn->lastInsertId().'" target="_blank">
+							<img src="/chat/thumbnail/'.$this->conn->lastInsertId().'" alt="..." class="img-thumbnail">
+						</a>
+					';
+				}else{
+					$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
+				}
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
@@ -993,5 +1029,34 @@ use Slim\Http\UploadedFile;
 		    }
 		    return $result;
 		}
+	   	function thumbnail($filename,$width=200,$height=200){
+	        //獲取原影象$filename的寬度$width_orig和高度$height_orig
+	        list($width_orig,$height_orig) = getimagesize($filename);
+	        $infos = @getimagesize($filename);
+            switch($infos['mime']) { 
+		     	case 'image/gif': 
+		      		$image = imagecreatefromgif($filename); 
+		     	break; 
+				case 'image/jpeg': 
+					$image = imagecreatefromjpeg($filename); 
+				break; 
+				case 'image/png': 
+					$image = imagecreatefrompng($filename); 
+				break; 
+		    } 
+	        //根據引數$width和$height值，換算出等比例縮放的高度和寬度
+	        if ($width && ($width_orig<$height_orig)){
+	            $width = ($height/$height_orig)*$width_orig;
+	        }else{
+	            $height = ($width / $width_orig)*$height_orig;
+	        }
+	 
+	        //將原圖縮放到這個新建立的圖片資源中
+	        $image_p = imagecreatetruecolor($width, $height);
+	 
+	        //使用imagecopyresampled()函式進行縮放設定
+	        imagecopyresampled($image_p,$image,0,0,0,0,$width,$height,$width_orig,$height_orig);
+	 		return $image_p;
+	    }
 	}
 ?>
