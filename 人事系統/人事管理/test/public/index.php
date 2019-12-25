@@ -298,6 +298,13 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+	$app->get('/readcount', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getReadCount($_GET);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
