@@ -257,7 +257,9 @@ function searchChat(){
                 '<div class="">'+this.UID+','+this.staff_name+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+this.content+'</p>'+
+                    '<p class="text-break">'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">'+this.content+'</a>'+
+                    '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read">'+
                       '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
@@ -271,7 +273,9 @@ function searchChat(){
             $('[name=chatBox]').append(
               '<div class="outgoing_msg">'+
                 '<div class="sent_msg">'+
-                  '<p class="text-break content">  '+this.content+'  </p>'+
+                  '<p class="text-break content">'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">'+this.content+'</a>'+
+                    '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
                   '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
                 '</div>'+
@@ -376,6 +380,8 @@ $('#basicModal').on('show.bs.modal',function(e){
     attachType();
   }else if(type=='photo'){
     viewPhoto($(e.relatedTarget).data('src'));
+  }else if(type=='comments'){
+    getComment($(e.relatedTarget).data());
   }
 });
 function viewPhoto(src){
@@ -463,6 +469,20 @@ function getReadlist(relatedData){
       });
     }
   });
+}
+function getComment(relatedData){
+  $('#basicModal .modal-title').text('留言');
+  $('#basicModal .modal-body').html(
+    '<h5>已讀</h5>'+
+    '<div name="readList"></div>'+
+    '<hr>'+
+    '<h5>未讀</h5>'+
+    '<div name="unreadList"></div>'
+  );
+  var data = new Object();
+  data['UID'] = relatedData['uid'];
+  data['sentTime'] = relatedData['senttime'];
+  data['chatID'] = chatID;
 }
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
