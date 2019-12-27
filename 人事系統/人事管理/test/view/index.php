@@ -258,7 +258,9 @@ function searchChat(){
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
                     '<p class="text-break">'+
-                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">'+this.content+'</a>'+
+                      +this.content+
+                      '<br>'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" style="color:red">'+'留言'+'</a>'+
                     '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read">'+
@@ -274,8 +276,10 @@ function searchChat(){
               '<div class="outgoing_msg">'+
                 '<div class="sent_msg">'+
                   '<p class="text-break content">'+
-                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">'+this.content+'</a>'+
-                    '</p>'+
+                    +this.content+
+                    '<br>'+
+                    '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'"  style="color:red">'+'留言'+'</a>'+
+                  '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
                   '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
                 '</div>'+
@@ -360,6 +364,25 @@ function sendMsg(){
       dataType:'json',
       success:function(response){
         // getTarget(chatID,chatName);
+    }
+  });
+}
+function sendComment(msgsender,msgtime,data){
+  console.log(msgtime);
+  Msg=$("#commentinput").val();
+  Msg = Msg.replace(/\r?\n/g, '<br />');
+    $.ajax({
+      url:'/chat/comment',
+      type:'post',
+      data:{Msg:Msg,
+            chatID:chatID,
+            chatOrigin:msgsender,
+            chatTime:msgtime,
+            _METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        getCommentContent(data)
+        console.log(response);
     }
   });
 }
@@ -470,19 +493,64 @@ function getReadlist(relatedData){
     }
   });
 }
-function getComment(relatedData){
-  $('#basicModal .modal-title').text('留言');
-  $('#basicModal .modal-body').html(
-    '<h5>已讀</h5>'+
-    '<div name="readList"></div>'+
-    '<hr>'+
-    '<h5>未讀</h5>'+
-    '<div name="unreadList"></div>'
-  );
+function getComment(relatedData){//TODO
+  console.log(relatedData);
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
+  data['content'] = decodeURIComponent(relatedData['content']);
   data['chatID'] = chatID;
+  
+  $('#basicModal .modal-title').text('留言板');
+  $('#basicModal .modal-body').html(
+    '<h5>訊息</h5>'+
+    '<div name="message">'+decodeURIComponent(relatedData['content'])+'</div>'+
+    '已讀:'+relatedData['readcount']+
+    '<hr>'+
+    '<h5>留言</h5>'+
+    '<div name="comment"></div>'+
+    '<div class="type_msg">'+
+      '<div class="input_msg_write">'+
+        '<textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>'+
+        '<button class="comment_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>'+
+        '</div>'+
+      '</div>'
+
+  );
+  $('.comment_send_btn').on('click',function(){
+    if($("#commentinput").val()!=""){
+      sendComment(relatedData['uid'],relatedData['senttime'],data);
+      $("#commentinput").val("");
+    }
+  });
+  getCommentContent(data);
+}
+function getCommentContent(data){
+  $.ajax({
+    url:'/chat/comment',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      console.log(response)
+      $('[name=comment]').html("");
+      $(response).each(function(){
+        $('[name=comment]').append(
+            '<div class="incoming_msg">'+
+                '<div class="">'+this.sender+'</div>'+
+                '<div class="received_msg">'+
+                  '<div class="received_withd_msg">'+
+                    '<p class="text-break">'+
+                      this.content+
+                    '</p>'+
+                    '<span class="time_date"> '+this.sentTime+'</span>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'
+          )
+      });
+    }
+  });
 }
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
