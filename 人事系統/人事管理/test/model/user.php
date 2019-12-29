@@ -683,6 +683,7 @@ use Slim\Http\UploadedFile;
 
 		function __construct($db){
 			$this->conn = $db;
+			session_write_close();
 		}
 
 		function getChatroomTitle($chatID){
@@ -758,7 +759,31 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+		function getReadCount($body){
+			$data = json_decode($body['data'],true);
+			$UID =$_SESSION['id'];
+			$sql = '
+				SELECT to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
+					FROM(
+					SELECT "chatHistory"."UID", MAX("chatContent"."sentTime") AS "sentTime"
+					FROM staff_chat."chatHistory"
+					LEFT JOIN staff_chat."chatContent" ON "chatHistory"."time" > "chatContent"."sentTime" AND "chatContent"."chatID" = :chatID
+					WHERE "chatHistory"."chatID" = :chatID AND "chatHistory"."UID" != :UID
+					GROUP BY "chatHistory"."UID"
+				)AS A
+				WHERE "sentTime" IS NOT NULL
+				GROUP BY "sentTime"
+				ORDER BY "sentTime" ASC;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$data['chatID'],PDO::PARAM_INT);
+			$sth->execute();
 
+			$row = $sth->fetchAll();
+			array_push($row,array('chatID'=>$data['chatID']));
+			return $row;
+		}
 		function getReadList($body){
 			$data = json_decode($body['data'],true);
 			$sql = '
@@ -783,14 +808,30 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+		function getComment($body){//TODO
+			$data = json_decode($body['data'],true);
+			$sql ='
+				SELECT "sender","content","sentTime"
+				FROM staff_chat."chatComment"
+				WHERE "chatID"=:CID and "chatOrigin"=:UID and "chatTime"=:CT
+			';
+			$sth = $this->conn->prepare($sql);
+			//bindParam
+			$sth->bindParam(':UID',$data['UID'],PDO::PARAM_STR);
+			$sth->bindParam(':CID',$data['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':CT',$data['sentTime']);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+			return $row;
+		}
 		function getChatContent($chatID,$body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
-			session_write_close();
-			// for ($i = 0, $timeout = 180; $i < $timeout; $i++ ) {
+			for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
 
 				$sql = '
-					SELECT "content",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
 					FROM (
 						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
 						FROM staff_chat."chatContent"
@@ -811,7 +852,7 @@ use Slim\Http\UploadedFile;
 						LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
 						Where "chatID"=:chatID
 						order by "chatContent"."sentTime" desc 
-						limit :limit 
+						-- limit :limit 
 					) as "tmpChatContent"
 					order by "tmpChatContent"."sentTime" asc
 				';
@@ -822,39 +863,42 @@ use Slim\Http\UploadedFile;
 	            //         WHERE "chatID"= :chatID 
 	            //         order by "sentTime" asc;';
 
-				// $sth = $this->conn->prepare($sql);
-				// $sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-				// $sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
-				// $sth->execute();
-				// $row = $sth->fetchAll();
-				// if(count($row)==$data['count']){
-				// 	usleep(1000000);
-				// }else{
-					// $result = array();
-					// for($j=$data['count'];$j<count($row);$j++){
-					// 	array_push($result,$row[$j]);
-					// }
+				$sth->execute();
+				$row = $sth->fetchAll();
+				if(count($row)==$data['count']){
+					usleep(1000000);
+				}else{
+					$result = array();
+					for($j=$data['count'];$j<count($row);$j++){
+						array_push($result,$row[$j]);
+					}
+					array_push($result,array('chatID'=>$chatID));
 					// $body = array('chatID'=>$chatID);
 					// $this->updateLastReadTime($body);
-					// return $result;
-				// }
-			// }
+					return $result;
+				}
+			}
 
 			// $result=($row==$data);
 			// array_push($row, array('diff'=>$result));
 
-			$sth = $this->conn->prepare($sql);
+			// $sth = $this->conn->prepare($sql);
 			// $UID =$_SESSION['id'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
-			$sth->execute();
+			// $sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			// $sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
+			// $sth->execute();
 
-			$row = $sth->fetchAll();
-			$body = array('chatID'=>$chatID);
-			$this->updateLastReadTime($body);
-			return $row;
+			// $row = $sth->fetchAll();
+			// $body = array('chatID'=>$chatID);
+			// $this->updateLastReadTime($body);
+			$result = array();
+			array_push($result,array('chatID'=>$chatID));
+			return $result;
 		}
 
 		function updateMessage($body){
@@ -871,6 +915,29 @@ use Slim\Http\UploadedFile;
 
 			$ack = array(
 				'status'=>'success'
+			);
+			return $ack;
+		}
+		function updateComment($body){//TODO
+			$sql = 'INSERT INTO staff_chat."chatComment"("chatID","chatOrigin","chatTime","content","sender","sentTime")
+					VALUES (:CID,:UID,:CT,:Msg,:SID,NOW())';
+			$sth = $this->conn->prepare($sql);
+			$chatID=$body['chatID'];
+			$origin=$body['chatOrigin'];
+			$chattime=$body['chatTime'];
+			$date = strtotime($chattime);
+			$Msg=$body['Msg'];
+			$SID =$_SESSION['id'];
+			$sth->bindParam(':CID',$chatID);
+			$sth->bindParam(':UID',$origin);
+			$sth->bindParam(':CT',$chattime);
+			$sth->bindParam(':Msg',$Msg);
+			$sth->bindParam(':SID',$SID);
+			$sth->execute();
+
+			$ack = array(
+				'content'=>$Msg,
+				'time'=>date("Y-m-d H:i:s",$date)
 			);
 			return $ack;
 		}
@@ -988,7 +1055,7 @@ use Slim\Http\UploadedFile;
 				$UID = $_SESSION['id'];
 				if($isPicture){
 					$Msg = '
-						<a href="/chat/picture/'.$this->conn->lastInsertId().'" target="_blank">
+						<a href="#" data-toggle="modal" data-target="#basicModal" data-type="photo" data-src="/chat/picture/'.$this->conn->lastInsertId().'">
 							<img src="/chat/thumbnail/'.$this->conn->lastInsertId().'" alt="..." class="img-thumbnail">
 						</a>
 					';

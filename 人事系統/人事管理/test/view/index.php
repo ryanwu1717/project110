@@ -1,239 +1,9 @@
 <?php
  include('partial/header.php')
 ?>
-          <!-- Page Heading -->
-<style >
+<!-- Custom styles for this template -->
+<link href="/css/ictrc-chatroom.min.css" rel="stylesheet">
 
-@media (max-width:550px) {
-
-  /* your conditional / responsive CSS inside this condition */
-
-  
-  .inbox_people {
-    background: #f8f8f8 none repeat scroll 0 0;
-    float: left;
-    overflow: hidden;
-    width: 40%; border-right:1px solid #c4c4c4;
-  }
-  .chatContent,.chat_date,.chat_img,.chat_ib button{
-    display:none;
-  }
-
-  .mesgs {
-    float: left;
-    padding: 30px 15px 0 25px;
-    width: 60%;
-  }
-}
-
-@media (max-width:700px) {
-  .time_date {
-    color: #747474;
-    display: inline;
-    font-size: 12px;
-    margin: 8px 0 0;
-  }
-  .read{
-    display: inline;
-  }
-}
-
-.container{max-width:1170px; margin:auto;}
-img{ max-width:100%;}
-.inbox_people {
-  background: #f8f8f8 none repeat scroll 0 0;
-  float: left;
-  overflow: hidden;
-  width: 29%; border-right:1px solid #c4c4c4;
-  margin-left: 1px;
-
-}
-.inbox_msg {
-  margin:auto;
-  border: 1px solid #c4c4c4;
-  clear: both;
-  overflow: hidden;
-}
-.top_spac{ margin: 20px 0 0;}
-
-
-.recent_heading {float: left; width:40%;}
-.srch_bar {
-  display: inline-block;
-  text-align: right;
-  width: 60%; padding:
-}
-.tool_bar{
-  display: inline-block;
-  text-align: right;
-  width: 60%;
-}
-.headind_srch{ padding:10px 29px 10px 20px; overflow:hidden; border-bottom:1px solid #c4c4c4;}
-
-.recent_heading h4 {
-  color: #05728f;
-  font-size: 21px;
-  margin: auto;
-}
-.srch_bar input{ border:1px solid #cdcdcd; border-width:0 0 1px 0; width:80%; padding:2px 0 4px 6px; background:none;}
-.srch_bar .input-group-addon button {
-  background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
-  border: medium none;
-  padding: 0;
-  color: #707070;
-  font-size: 18px;
-}
-.srch_bar .input-group-addon { margin: 0 0 0 -27px;}
-
-.chat_ib h5{ font-size:15px; color:#464646; margin:0 0 8px 0;}
-.chat_ib h5 span{ font-size:13px; float:right;}
-.chat_ib p{ font-size:14px; color:#989898; margin:auto}
-.chat_img {
-  float: left;
-  width: 11%;
-}
-.chat_ib {
-  float: left;
-  padding: 0 0 0 15px;
-  width: 88%;
-}
-
-.chat_people{ overflow:hidden; clear:both;}
-.chat_list {
-  border-bottom: 1px solid #c4c4c4;
-  margin: 0;
-  padding: 19px 16px 10px;
-}
-.inbox_chat { 
-  height: 60vh; overflow-y: scroll;}
-
-.active_chat{ background:#ebebeb;}
-
-.incoming_msg_img {
-  display: inline-block;
-  width: 6%;
-}
-.received_msg {
-  display: inline-block;
-  padding: 0 0 0 10px;
-  vertical-align: top;
-  width: 92%;
- }
- .received_withd_msg p {
-  background: #ebebeb none repeat scroll 0 0;
-  border-radius: 3px;
-  color: #646464;
-  font-size: 14px;
-  margin: 0;
-  padding: 5px 10px 5px 12px;
-  width: 100%;
-}
-.time_date {
-  color: #747474;
-  display: inline;
-  font-size: 12px;
-  margin: 8px 0 0;
-}
-.read{
-  display: inline;
-}
-.received_withd_msg { width: 57%;}
-.mesgs {
-  float: left;
-  padding: 30px 15px 0 25px;
-  width: 70%;
-}
-
-.sent_msg p.content {
-  background: #05728f none repeat scroll 0 0;
-  border-radius: 3px;
-  font-size: 14px;
-  margin: 0; color:#fff;
-  padding: 5px 10px 5px 12px;
-  width:100%;
-}
-.outgoing_msg{ overflow:hidden; margin:26px 0 26px;}
-.sent_msg {
-  float: right;
-  width: 46%;
-}
-.input_msg_write input {
-  background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
-  border: medium none;
-  color: #4c4c4c;
-  font-size: 15px;
-  min-height: 48px;
-  width: 100%;
-}
-
-.type_msg {border-top: 1px solid #c4c4c4;position: relative;}
-.msg_send_btn {
-  background: #05728f none repeat scroll 0 0;
-  border: medium none;
-  border-radius: 50%;
-  color: #fff;
-  cursor: pointer;
-  font-size: 17px;
-  height: 33px;
-  position: absolute;
-  right: 0;
-  top: 11px;
-  width: 33px;
-}
-.msg_attach_btn {
-  background: #05728f none repeat scroll 0 0;
-  border: medium none;
-  border-radius: 50%;
-  color: #fff;
-  cursor: pointer;
-  font-size: 17px;
-  height: 33px;
-  position: absolute;
-  right: 33px;
-  top: 11px;
-  width: 33px;
-}
-.messaging { padding: 0 0 50px 0;}
-.msg_history {
-  height: 50vh;
-  overflow-y: auto;
-}
-.circleBase {
-    border-radius: 50%;
-    behavior: url(PIE.htc); /* remove if you don't care about IE8 */
-}
-
-.type2 {
-    width: 25px;
-    height: 25px;
-    background: #ccc;
-    border: 3px solid #000;
-}
-.scroll-to-down {
-  position: fixed;
-  right: 1rem;
-  bottom: 1rem;
-  display: none;
-  width: 2.75rem;
-  height: 2.75rem;
-  text-align: center;
-  color: #fff;
-  background: rgba(90, 92, 105, 0.5);
-  line-height: 46px;
-}
-
-.scroll-to-down:focus, .scroll-to-down:hover {
-  color: white;
-}
-
-.scroll-to-down:hover {
-  background: #5a5c69;
-}
-
-.scroll-to-down i {
-  font-weight: 800;
-}
-</style>    
 <h3 class=" text-center">訊息</h3>
 <div class="messaging">
   <div class="inbox_msg">
@@ -262,6 +32,18 @@ img{ max-width:100%;}
       <div class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
+
+          <div style="display:flex; justify-content:flex-end; width:100%; ">
+            <div class="btn-group" id="tool_dropdown" >
+              <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" >
+              </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
+              </div>
+            </div>
+          </div>
         </nav>
       </div>
       <div class="msg_history" name=chatBox>
@@ -308,6 +90,22 @@ img{ max-width:100%;}
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
+//window focus
+var isTabActive = true;
+var titleOrg=$('title').text();
+$(function(){
+  titleOrg=$('title').text();
+});
+window.onfocus = function () { 
+  window.isTabActive = true; 
+  $('title').text(titleOrg);
+  updateLastReadTime();
+}; 
+
+window.onblur = function () { 
+  window.isTabActive = false; 
+}; 
+//focus end
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
@@ -332,15 +130,17 @@ var scrollable = false;
 function schedule(){
   // searchChatroom();
   // searchChat();
-  clearTimeout(queue['chatroom']);
-  clearTimeout(queue['chat']);
-  queue['chatroom'] = setTimeout(searchChatroom,1000);
-  queue['chat'] = setTimeout(searchChat,1000);
+  // clearTimeout(queue['chatroom']);
+  // clearTimeout(queue['chat']);
+  setTimeout(searchChatroom,1000);
+  setTimeout(searchChat,1000);
 }
 schedule();
 
 function updateLastReadTime(){
-  $.ajax({
+  if(queue['lastReadTime']!=null)
+    queue['lastReadTime'].abort();
+  queue['lastReadTime'] = $.ajax({
     url:'/chat/lastReadTime',
     type:'post',
     data:{chatID:chatID,_METHOD:'PATCH'},
@@ -349,7 +149,9 @@ function updateLastReadTime(){
 }
 
 function searchChatroom(){
-  $.ajax({
+  if(queue['chatroom']!=null)
+    queue['chatroom'].abort();
+  queue['chatroom'] = $.ajax({
     url:'/chat/chatroom',
     type:'get',
     data:{},
@@ -370,12 +172,22 @@ function searchChatroom(){
           chatName=this.staff_name;
         }
         var haveUnread ='';
+        if(window.isTabActive){
+          $('title').text(titleOrg);
+        }
         if(this.CountUnread!='0'&&this.CountUnread!=null){
-          haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> '
+          haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> ';
+          if(!window.isTabActive){
+            if($('title').text().indexOf('您有訊息!!')>-1)
+              $('title').text(titleOrg);
+            else
+              $('title').text('[您有訊息!!]'+titleOrg);
+          }
         }
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
+     
         $('[name=inbox_chat]').append(
           '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
             '<div class="chat_people">'+
@@ -386,28 +198,26 @@ function searchChatroom(){
                 '<h5>'+chatName+
                   '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
                 '</h5>'+
-                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete">'+
-                  '<span aria-hidden="true">&times;</span>'+
-                '</button>'+
-                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member">'+
-                  '<span aria-hidden="true">&equiv;</span>'+
-                '</button>'+
-                '<p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>'+
+                '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
                 haveUnread +
               '</div>'+
             '</div>'+
           '</div>'
         );
       });
-    },
-    complete:function(){
-      queue['chatroom'] = setTimeout(searchChatroom,1000);
+      if(!scrollable)
+        $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
+      setTimeout(searchChatroom,1000);
     }
   });
 
 }
 var chatID=-1;
 var chatName = '';
+
+$('#tool_dropdown').hide()
+
+
 function getTarget(_chatID,_chatName){
   // console.log($(div).attr("data-name"));
   // chatID=$(div).attr("data-name");
@@ -417,9 +227,11 @@ function getTarget(_chatID,_chatName){
   $('[name=chatBox]').html("");
   chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
+  $('#tool_dropdown').show()
   resetLimit();
   updateLastReadTime();
   schedule();
+  getReadcount();
 }
 
 function expendLimit(){
@@ -434,22 +246,34 @@ last['limit'] = 20;
 last['count'] = 0;
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
-    queue['ajaxChat']=$.ajax({
+    if(queue['chat'] != null)
+      queue['chat'].abort();
+    queue['chat'] = $.ajax({
       url:'/chat/content/'+chatID,
       data:{data:JSON.stringify(last)},
       type:'get',
       dataType:'json',
       success:function(response){
-        $('[name=chatBox]').html("");
+        // $('[name=chatBox]').html("");
+        if(response[response.length-1].chatID != chatID){
+          return false;
+        }
+        response.pop();
+        if(window.isTabActive)
+          updateLastReadTime();
         $(response).each(function(){
-          // last['count'] = last['count']+1;
+          last['count'] = last['count']+1;
           if(this.diff!='me'){
             $('[name=chatBox]').append(
               '<div class="incoming_msg">'+
                 '<div class="">'+this.UID+','+this.staff_name+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+this.content+'</p>'+
+                    '<p class="text-break">'+
+                      +this.content+
+                      '<br>'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" style="color:red">'+'留言'+'</a>'+
+                    '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read">'+
                       '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
@@ -463,7 +287,11 @@ function searchChat(){
             $('[name=chatBox]').append(
               '<div class="outgoing_msg">'+
                 '<div class="sent_msg">'+
-                  '<p class="text-break content">  '+this.content+'  </p>'+
+                  '<p class="text-break content">'+
+                    +this.content+
+                    '<br>'+
+                    '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'"  style="color:red">'+'留言'+'</a>'+
+                  '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
                   '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
                 '</div>'+
@@ -473,9 +301,7 @@ function searchChat(){
         });
         if(!scrollable)
           $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-      },
-      complete:function(){
-        queue['chat'] = setTimeout(searchChat,1000);
+        setTimeout(searchChat,1000);
       }
     });
   }
@@ -551,8 +377,26 @@ function sendMsg(){
       success:function(response){
         // getTarget(chatID,chatName);
     }
-  })
-
+  });
+}
+function sendComment(msgsender,msgtime,data){
+  console.log(msgtime);
+  Msg=$("#commentinput").val();
+  Msg = Msg.replace(/\r?\n/g, '<br />');
+    $.ajax({
+      url:'/chat/comment',
+      type:'post',
+      data:{Msg:Msg,
+            chatID:chatID,
+            chatOrigin:msgsender,
+            chatTime:msgtime,
+            _METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        getCommentContent(data)
+        console.log(response);
+    }
+  });
 }
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
@@ -569,7 +413,22 @@ $('#basicModal').on('show.bs.modal',function(e){
     getReadlist($(e.relatedTarget).data());
   }else if(type=='attach'){
     attachType();
+  }else if(type=='photo'){
+    viewPhoto($(e.relatedTarget).data('src'));
+  }else if(type=='comments'){
+    getComment($(e.relatedTarget).data());
   }
+});
+function viewPhoto(src){
+  $('#basicModal .modal-title').text('圖片');
+  $('#basicModal .modal-body').html('<img class="img-fluid"/>');
+  $('#basicModal .modal-body img').attr('src',src);
+  $('#basicModal .modal-dialog').addClass('modal-xl');
+  $('#basicModal .modal-body').addClass('text-center');
+}
+$('#basicModal').on('hidden.bs.modal',function(e){
+  $('#basicModal .modal-dialog').removeClass('modal-xl');
+    $('#basicModal .modal-body').removeClass('text-center');
 });
 
 function attachType(){
@@ -586,6 +445,34 @@ function attachType(){
       '</div>'+
     '</div>'
   );
+}
+function getReadcount(){
+  var data = new Object();
+  data['chatID'] = chatID;
+  if(queue['readcount'] != null)
+    queue['readcount'].abort();
+  queue['readcount'] = $.ajax({
+    url:'/chat/readcount',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      if(response[response.length-1].chatID != chatID){
+        return false;
+      }
+      response.pop();
+      var readcountElement = response.shift();
+      $('a[data-type=readlist]').each(function(){
+        $(this).text('已讀:'+readcountElement.sum);
+        if($(this).attr('data-sentTime')==readcountElement.sentTime){
+          readcountElement = response.shift();
+          if(readcountElement===undefined)
+            return false;
+        }
+      });
+      setTimeout(getReadcount,1000);
+    }
+  });
 }
 function getReadlist(relatedData){
   $('#basicModal .modal-title').text('已讀清單');
@@ -614,6 +501,65 @@ function getReadlist(relatedData){
           $('[name=readList]').append('<p>'+this.staff_name+'</p>')
         else
           $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  });
+}
+function getComment(relatedData){//TODO
+  console.log(relatedData);
+  var data = new Object();
+  data['UID'] = relatedData['uid'];
+  data['sentTime'] = relatedData['senttime'];
+  data['content'] = decodeURIComponent(relatedData['content']);
+  data['chatID'] = chatID;
+  
+  $('#basicModal .modal-title').text('留言板');
+  $('#basicModal .modal-body').html(
+    '<h5>訊息</h5>'+
+    '<div name="message">'+decodeURIComponent(relatedData['content'])+'</div>'+
+    '已讀:'+relatedData['readcount']+
+    '<hr>'+
+    '<h5>留言</h5>'+
+    '<div name="comment"></div>'+
+    '<div class="type_msg">'+
+      '<div class="input_msg_write">'+
+        '<textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>'+
+        '<button class="comment_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>'+
+        '</div>'+
+      '</div>'
+
+  );
+  $('.comment_send_btn').on('click',function(){
+    if($("#commentinput").val()!=""){
+      sendComment(relatedData['uid'],relatedData['senttime'],data);
+      $("#commentinput").val("");
+    }
+  });
+  getCommentContent(data);
+}
+function getCommentContent(data){
+  $.ajax({
+    url:'/chat/comment',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      console.log(response)
+      $('[name=comment]').html("");
+      $(response).each(function(){
+        $('[name=comment]').append(
+            '<div class="incoming_msg">'+
+                '<div class="">'+this.sender+'</div>'+
+                '<div class="received_msg">'+
+                  '<div class="received_withd_msg">'+
+                    '<p class="text-break">'+
+                      this.content+
+                    '</p>'+
+                    '<span class="time_date"> '+this.sentTime+'</span>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'
+          )
       });
     }
   });
