@@ -198,12 +198,6 @@ function searchChatroom(){
                 '<h5>'+chatName+
                   '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
                 '</h5>'+
-                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete">'+
-                  '<span aria-hidden="true">&times;</span>'+
-                '</button>'+
-                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member">'+
-                  '<span aria-hidden="true">&equiv;</span>'+
-                '</button>'+
                 '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
                 haveUnread +
               '</div>'+
