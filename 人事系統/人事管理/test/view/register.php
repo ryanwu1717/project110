@@ -14,15 +14,6 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group row">
-                      <label class="col-form-label col-md-4">員工編號</label>
-                      <div class="col-md-6">  
-                        <input required type="text" class="form-control form-control-user" name="staffId" placeholder="ex.L001">
-                      </div>
-                      <div class="col-md-2">  
-                        <button type="button" class="btn btn-danger" name="checkStaffId">X</button>
-                      </div>
-                    </div>
-                    <div class="form-group row">
                       <label class="col-form-label col-md-4">部門</label>
                       <div class="col-md-8">  
                         <select required class="custom-select" name="buttonDepartment">
@@ -30,12 +21,14 @@
                         </select>
                       </div>
                     </div>
+
                     <div class="form-group row">
-                      <label class="col-form-label col-md-4">密碼</label>
+                      <label class="col-form-label col-md-4">中文姓名</label>
                       <div class="col-md-8">  
-                        <input required type="password" class="form-control form-control-user" name="password" placeholder="ex.aaaa0000">
+                        <input required type="text" class="form-control form-control-user" name="staffName" placeholder="ex.王大明">
                       </div>
                     </div>
+
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">身分證字號</label>
                       <div class="col-md-8">  
@@ -54,12 +47,6 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group row">
-                      <label class="col-form-label col-md-4">中文姓名</label>
-                      <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="staffName" placeholder="ex.王大明">
-                      </div>
-                    </div>
-                    <div class="form-group row">
                       <label class="col-form-label col-md-4">職位</label>
                       <div class="col-md-8">  
                         <select required class="custom-select" name="buttonPosition">
@@ -68,9 +55,9 @@
                       </div>
                     </div>
                     <div class="form-group row">
-                      <label class="col-form-label col-md-4">確認密碼</label>
+                      <label class="col-form-label col-md-4">密碼</label>
                       <div class="col-md-8">  
-                        <input required type="password" class="form-control form-control-user" name="rePassword" placeholder="ex.aaaa0000">
+                        <input required type="password" class="form-control form-control-user" name="password" placeholder="ex.aaaa0000">
                       </div>
                     </div>
                     <div class="form-group row">
@@ -101,7 +88,7 @@
                     <div class="form-group row">
                       <label class="col-form-label col-md-4">公司聯絡電話</label>
                       <div class="col-md-8">  
-                        <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="ex.077172930">
+                        <input required type="text" class="form-control form-control-user" name="companyNumber" placeholder="ex.077172930 or 077172930#9">
                       </div>
                     </div>
                     <div class="form-group row">
@@ -231,7 +218,7 @@
                       <div class="form-group row">
                         <label class="col-form-label col-md-4">就學期間</label>
                         <div class="col-md-8">
-                          <input required type="number" class="form-control" name="educationTime" placeholder="ex.90-106">
+                          <input required type="text" class="form-control" name="educationTime" placeholder="ex.90-106">
                         </div>
                       </div>
                       <div class="form-group row">
@@ -315,8 +302,7 @@
         type:'get',
         dataType:'json',
         success:function(data){
-          $('[name=staffId]').empty();
-          $('[name=staffId]').val(data[0].staff_id);
+          console.log(data);
           $('[name=selectDepartment]').empty();
           $('[name=selectDepartment]').append(data[0].staff_department);
           $('[name=selectPosition]').empty();
@@ -479,6 +465,7 @@
   }
   function modify(){
     var data = new Object();
+    data['staff_id'] = isUpdate;
     $('input').each(function(eachid,eachdata){
       data[eachdata.name] = $(eachdata).val();
     });
@@ -486,18 +473,12 @@
       data[eachdata.name] = $(eachdata).val();
     });
     $.ajax({
-      url:'/staff/modify/'+isUpdate,
+      url:'/staff/modify/post',
       type:'POST',
       data:{data:JSON.stringify(data)},        
       dataType:'json',
       success:function(data){
-         if(data.status=='success'){
-          $('#checkRegisterModel').html("修改完成</br>");
-          $('button[name=registerButton]').remove();
-          $('#basicExampleModal').on('hide.bs.modal',function(){
-            window.location='<?=@$url?>/table';
-          });
-         }
+         console.log("success");
       },
       error:function(jqXHR, textStatus, errorThrown){
         console.log("failed");
@@ -505,34 +486,16 @@
       }
     });
   }
-  var queue = {
-    staffId:null
-  };
-  function checkStaffId(){
-    $.ajax({
-        url:'/staff/checkStaffId/'+$('[name=staffId]').val(),
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          if(response.status==false){
-            $('[name=registerFirstButton]').attr('disabled',true);
-            $('[name=checkStaffId]').addClass('btn-danger');
-            $('[name=checkStaffId]').removeClass('btn-success');
-            $('[name=checkStaffId]').text('X');
-          }else{
-            $('[name=registerFirstButton]').attr('disabled',false);
-            $('[name=checkStaffId]').addClass('btn-success');
-            $('[name=checkStaffId]').removeClass('btn-danger');
-            $('[name=checkStaffId]').text('V');
-          }
-        } 
-      });
+
+
+  function paddingLeft(str,lenght){
+    if(str.length >= lenght)
+      return str;
+    else
+      return paddingLeft("0" +str,lenght);
   }
   function loadType(){
-    $('[name=staffId]').on('keyup',function(){
-      clearTimeout(queue['staffId']);
-      queue['staffId'] = setTimeout(checkStaffId,1000);
-    });
+
     $.ajax({
         url:'/staff/department/get',
         type:'get',

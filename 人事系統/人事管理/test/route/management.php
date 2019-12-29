@@ -84,6 +84,10 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/add.php', $viewParam);
 			});
+			$app->get('/checkin', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/userCheckin.php', $viewParam);
+			});
 		})->add('ManagementViewMiddleware');
 		$app->get('/login', function (Request $request, Response $response, array $args) {	
 			session_destroy();

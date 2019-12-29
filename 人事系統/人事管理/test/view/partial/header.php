@@ -63,6 +63,12 @@
               <span>訊息</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/checkin">
+              <i class="fas fa-fw fa-table"></i>
+              <span>打卡</span>
+            </a>
+          </li>
           <!-- Nav Item - Pages Collapse Menu -->
           <!-- <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">

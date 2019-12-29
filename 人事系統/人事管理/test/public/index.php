@@ -83,6 +83,10 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/index.php', $viewParam);
 		});
+		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');	
+			return $this->view->render($response, '/checkin.php', $viewParam);
+		});
 		// $app->get('/register', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
 		// 	return $this->view->render($response, '/register.php', $viewParam);
@@ -205,15 +209,6 @@ $app->group('/staff', function () use ($app) {
 	    return $response;  
 	});
 
-	$app->get('/checkStaffId/{staff_id}', function (Request $request, Response $response, array $args) {
-	    $staff = new Staff($this->db);
-	    $result = $staff->checkStaffId($args['staff_id']);
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-		//echo $response['num'];
-	    return $response;  
-	});
-
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
 	    $result = $staff->checkRegister();
@@ -232,9 +227,9 @@ $app->group('/staff', function () use ($app) {
 
 	});
 
-	$app->post('/modify/{staff_id}', function (Request $request, Response $response, array $args) {
+	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $ack = $staff->modify($args['staff_id']);  
+	    $ack = $staff->modify();  
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 	    return $response;   
@@ -256,7 +251,7 @@ $app->group('/table', function () use ($app) {
 	    $staff = new Table($this->db);
 	    $result = $staff->allInfo($args['staff_id']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 
 	    
 	    return $response;
@@ -268,7 +263,7 @@ $app->group('/table', function () use ($app) {
 	    $staff = new Table($this->db);
 	    $result = $staff->getProfile($args['staff_id']);  
 	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
+		$response = $response->withJson($ack);
 
 	    return $response; 
 	});
@@ -299,6 +294,20 @@ $app->group('/chat', function () use ($app) {
 	$app->get('/readlist', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getReadList($_GET);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/comment', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
+		$chat = new Chat($this->db);
+		$result = $chat->getComment($_GET);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/readcount', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getReadCount($_GET);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -344,7 +353,7 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->get('/content/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->getChatContent($args['chatID']);
+		$result = $chat->getChatContent($args['chatID'],$_GET);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -352,6 +361,13 @@ $app->group('/chat', function () use ($app) {
 	$app->patch('/message', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->updateMessage($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->patch('/comment', function (Request $request, Response $response, array $args) { //TODO
+		$chat = new Chat($this->db);
+		$result = $chat->updateComment($request->getParsedBody());
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -365,7 +381,7 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->post('/file/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles());
+		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles(),false);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -390,6 +406,69 @@ $app->group('/chat', function () use ($app) {
 		}
 		return $response;
 	});
+	$app->post('/picture/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles(),true);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/picture/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->downloadFile($args['fileID']);
+		if(isset($result['data'])){
+	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+    	    $image = @file_get_contents($file);
+    		$response->write($image);
+		    return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
+		}else{
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		}
+		return $response;
+	});
+	$app->get('/thumbnail/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->downloadFile($args['fileID']);
+		if(isset($result['data'])){
+	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+    	    $image = $chat->thumbnail($file);
+			imagejpeg($image, null, 100);
+		    return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
+		}else{
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		}
+		return $response;
+	});
+});
+
+$app->group('/work', function () use ($app) {
+	$app->get('/check/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
+	    $staff = new Work($this->db);
+	    $result = $staff->check($args['staff_name'],$args['todayDate']);   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+	$app->get('/checkAll/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
+	    $staff = new Work($this->db);
+	    $result = $staff->checkALL($args['staff_name'],$args['todayDate']);   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+	$app->post('/checkin', function (Request $request, Response $response, array $args) {
+	    $staff = new Work($this->db);
+	    $result = $staff->checkinToday();   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
+	
 });
 
 $app->run();

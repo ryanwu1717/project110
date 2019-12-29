@@ -92,7 +92,7 @@ use Slim\Http\UploadedFile;
 		}
 		function getDepartment()
 		{  	
-			$sql ='SELECT * from staff_information.department ORDER BY department_name desc;';	
+			$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();			
@@ -178,23 +178,20 @@ use Slim\Http\UploadedFile;
             else
               return $this->paddingLeft("0".$str,$strLenght);
         }
-        function checkStaffId($staff_id)
-        {        
-            $sql ='SELECT staff_id FROM staff.staff WHERE staff_id = :staff_id;';    
+        function staffId($staff_department,$staff_position)
+        {   
+            $dp = $staff_department.$staff_position.'%';         
+            $sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';    
             $statement = $this->conn->prepare($sql);
-            $statement->bindParam(':staff_id',$staff_id);
+            $statement->bindParam(':dp',$dp);
             $statement->execute();
-            $row = $statement->fetchAll();
-            if(count($row)!=0){
-            	$ack = array(
-            		"status"=>false
-            	);
-            }else{
-            	$ack = array(
-            		"status"=>true
-            	);
-            }
-            return $ack;
+            $row = $statement->fetchColumn(0);
+            $row += 1;
+            $row = (string)$row;
+            $newId = $this->paddingLeft($row,4);
+            $newId = $staff_department.$staff_position.$newId;
+            // echo $newId;    
+            return $newId;
         }
 
        	function checkString($strings, $standard){
@@ -207,13 +204,17 @@ use Slim\Http\UploadedFile;
        	}
 
        public function check($field,$input){
-       		if(empty($input)&&$field!='離職日期'){
+       		if(empty($input)){
        			return $field."不得為空";
        		}
        		$inputLen = strlen($input);
        		
        		//A. 檢查是不是數字
 	        $standard_A = "/^([0-9]+)$/"; 
+       		//A. 檢查是不是分機符號
+	        $standard_A_1 = "/^([0-9]+)*(#([0-9]+))?$/"; 
+       		//A. 檢查是不是就學期間
+	        $standard_A_2 = "/^([0-9]{2,3}-[0-9]{2,3})$/"; 
 	        //B. 檢查是不是小寫英文
 	        $standard_B = "/^([a-z]+)$/";
 	        //C. 檢查是不是大寫英文
@@ -277,7 +278,7 @@ use Slim\Http\UploadedFile;
 					return "success";
 					break;
 				case '公司聯絡電話':
-       				if($this -> checkString($input, $standard_A) == 0){
+       				if($this -> checkString($input, $standard_A_1) == 0){
 						return $field."不符合格式";
 					}
 					return "success";
@@ -332,7 +333,7 @@ use Slim\Http\UploadedFile;
 					return "success";
 					break;
 				case '就學期間':
-       				if($inputLen > 20){
+       				if($this -> checkString($input, $standard_A_2) == 0){
 						return $field."不符合格式";
 					}
 					return "success";
@@ -363,12 +364,6 @@ use Slim\Http\UploadedFile;
 					}
 					return "success";
 					break;
-				case '確認密碼':
-       				if($_POST['password'] != $input){
-						return $field."密碼不一致";
-					}
-					return "success";
-					break;
        			default:
        				return "success";
        				break;
@@ -383,15 +378,14 @@ use Slim\Http\UploadedFile;
 			$check['checkPosition'] = $this -> check('職位',$_POST['buttonPosition']);
 			$check['checkName'] = $this -> check('中文名字',$_POST['staffName']);
 			$check['checkPassword'] = $this -> check("密碼",$_POST['password']);
-			$check['checkPassword'] = $this -> check("確認密碼",$_POST['rePassword']);
 			$check['checkBirthday'] = $this -> check('生日',$_POST['staffBirthday']);
 			$check['checkGender'] = $this -> check('性別',$_POST['buttonGender']);
 			$check['checkMarriage'] = $this -> check('婚姻狀況',$_POST['buttonMarriage']);
 			$check['checkTWid'] = $this-> check('身分證號碼',$_POST['TWid']);
 
-			$check['checkContactCompanyNumber'] = $this -> check("公司聯絡電話",$_POST['homeNumber']);
+			$check['checkContactCompanyNumber'] = $this -> check("公司聯絡電話",$_POST['companyNumber']);
 			$check['checkContactPhoneNumber'] = $this -> check("手機",$_POST['phoneNumber']);
-			$check['checkContactHomeNumber'] = $this -> check("住家電話",$_POST['companyNumber']);
+			$check['checkContactHomeNumber'] = $this -> check("住家電話",$_POST['homeNumber']);
 			$check['checkContactHomeAddress'] = $this -> check("戶籍地址",$_POST['homeAddress']);
 			$check['checkContactContactAddress'] = $this -> check("通訊地址",$_POST['contactAddress']);
 
@@ -466,8 +460,81 @@ use Slim\Http\UploadedFile;
 		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
 		   		$_POST=json_decode($_POST['data'],true);
 		   		//var_dump($_POST);
-		   		$staff_id = $_POST['staffId'];
-				$sth->bindParam(':staff_id',$_POST['staffId']);
+		   		$staff_id = $this->staffId($_POST['buttonDepartment'],$_POST['buttonPosition']);
+				$sth->bindParam(':staff_id',$staff_id);
+				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
+				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
+				$sth->bindParam(':staff_name',$_POST['staffName']);
+				$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
+				$sth->bindParam(':staff_gender',$_POST['buttonGender']);
+				$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
+				$sth->bindParam(':staff_TWid',$_POST['TWid']);
+				$sth->bindParam(':staff_password',$_POST['password']);
+
+
+				$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
+				$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
+				$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
+				$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
+				$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
+
+				$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
+				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
+				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
+				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
+				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+
+				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
+				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
+				$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
+				$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
+				$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
+
+				$sth->bindParam(':education_time',$_POST['educationTime']);
+				$sth->bindParam(':education_type',$_POST['educationType']);
+				$sth->bindParam(':education_school',$_POST['schoolName']);
+				$sth->bindParam(':education_department',$_POST['schoolDepartment']);
+				$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
+
+				$sth->execute();
+				$ack = array(
+					'status' => 'success', 
+					'staff_id' => $staff_id
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+				);
+			}
+			return $ack;
+		}
+		function modify(){
+			try{
+				$sql = 'UPDATE staff.staff
+							SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
+								 staff_birthday=:staff_birthday, staff_gender = :staff_gender, staff_marriage = :staff_marriage,
+								 "staff_TWid" = :staff_TWid,
+								 "contact_homeNumber" = :contact_homeNumber, "contact_phoneNumber" = :contact_phoneNumber,
+								 "contact_companyNumber" = :contact_companyNumber, "contact_homeAddress" = :contact_homeAddress,
+								 "contact_contactAddress" = :contact_contactAddress,
+								 "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatus"= :seniority_workStatus,
+								 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate, 
+								 "seniority_leaveDate" = :seniority_leaveDate,
+								 "contactPerson_name" = :contactPerson_name, "contactPerson_homeNumber" = :contactPerson_homeNumber,
+								 "contactPerson_phone" = :contactPerson_phone, "contactPerson_relation" = :contactPerson_relation,
+								 "contactPerson_more" = :contactPerson_more,
+								 education_time = :education_time, education_type = :education_type,
+								 education_school = :education_school, education_department = :education_department,
+								 education_status = :education_status, staff_password = :staff_password
+							WHERE "staff_id" = :staff_id;';
+				$sth = $this->conn->prepare($sql);
+
+				//var_dump($_POST);
+		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
+		   		$_POST=json_decode($_POST['data'],true);
+		   		//var_dump($_POST);
+
+				$sth->bindParam(':staff_id',$_POST['staff_id']);
 				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
 				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
 				$sth->bindParam(':staff_name',$_POST['staffName']);
@@ -493,80 +560,6 @@ use Slim\Http\UploadedFile;
 				}else{
 					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
 				}
-
-				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
-				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
-				$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
-				$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
-				$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
-
-				$sth->bindParam(':education_time',$_POST['educationTime']);
-				$sth->bindParam(':education_type',$_POST['educationType']);
-				$sth->bindParam(':education_school',$_POST['schoolName']);
-				$sth->bindParam(':education_department',$_POST['schoolDepartment']);
-				$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
-
-				$sth->execute();
-				$ack = array(
-					'status' => 'success', 
-					'staff_id' => $staff_id
-				);
-			}catch(PDOException $e){
-				$ack = array(
-					'status' => 'failed'
-				);
-			}
-			return $ack;
-		}
-		function modify($staff_id){
-			try{
-				$sql = 'UPDATE staff.staff
-							SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
-								 staff_birthday=:staff_birthday, staff_gender = :staff_gender, staff_marriage = :staff_marriage,
-								 "staff_TWid" = :staff_TWid,
-								 "contact_homeNumber" = :contact_homeNumber, "contact_phoneNumber" = :contact_phoneNumber,
-								 "contact_companyNumber" = :contact_companyNumber, "contact_homeAddress" = :contact_homeAddress,
-								 "contact_contactAddress" = :contact_contactAddress,
-								 "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatus"= :seniority_workStatus,
-								 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate, 
-								 "seniority_leaveDate" = :seniority_leaveDate,
-								 "contactPerson_name" = :contactPerson_name, "contactPerson_homeNumber" = :contactPerson_homeNumber,
-								 "contactPerson_phone" = :contactPerson_phone, "contactPerson_relation" = :contactPerson_relation,
-								 "contactPerson_more" = :contactPerson_more,
-								 education_time = :education_time, education_type = :education_type,
-								 education_school = :education_school, education_department = :education_department,
-								 education_status = :education_status, staff_password = :staff_password, staff_id = :staff_id
-							WHERE "staff_id" = :staff_id_org;';
-				$sth = $this->conn->prepare($sql);
-
-				//var_dump($_POST);
-		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
-		   		$_POST=json_decode($_POST['data'],true);
-		   		//var_dump($_POST);
-
-				$sth->bindParam(':staff_id',$_POST['staffId']);
-				$sth->bindParam(':staff_id_org',$staff_id);
-				$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
-				$sth->bindParam(':staff_position',$_POST['buttonPosition']);
-				$sth->bindParam(':staff_name',$_POST['staffName']);
-				$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
-				$sth->bindParam(':staff_gender',$_POST['buttonGender']);
-				$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
-				$sth->bindParam(':staff_TWid',$_POST['TWid']);
-				$sth->bindParam(':staff_password',$_POST['password']);
-
-
-				$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
-				$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
-				$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
-				$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
-				$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
-
-				$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
-				$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
-				$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
-				$sth->bindParam(':seniority_endDate',$_POST['endDate']);
-				$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
 
 				$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
 				$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
@@ -631,6 +624,7 @@ use Slim\Http\UploadedFile;
 			$statement->bindParam(':staff_id',$staff_id);
 			$statement->execute();
 			$row = $statement->fetchAll();
+			// echo $row.staff_department;
 			return $row;
 		}
 		function getProfile($staff_id){
@@ -639,7 +633,7 @@ use Slim\Http\UploadedFile;
 				$data = array();
 				foreach ($profile[0] as $key => $value) {
 					if($key=='staff_department') $data['部門']=$value;
-					else if($key=='staff_id') $data['員工編號']=$value;
+					else if($key=='staff_id') $data['職員編號']=$value;
 					else if($key=='staff_position') $data['職位']=$value;
 					else if($key=='staff_name') $data['中文名字']=$value;
 					else if($key=='staff_password') $data['密碼']=$value;
@@ -689,6 +683,7 @@ use Slim\Http\UploadedFile;
 
 		function __construct($db){
 			$this->conn = $db;
+			session_write_close();
 		}
 
 		function getChatroomTitle($chatID){
@@ -713,35 +708,39 @@ use Slim\Http\UploadedFile;
 								where "UID"= :UID
 								)as "chatWith" 
 								LEFT JOIN (
-											SELECT "cH3"."chatID","UID" as "chatToWhom"
-											FROM(
-												SELECT "couUID","chatID","time"
-												FROM(
-													SELECT "chatID" as "cID", COUNT("UID")as "couUID"
-													FROM staff_chat."chatHistory"
-													group by "chatID") as "cUID"
-													LEFT JOIN staff_chat."chatHistory" as "cH2"
-													on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
-											LEFT join staff_chat."chatHistory" as "cH3"
-											on "check"."chatID"="cH3"."chatID"
-											where "UID"!= :UID
-											)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
+									SELECT "cH3"."chatID","UID" as "chatToWhom"
+									FROM(
+										SELECT "couUID","chatID","time"
+										FROM(
+											SELECT "chatID" as "cID", COUNT("UID")as "couUID"
+											FROM staff_chat."chatHistory"
+											group by "chatID") as "cUID"
+											LEFT JOIN staff_chat."chatHistory" as "cH2"
+											on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
+									LEFT join staff_chat."chatHistory" as "cH3"
+									on "check"."chatID"="cH3"."chatID"
+									where "UID"!= :UID
+									)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
 								LEFT JOIN (
-											SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
-											FROM(
-												SELECT "chatID",MAX("sentTime")as "LastTime"
-												FROM staff_chat."chatContent"
-												Group by "chatID")as "cILT" 
-								LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
-								where "LastTime"="sentTime")as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
+									SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
+									FROM(
+										SELECT "chatID",MAX("sentTime")as "LastTime"
+										FROM staff_chat."chatContent"
+										Group by "chatID"
+									)as "cILT" 
+									LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
+									Where "LastTime"="sentTime"
+								)as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
 								LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
 								LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
-								LEFT JOIN (SELECT "chatID","UID",COUNT("c")as "CountUnread"
-											FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
-												FROM staff_chat."chatHistory"
-												join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
-												where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
-											group by "chatID","UID") as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+								LEFT JOIN (
+									SELECT "chatID","UID",COUNT("c")as "CountUnread"
+									FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+										FROM staff_chat."chatHistory"
+										join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+										where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
+										group by "chatID","UID"
+									) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
 								order by "LastTime1" desc;';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
@@ -760,7 +759,31 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+		function getReadCount($body){
+			$data = json_decode($body['data'],true);
+			$UID =$_SESSION['id'];
+			$sql = '
+				SELECT to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
+					FROM(
+					SELECT "chatHistory"."UID", MAX("chatContent"."sentTime") AS "sentTime"
+					FROM staff_chat."chatHistory"
+					LEFT JOIN staff_chat."chatContent" ON "chatHistory"."time" > "chatContent"."sentTime" AND "chatContent"."chatID" = :chatID
+					WHERE "chatHistory"."chatID" = :chatID AND "chatHistory"."UID" != :UID
+					GROUP BY "chatHistory"."UID"
+				)AS A
+				WHERE "sentTime" IS NOT NULL
+				GROUP BY "sentTime"
+				ORDER BY "sentTime" ASC;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$data['chatID'],PDO::PARAM_INT);
+			$sth->execute();
 
+			$row = $sth->fetchAll();
+			array_push($row,array('chatID'=>$data['chatID']));
+			return $row;
+		}
 		function getReadList($body){
 			$data = json_decode($body['data'],true);
 			$sql = '
@@ -783,49 +806,99 @@ use Slim\Http\UploadedFile;
 			$sth->execute();
 
 			$row = $sth->fetchAll();
-
 			return $row;
 		}
-
-		function getChatContent($chatID){
-			$sql = '
-				SELECT *
-				FROM(
-					SELECT "chatContent"."content",to_char( "chatContent"."sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
-					FROM staff_chat."chatContent"
-					LEFT JOIN
-					(
-						SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
-						FROM (
-							SELECT content, "sentTime", "UID" as "sentFrom","chatID"
-							FROM staff_chat."chatContent"
-							WHERE "chatID"= :chatID)as "display",
-							(
-								SELECT "chatID", "time", "UID"
-								FROM staff_chat."chatHistory"
-								Where "chatID"=:chatID
-							) as "chatHistory" 
-						Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
-						Group by "content","sentTime","sentFrom" 
-					) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
-					LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
-					Where "chatID"=:chatID
-					order by "chatContent"."sentTime" desc 
-					limit :limit ) as "tmpChatContent"
-				order by "tmpChatContent"."sentTime" asc
+		function getComment($body){//TODO
+			$data = json_decode($body['data'],true);
+			$sql ='
+				SELECT "sender","content","sentTime"
+				FROM staff_chat."chatComment"
+				WHERE "chatID"=:CID and "chatOrigin"=:UID and "chatTime"=:CT
 			';
-			$limit=$_GET['limit'];
 			$sth = $this->conn->prepare($sql);
-			$UID =$_SESSION['id'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->bindParam(':limit',$limit,PDO::PARAM_INT);
+			//bindParam
+			$sth->bindParam(':UID',$data['UID'],PDO::PARAM_STR);
+			$sth->bindParam(':CID',$data['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':CT',$data['sentTime']);
 			$sth->execute();
 
 			$row = $sth->fetchAll();
-			$body = array('chatID'=>$chatID);
-			$this->updateLastReadTime($body);
 			return $row;
+		}
+		function getChatContent($chatID,$body){
+			$data = json_decode($body['data'],true);
+			$UID =$_SESSION['id'];
+			for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
+
+				$sql = '
+					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					FROM (
+						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+						FROM staff_chat."chatContent"
+						LEFT JOIN (
+							SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
+							FROM (
+									SELECT content, "sentTime", "UID" as "sentFrom","chatID"
+									FROM staff_chat."chatContent"
+									WHERE "chatID"= :chatID
+								)as "display",(
+									SELECT "chatID", "time", "UID"
+									FROM staff_chat."chatHistory"
+									Where "chatID"=:chatID
+								) as "chatHistory" 
+							Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
+							Group by "content","sentTime","sentFrom" 
+						) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
+						LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
+						Where "chatID"=:chatID
+						order by "chatContent"."sentTime" desc 
+						-- limit :limit 
+					) as "tmpChatContent"
+					order by "tmpChatContent"."sentTime" asc
+				';
+	            // $sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
+	            //         as "diff",staff_name 
+	            //         FROM staff_chat."chatContent" 
+	            //         left join "staff"."staff" on staff.staff_id="chatContent"."UID" 
+	            //         WHERE "chatID"= :chatID 
+	            //         order by "sentTime" asc;';
+
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				if(count($row)==$data['count']){
+					usleep(1000000);
+				}else{
+					$result = array();
+					for($j=$data['count'];$j<count($row);$j++){
+						array_push($result,$row[$j]);
+					}
+					array_push($result,array('chatID'=>$chatID));
+					// $body = array('chatID'=>$chatID);
+					// $this->updateLastReadTime($body);
+					return $result;
+				}
+			}
+
+			// $result=($row==$data);
+			// array_push($row, array('diff'=>$result));
+
+			// $sth = $this->conn->prepare($sql);
+			// $UID =$_SESSION['id'];
+			// $sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			// $sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
+			// $sth->execute();
+
+			// $row = $sth->fetchAll();
+			// $body = array('chatID'=>$chatID);
+			// $this->updateLastReadTime($body);
+			$result = array();
+			array_push($result,array('chatID'=>$chatID));
+			return $result;
 		}
 
 		function updateMessage($body){
@@ -842,6 +915,29 @@ use Slim\Http\UploadedFile;
 
 			$ack = array(
 				'status'=>'success'
+			);
+			return $ack;
+		}
+		function updateComment($body){//TODO
+			$sql = 'INSERT INTO staff_chat."chatComment"("chatID","chatOrigin","chatTime","content","sender","sentTime")
+					VALUES (:CID,:UID,:CT,:Msg,:SID,NOW())';
+			$sth = $this->conn->prepare($sql);
+			$chatID=$body['chatID'];
+			$origin=$body['chatOrigin'];
+			$chattime=$body['chatTime'];
+			$date = strtotime($chattime);
+			$Msg=$body['Msg'];
+			$SID =$_SESSION['id'];
+			$sth->bindParam(':CID',$chatID);
+			$sth->bindParam(':UID',$origin);
+			$sth->bindParam(':CT',$chattime);
+			$sth->bindParam(':Msg',$Msg);
+			$sth->bindParam(':SID',$SID);
+			$sth->execute();
+
+			$ack = array(
+				'content'=>$Msg,
+				'time'=>date("Y-m-d H:i:s",$date)
 			);
 			return $ack;
 		}
@@ -940,8 +1036,7 @@ use Slim\Http\UploadedFile;
 			}
 			return $row;
 		}
-
-		function uploadFile($chatID,$directory,$uploadedFiles){
+		function uploadFile($chatID,$directory,$uploadedFiles,$isPicture){
 			// handle single input with single file upload
 		    $uploadedFile = $uploadedFiles['inputFile'];
 		    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
@@ -958,7 +1053,15 @@ use Slim\Http\UploadedFile;
 						VALUES ( :Msg , :UID , NOW(), :chatID );';
 				$sth = $this->conn->prepare($sql);
 				$UID = $_SESSION['id'];
-				$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
+				if($isPicture){
+					$Msg = '
+						<a href="#" data-toggle="modal" data-target="#basicModal" data-type="photo" data-src="/chat/picture/'.$this->conn->lastInsertId().'">
+							<img src="/chat/thumbnail/'.$this->conn->lastInsertId().'" alt="..." class="img-thumbnail">
+						</a>
+					';
+				}else{
+					$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
+				}
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
@@ -1006,5 +1109,34 @@ use Slim\Http\UploadedFile;
 		    }
 		    return $result;
 		}
+	   	function thumbnail($filename,$width=200,$height=200){
+	        //獲取原影象$filename的寬度$width_orig和高度$height_orig
+	        list($width_orig,$height_orig) = getimagesize($filename);
+	        $infos = @getimagesize($filename);
+            switch($infos['mime']) { 
+		     	case 'image/gif': 
+		      		$image = imagecreatefromgif($filename); 
+		     	break; 
+				case 'image/jpeg': 
+					$image = imagecreatefromjpeg($filename); 
+				break; 
+				case 'image/png': 
+					$image = imagecreatefrompng($filename); 
+				break; 
+		    } 
+	        //根據引數$width和$height值，換算出等比例縮放的高度和寬度
+	        if ($width && ($width_orig<$height_orig)){
+	            $width = ($height/$height_orig)*$width_orig;
+	        }else{
+	            $height = ($width / $width_orig)*$height_orig;
+	        }
+	 
+	        //將原圖縮放到這個新建立的圖片資源中
+	        $image_p = imagecreatetruecolor($width, $height);
+	 
+	        //使用imagecopyresampled()函式進行縮放設定
+	        imagecopyresampled($image_p,$image,0,0,0,0,$width,$height,$width_orig,$height_orig);
+	 		return $image_p;
+	    }
 	}
 ?>
