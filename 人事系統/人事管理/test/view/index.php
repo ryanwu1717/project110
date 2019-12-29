@@ -254,6 +254,18 @@ img{ max-width:100%;}
       <div class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
+
+          <div style="display:flex; justify-content:flex-end; width:100%; ">
+            <div class="btn-group" id="tool_dropdown" >
+              <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" >
+              </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
+              </div>
+            </div>
+          </div>
         </nav>
       </div>
       <div class="msg_history" name=chatBox>
@@ -359,7 +371,7 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
-        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete"> <span aria-hidden="true">&times;</span> </button><button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member"> <span aria-hidden="true">&equiv;</span> </button>                  <p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
+        $('[name=inbox_chat]').append('<div class="chat_list" onclick="getTarget('+this.chatID+',\''+chatName+'\');" data-name="'+this.chatID+'">              <div class="chat_people">                <div class="chat_img"> <div class="circleBase type2"></div> </div>                <div class="chat_ib">                  <h5>'+chatName+' <span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span></h5>                 <p class="text-truncate chatContent">'+ (this.content==null?' ':this.content) +'</p>      '+haveUnread+'         </div>              </div>            </div>');
       });
     } 
   });
@@ -369,10 +381,13 @@ var chatID=-1;
 
 var chatName = '';
 
+$('#tool_dropdown').hide()
+
 function getTarget(_chatID,_chatName){
   chatID = _chatID;
   chatName = _chatName;
   $('[name=navbarChatroomTitle]').text(chatName);
+  $('#tool_dropdown').show()
   resetLimit();
   updateLastReadTime();
   clearTimeout(queue);
