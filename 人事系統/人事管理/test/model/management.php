@@ -179,6 +179,49 @@
 		} 
 	}
 
+	Class CheckinList{
+		var $conn;
+		var $result; 
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function getlist(){
+			$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff ;";
+			$sth = $this->conn->prepare($sql);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
+		}
+		function getCheckin($staff_id,$checkDate){
+			try{	 	
+				$sql ="SELECT checkintime,checkouttime,checkinlocation,checkoutlocation,staff_name FROM staff.checkin NATURAL JOIN staff.staff where staff_id = :id AND checkindate = :checkindate;";
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':id',$staff_id);
+				$sth->bindParam(':checkindate',$checkDate);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				if(empty($row)  ){
+					$ack = array(
+						'status' => 'failed', 
+					);
+				}else{
+					$ack = array(
+						'status' => 'success', 
+						'data' => $row
+					);
+				}
+				return $ack;
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'checkout' => false,
+					'message'=> $e
+				);
+				return $ack;
+			}	
+		}
+	}
+
 	Class Add{
 		var $conn;
 		var $result; 
