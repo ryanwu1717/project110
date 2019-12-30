@@ -133,7 +133,7 @@ function updateLastReadTime(){
     type:'post',
     data:{chatID:chatID,_METHOD:'PATCH'},
     dataType:'json'
-  })
+  });
 }
 
 function searchChatroom(){
@@ -257,7 +257,7 @@ function searchChat(){
                 '<div class="">'+this.UID+','+this.staff_name+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+this.content+'</p>'+
+                    '<p class="text-break">'+this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+'</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read">'+
                       '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
@@ -421,6 +421,8 @@ function getReadcount(){
       }
       response.pop();
       var readcountElement = response.shift();
+      if(readcountElement===undefined)
+        return false;
       $('a[data-type=readlist]').each(function(){
         $(this).text('已讀:'+readcountElement.sum);
         if($(this).attr('data-sentTime')==readcountElement.sentTime){
