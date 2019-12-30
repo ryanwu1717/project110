@@ -32,6 +32,18 @@
       <div class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
+
+          <div style="display:flex; justify-content:flex-end; width:100%; ">
+            <div class="btn-group" id="tool_dropdown" >
+              <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" >
+              </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
+              </div>
+            </div>
+          </div>
         </nav>
       </div>
       <div class="msg_history" name=chatBox>
@@ -175,6 +187,7 @@ function searchChatroom(){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
         }
+     
         $('[name=inbox_chat]').append(
           '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
             '<div class="chat_people">'+
@@ -185,12 +198,6 @@ function searchChatroom(){
                 '<h5>'+chatName+
                   '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
                 '</h5>'+
-                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="delete">'+
-                  '<span aria-hidden="true">&times;</span>'+
-                '</button>'+
-                '<button type="button" class="close" aria-label="Close" data-toggle="modal" data-target="#basicModal" data-type="member">'+
-                  '<span aria-hidden="true">&equiv;</span>'+
-                '</button>'+
                 '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
                 haveUnread +
               '</div>'+
@@ -207,6 +214,10 @@ function searchChatroom(){
 }
 var chatID=-1;
 var chatName = '';
+
+$('#tool_dropdown').hide()
+
+
 function getTarget(_chatID,_chatName){
   // console.log($(div).attr("data-name"));
   // chatID=$(div).attr("data-name");
@@ -216,6 +227,7 @@ function getTarget(_chatID,_chatName){
   $('[name=chatBox]').html("");
   chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
+  $('#tool_dropdown').show()
   resetLimit();
   updateLastReadTime();
   schedule();
@@ -257,7 +269,11 @@ function searchChat(){
                 '<div class="">'+this.UID+','+this.staff_name+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+'</p>'+
+                    '<p class="text-break">'+
+                      +this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
+                      '<br>'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" style="color:red">'+'留言'+'</a>'+
+                    '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read">'+
                       '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
@@ -271,7 +287,11 @@ function searchChat(){
             $('[name=chatBox]').append(
               '<div class="outgoing_msg">'+
                 '<div class="sent_msg">'+
-                  '<p class="text-break content">  '+this.content+'  </p>'+
+                  '<p class="text-break content">'+
+                    +this.content+
+                    '<br>'+
+                    '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'"  style="color:red">'+'留言'+'</a>'+
+                  '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
                   '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
                 '</div>'+
@@ -359,6 +379,25 @@ function sendMsg(){
     }
   });
 }
+function sendComment(msgsender,msgtime,data){
+  console.log(msgtime);
+  Msg=$("#commentinput").val();
+  Msg = Msg.replace(/\r?\n/g, '<br />');
+    $.ajax({
+      url:'/chat/comment',
+      type:'post',
+      data:{Msg:Msg,
+            chatID:chatID,
+            chatOrigin:msgsender,
+            chatTime:msgtime,
+            _METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        getCommentContent(data)
+        console.log(response);
+    }
+  });
+}
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
   var type = $(e.relatedTarget).data('type');
@@ -376,6 +415,8 @@ $('#basicModal').on('show.bs.modal',function(e){
     attachType();
   }else if(type=='photo'){
     viewPhoto($(e.relatedTarget).data('src'));
+  }else if(type=='comments'){
+    getComment($(e.relatedTarget).data());
   }
 });
 function viewPhoto(src){
@@ -462,6 +503,65 @@ function getReadlist(relatedData){
           $('[name=readList]').append('<p>'+this.staff_name+'</p>')
         else
           $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+      });
+    }
+  });
+}
+function getComment(relatedData){//TODO
+  console.log(relatedData);
+  var data = new Object();
+  data['UID'] = relatedData['uid'];
+  data['sentTime'] = relatedData['senttime'];
+  data['content'] = decodeURIComponent(relatedData['content']);
+  data['chatID'] = chatID;
+  
+  $('#basicModal .modal-title').text('留言板');
+  $('#basicModal .modal-body').html(
+    '<h5>訊息</h5>'+
+    '<div name="message">'+decodeURIComponent(relatedData['content'])+'</div>'+
+    '已讀:'+relatedData['readcount']+
+    '<hr>'+
+    '<h5>留言</h5>'+
+    '<div name="comment"></div>'+
+    '<div class="type_msg">'+
+      '<div class="input_msg_write">'+
+        '<textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>'+
+        '<button class="comment_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>'+
+        '</div>'+
+      '</div>'
+
+  );
+  $('.comment_send_btn').on('click',function(){
+    if($("#commentinput").val()!=""){
+      sendComment(relatedData['uid'],relatedData['senttime'],data);
+      $("#commentinput").val("");
+    }
+  });
+  getCommentContent(data);
+}
+function getCommentContent(data){
+  $.ajax({
+    url:'/chat/comment',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      console.log(response)
+      $('[name=comment]').html("");
+      $(response).each(function(){
+        $('[name=comment]').append(
+            '<div class="incoming_msg">'+
+                '<div class="">'+this.sender+'</div>'+
+                '<div class="received_msg">'+
+                  '<div class="received_withd_msg">'+
+                    '<p class="text-break">'+
+                      this.content+
+                    '</p>'+
+                    '<span class="time_date"> '+this.sentTime+'</span>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'
+          )
       });
     }
   });

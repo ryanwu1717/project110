@@ -808,13 +808,30 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+		function getComment($body){//TODO
+			$data = json_decode($body['data'],true);
+			$sql ='
+				SELECT "sender","content","sentTime"
+				FROM staff_chat."chatComment"
+				WHERE "chatID"=:CID and "chatOrigin"=:UID and "chatTime"=:CT
+			';
+			$sth = $this->conn->prepare($sql);
+			//bindParam
+			$sth->bindParam(':UID',$data['UID'],PDO::PARAM_STR);
+			$sth->bindParam(':CID',$data['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':CT',$data['sentTime']);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+			return $row;
+		}
 		function getChatContent($chatID,$body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
 			for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
 
 				$sql = '
-					SELECT "content",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
 					FROM (
 						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
 						FROM staff_chat."chatContent"
@@ -898,6 +915,29 @@ use Slim\Http\UploadedFile;
 
 			$ack = array(
 				'status'=>'success'
+			);
+			return $ack;
+		}
+		function updateComment($body){//TODO
+			$sql = 'INSERT INTO staff_chat."chatComment"("chatID","chatOrigin","chatTime","content","sender","sentTime")
+					VALUES (:CID,:UID,:CT,:Msg,:SID,NOW())';
+			$sth = $this->conn->prepare($sql);
+			$chatID=$body['chatID'];
+			$origin=$body['chatOrigin'];
+			$chattime=$body['chatTime'];
+			$date = strtotime($chattime);
+			$Msg=$body['Msg'];
+			$SID =$_SESSION['id'];
+			$sth->bindParam(':CID',$chatID);
+			$sth->bindParam(':UID',$origin);
+			$sth->bindParam(':CT',$chattime);
+			$sth->bindParam(':Msg',$Msg);
+			$sth->bindParam(':SID',$SID);
+			$sth->execute();
+
+			$ack = array(
+				'content'=>$Msg,
+				'time'=>date("Y-m-d H:i:s",$date)
 			);
 			return $ack;
 		}
