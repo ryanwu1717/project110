@@ -763,7 +763,7 @@ use Slim\Http\UploadedFile;
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
 			$sql = '
-				SELECT to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
+				SELECT "sentTime" as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
 					FROM(
 					SELECT "chatHistory"."UID", MAX("chatContent"."sentTime") AS "sentTime"
 					FROM staff_chat."chatHistory"
@@ -792,7 +792,7 @@ use Slim\Http\UploadedFile;
 					SELECT content, "chatHistory"."UID", "chatHistory"."chatID",case when "time" > "sentTime" then \'true\' else \'false\' end as "checkread"
 					FROM staff_chat."chatContent" as "chatContent"
 					join staff_chat."chatHistory" as "chatHistory" on "chatContent"."chatID"="chatHistory"."chatID"
-					Where content=:whichTalk and "chatHistory"."chatID"=:chatID
+					Where content=:whichTalk and "chatHistory"."chatID"=:chatID and "sentTime" = :sentTime
 				)as "checkUnread"
 				left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
 				where "staff_id"!=:UID
@@ -800,6 +800,7 @@ use Slim\Http\UploadedFile;
 			';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
+			$sth->bindParam(':sentTime',$data['sentTime'],PDO::PARAM_STR);
 			$sth->bindParam(':whichTalk',$data['content'],PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$data['chatID'],PDO::PARAM_INT);
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);

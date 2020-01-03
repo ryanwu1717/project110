@@ -32,16 +32,13 @@
       <div class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
-
-          <div style="display:flex; justify-content:flex-end; width:100%; ">
-            <div class="btn-group" id="tool_dropdown" >
-              <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" >
-              </button>
+          <div class="btn-group d-flex justify-content-end" id="tool_dropdown" >
+            <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" >
+            </button>
             <div class="dropdown-menu dropdown-menu-right">
-                <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
-              </div>
+              <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
             </div>
           </div>
         </nav>
@@ -145,7 +142,7 @@ function updateLastReadTime(){
     type:'post',
     data:{chatID:chatID,_METHOD:'PATCH'},
     dataType:'json'
-  })
+  });
 }
 
 function searchChatroom(){
@@ -270,14 +267,14 @@ function searchChat(){
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
                     '<p class="text-break">'+
-                      +this.content+
-                      '<br>'+
-                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" style="color:red">'+'留言'+'</a>'+
+                      this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
                     '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
-                    '<span class="read">'+
-                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                    '<span class="read ml-1">'+
+                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
                     '</span>'+
+                    '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#">6</span></a>'+
+                    '<a class="badge badge-danger ml-1" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>6</a>'+
                   '</div>'+
                 '</div>'+
               '</div>'
@@ -288,12 +285,12 @@ function searchChat(){
               '<div class="outgoing_msg">'+
                 '<div class="sent_msg">'+
                   '<p class="text-break content">'+
-                    +this.content+
-                    '<br>'+
-                    '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'"  style="color:red">'+'留言'+'</a>'+
+                    this.content+
                   '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
-                  '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.sentTime+'" data-UID="'+this.UID+'">已讀:'+this.Read+'</a>'+
+                  '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
+                  '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+                  '<a class="badge badge-light ml-1" href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>'+
                 '</div>'+
               '</div>'
             );
@@ -462,8 +459,10 @@ function getReadcount(){
       }
       response.pop();
       var readcountElement = response.shift();
+      if(readcountElement===undefined)
+        return false;
       $('a[data-type=readlist]').each(function(){
-        $(this).text('已讀:'+readcountElement.sum);
+        $(this).html('<i class="fa fa-eye" aria-hidden="true"></i>'+readcountElement.sum);
         if($(this).attr('data-sentTime')==readcountElement.sentTime){
           readcountElement = response.shift();
           if(readcountElement===undefined)
@@ -480,9 +479,12 @@ function getReadlist(relatedData){
     '<h5>已讀</h5>'+
     '<div name="readList"></div>'+
     '<hr>'+
-    '<h5>未讀</h5>'+
-    '<div name="unreadList"></div>'
+    '<div class="alert alert-secondary" role="alert">'+
+      '<h5 class="font-weight-bold">未讀</h5>'+
+      '<div name="unreadList"></div>'+
+    '</div>'
   );
+
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
@@ -500,7 +502,7 @@ function getReadlist(relatedData){
         if(this.checkread=='true')
           $('[name=readList]').append('<p>'+this.staff_name+'</p>')
         else
-          $('[name=unreadList]').append('<p>'+this.staff_name+'</p>')
+          $('[name=unreadList]').append('<p class="font-weight-bold">'+this.staff_name+'</p>')
       });
     }
   });
