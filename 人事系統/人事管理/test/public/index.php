@@ -444,17 +444,17 @@ $app->group('/chat', function () use ($app) {
 });
 
 $app->group('/work', function () use ($app) {
-	$app->get('/check/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
+	$app->get('/check/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
-	    $result = $staff->check($args['staff_name'],$args['todayDate']);   
+	    $result = $staff->check($args['todayDate']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
 	    
 	});
-	$app->get('/checkAll/{staff_name}/{todayDate}', function (Request $request, Response $response, array $args) {
+	$app->get('/checkAll/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
-	    $result = $staff->checkALL($args['staff_name'],$args['todayDate']);   
+	    $result = $staff->checkALL($args['todayDate']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;

@@ -77,14 +77,15 @@
 		function __construct($db){
 			$this->conn = $db;
 		}
-		function check($staff_name,$todaydate){
+		function check($todaydate){
 			try{	 	
+				$staff_id = $_SESSION['id'];
 				$sql ="SELECT checkin
 						FROM staff.checkin
-						WHERE staff_name= :staff AND checkindate = :checkinDate;";
+						WHERE staff_id= :staff AND checkindate = :checkinDate;";
 				$sth = $this->conn->prepare($sql);
-			   $sth->bindParam(':staff',$staff_name);
-			   $sth->bindParam(':checkinDate',$todaydate);
+			    $sth->bindParam(':staff',$staff_id);
+			    $sth->bindParam(':checkinDate',$todaydate);
 				$sth->execute();
 				$row = $sth->fetchColumn(0);
 				$ack = array(
@@ -99,14 +100,15 @@
 			}	
 			return $ack;
 		} 
-		function checkAll($staff_name,$todaydate){
-			try{	 	
+		function checkAll($todaydate){
+			try{	 
+				$staff_id = $_SESSION['id'];	
 				$sql ="SELECT checkout
 						FROM staff.checkin
-						WHERE staff_name= :staff AND checkindate = :checkinDate AND checkin = true;";
+						WHERE staff_id= :staff AND checkindate = :checkinDate AND checkin = true;";
 				$sth = $this->conn->prepare($sql);
-			   $sth->bindParam(':staff',$staff_name);
-			   $sth->bindParam(':checkinDate',$todaydate);
+			    $sth->bindParam(':staff',$staff_id);
+			    $sth->bindParam(':checkinDate',$todaydate);
 				$sth->execute();
 				$row = $sth->fetchColumn(0);
 				$ack = array(
@@ -123,14 +125,15 @@
 		} 
 
 		function checkinToday(){
-			$_POST=json_decode($_POST['data'],true);	
+			$_POST=json_decode($_POST['data'],true);
+			$staff_id = $_SESSION['id'];	
 			switch($_POST['type']){
 				case 'start':
 					try{	 	
-						$sql ="INSERT INTO staff.checkin(staff_name, checkintime, checkin, checkout, checkindate,checkinlocation )
+						$sql ="INSERT INTO staff.checkin(staff_id, checkintime, checkin, checkout, checkindate,checkinlocation )
 								VALUES (:staff, :checkinTime, true , false, :checkinDate,:checkinlocation);";
 						$sth = $this->conn->prepare($sql);
-					   $sth->bindParam(':staff',$_POST['staff_id']);
+					   $sth->bindParam(':staff',$staff_id);
 					   $sth->bindParam(':checkinTime',$_POST['checkinTime']);
 					   $sth->bindParam(':checkinDate',$_POST['checkinDate']);
 					   $sth->bindParam(':checkinlocation',$_POST['location']);
@@ -145,14 +148,15 @@
 							'checkout' => false,
 							'message'=> $e
 						);
-					}	
+					}
+					return $ack;	
 				case 'finish':
 					try{	 	
 						$sql ="UPDATE staff.checkin
 								SET checkouttime=:checkoutTime, checkout = true, checkoutlocation=:checkoutlocation
-								WHERE staff_name= :staff AND checkindate = :checkindate;";
+								WHERE staff_id= :staff AND checkindate = :checkindate;";
 						$sth = $this->conn->prepare($sql);
-					   $sth->bindParam(':staff',$_POST['staff_id']);
+					   $sth->bindParam(':staff',$staff_id);
 					   $sth->bindParam(':checkoutTime',$_POST['checkinTime']);
 					   $sth->bindParam(':checkindate',$_POST['checkinDate']);
 					   $sth->bindParam(':checkoutlocation',$_POST['location']);
@@ -168,14 +172,16 @@
 							'message'=> $e
 						);
 					}
+					return $ack;
 				default :
 					$ack = array(
 						'status' => 'failed', 
 						'checkout' => "default",
 					);
+					return $ack;
 			}
 
-			return $ack;
+			
 		} 
 	}
 

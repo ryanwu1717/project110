@@ -462,7 +462,7 @@ $(document).ready(function () {
 	    $('[name=checkOutButton]').hide();
 		console.log(todayDate);
 		$.ajax({
-	        url:'/work/check/'+tmpId+"/"+todayDate,
+	        url:'/work/check/'+todayDate,
 	        type:'get',
 	        dataType:'json',
 	        success:function(response){
@@ -474,7 +474,7 @@ $(document).ready(function () {
 	        }
 	    });
 	    $.ajax({
-	        url:'/work/checkAll/'+tmpId+"/"+todayDate,
+	        url:'/work/checkAll/'+todayDate,
 	        type:'get',
 	        dataType:'json',
 	        success:function(response){
@@ -524,7 +524,7 @@ $(document).ready(function () {
       			},
         		dataType:'json',
         		success:function(response){
-	          		if(response.checkout)
+	          		if(response.status = "success")
 	          		{
 	          			window.location.href='/checkin'; 
 	          		}
