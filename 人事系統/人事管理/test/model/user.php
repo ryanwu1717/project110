@@ -508,6 +508,192 @@ use Slim\Http\UploadedFile;
 			}
 			return $ack;
 		}
+		function tmpmodify(){
+			try{
+				$sql = 'UPDATE staff.staff
+							SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
+								 staff_birthday=:staff_birthday, staff_gender = :staff_gender, staff_marriage = :staff_marriage,
+								 "staff_TWid" = :staff_TWid,
+								 "contact_homeNumber" = :contact_homeNumber, "contact_phoneNumber" = :contact_phoneNumber,
+								 "contact_companyNumber" = :contact_companyNumber, "contact_homeAddress" = :contact_homeAddress,
+								 "contact_contactAddress" = :contact_contactAddress,
+								 "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatus"= :seniority_workStatus,
+								 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate, 
+								 "seniority_leaveDate" = :seniority_leaveDate,
+								 "contactPerson_name" = :contactPerson_name, "contactPerson_homeNumber" = :contactPerson_homeNumber,
+								 "contactPerson_phone" = :contactPerson_phone, "contactPerson_relation" = :contactPerson_relation,
+								 "contactPerson_more" = :contactPerson_more,
+								 education_time = :education_time, education_type = :education_type,
+								 education_school = :education_school, education_department = :education_department,
+								 education_status = :education_status, staff_password = :staff_password
+							WHERE "staff_id" = :staff_id;';
+				$sth = $this->conn->prepare($sql);
+
+				//var_dump($_POST);
+		   		//require_once('dbconnect.php');//引入資料庫連結設定檔
+		   		$_POST=json_decode($_POST['data'],true);
+		   		//var_dump($_POST);
+
+				$sth->bindParam(':staff_id',$_POST['staff_id']);
+				if($_POST['buttonDepartment']==''){
+					$sth->bindValue(':staff_department',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_department',$_POST['buttonDepartment']);
+				}
+				if($_POST['buttonPosition']==''){
+					$sth->bindValue(':staff_position',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_position',$_POST['buttonPosition']);
+				}
+				if($_POST['staffName']==''){
+					$sth->bindValue(':staff_name',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_name',$_POST['staffName']);
+				}
+				if($_POST['staffBirthday']==''){
+					$sth->bindValue(':staff_birthday',null,PDO::PARAM_INT);
+				}else{
+					$sth->bindParam(':staff_birthday',$_POST['staffBirthday']);
+				}
+				if($_POST['buttonGender']==''){
+					$sth->bindValue(':staff_gender',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_gender',$_POST['buttonGender']);
+				}
+				if($_POST['buttonMarriage']==''){
+					$sth->bindValue(':staff_marriage',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_marriage',$_POST['buttonMarriage']);
+				}
+				if($_POST['TWid']==''){
+					$sth->bindValue(':staff_TWid',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_TWid',$_POST['TWid']);
+				}
+				if($_POST['password']==''){
+					$sth->bindValue(':staff_password',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':staff_password',$_POST['password']);
+				}
+
+				if($_POST['homeNumber']==''){
+					$sth->bindValue(':contact_homeNumber',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contact_homeNumber',$_POST['homeNumber']);
+				}
+				if($_POST['phoneNumber']==''){
+					$sth->bindValue(':contact_phoneNumber',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contact_phoneNumber',$_POST['phoneNumber']);
+				}
+				if($_POST['companyNumber']==''){
+					$sth->bindValue(':contact_companyNumber',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contact_companyNumber',$_POST['companyNumber']);
+				}
+				if($_POST['homeAddress']==''){
+					$sth->bindValue(':contact_homeAddress',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contact_homeAddress',$_POST['homeAddress']);
+				}
+				if($_POST['contactAddress']==''){
+					$sth->bindValue(':contact_contactAddress',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contact_contactAddress',$_POST['contactAddress']);
+				}
+
+				if($_POST['buttonInsuredCompany']==''){
+					$sth->bindValue(':seniority_insuredCompany',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':seniority_insuredCompany',$_POST['buttonInsuredCompany']);
+				}
+				if($_POST['buttonWorkstatus']==''){
+					$sth->bindValue(':seniority_workStatus',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':seniority_workStatus',$_POST['buttonWorkstatus']);
+				}
+				if($_POST['buttonStafftype']==''){
+					$sth->bindValue(':seniority_staffType',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':seniority_staffType',$_POST['buttonStafftype']);
+				}
+				if($_POST['endDate']==''){
+					$sth->bindValue(':seniority_endDate',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':seniority_endDate',$_POST['endDate']);
+				}
+				if($_POST['leaveDate']==''){
+					$sth->bindValue(':seniority_leaveDate',null,PDO::PARAM_INT);
+				}else{
+					$sth->bindParam(':seniority_leaveDate',$_POST['leaveDate']);
+				}
+
+				if($_POST['contactPersonName']==''){
+					$sth->bindValue(':contactPerson_name',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contactPerson_name',$_POST['contactPersonName']);
+				}
+				if($_POST['contactPersonHomeNumber']==''){
+					$sth->bindValue(':contactPerson_homeNumber',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contactPerson_homeNumber',$_POST['contactPersonHomeNumber']);
+				}
+				if($_POST['contactPersonPhone']==''){
+					$sth->bindValue(':contactPerson_phone',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contactPerson_phone',$_POST['contactPersonPhone']);
+				}
+				if($_POST['contactPersonRelation']==''){
+					$sth->bindValue(':contactPerson_relation',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contactPerson_relation',$_POST['contactPersonRelation']);
+				}
+				if($_POST['contactPersonMore']==''){
+					$sth->bindValue(':contactPerson_more',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':contactPerson_more',$_POST['contactPersonMore']);
+				}
+
+				if($_POST['educationTime']==''){
+					$sth->bindValue(':education_time',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':education_time',$_POST['educationTime']);
+				}
+				if($_POST['educationType']==''){
+					$sth->bindValue(':education_type',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':education_type',$_POST['educationType']);
+				}
+				if($_POST['schoolName']==''){
+					$sth->bindValue(':education_school',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':education_school',$_POST['schoolName']);
+				}
+				if($_POST['schoolDepartment']==''){
+					$sth->bindValue(':education_department',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':education_department',$_POST['schoolDepartment']);
+				}
+				if($_POST['buttonEducationCondition']==''){
+					$sth->bindValue(':education_status',null,PDO::PARAM_STR);
+				}else{
+					$sth->bindParam(':education_status',$_POST['buttonEducationCondition']);
+				}
+
+				$sth->execute();
+				$ack = array(
+					'status' => 'success', 
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'message'=>$e
+				);
+			}
+			return $ack;
+		
+
+		}
 		function modify(){
 			try{
 				$sql = 'UPDATE staff.staff
@@ -763,7 +949,7 @@ use Slim\Http\UploadedFile;
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
 			$sql = '
-				SELECT "sentTime" as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
+				SELECT to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
 					FROM(
 					SELECT "chatHistory"."UID", MAX("chatContent"."sentTime") AS "sentTime"
 					FROM staff_chat."chatHistory"
@@ -792,7 +978,7 @@ use Slim\Http\UploadedFile;
 					SELECT content, "chatHistory"."UID", "chatHistory"."chatID",case when "time" > "sentTime" then \'true\' else \'false\' end as "checkread"
 					FROM staff_chat."chatContent" as "chatContent"
 					join staff_chat."chatHistory" as "chatHistory" on "chatContent"."chatID"="chatHistory"."chatID"
-					Where content=:whichTalk and "chatHistory"."chatID"=:chatID and "sentTime" = :sentTime
+					Where content=:whichTalk and "chatHistory"."chatID"=:chatID
 				)as "checkUnread"
 				left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
 				where "staff_id"!=:UID
@@ -800,7 +986,6 @@ use Slim\Http\UploadedFile;
 			';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
-			$sth->bindParam(':sentTime',$data['sentTime'],PDO::PARAM_STR);
 			$sth->bindParam(':whichTalk',$data['content'],PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$data['chatID'],PDO::PARAM_INT);
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
