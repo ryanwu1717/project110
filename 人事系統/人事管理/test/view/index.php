@@ -270,7 +270,7 @@ function searchChat(){
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
                     '<p class="text-break">'+
-                      +this.content+
+                      +this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
                       '<br>'+
                       '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" style="color:red">'+'留言'+'</a>'+
                     '</p>'+
