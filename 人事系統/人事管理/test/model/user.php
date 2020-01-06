@@ -885,7 +885,7 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getChatroom(){
-			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread"
+			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread",case when "CountUnread" > 0 then \'1\'else\'0\' end as "Priority"
 						FROM(
 							SELECT "chatWith"."chatID","chatToWhom"
 							FROM(
@@ -927,7 +927,7 @@ use Slim\Http\UploadedFile;
 										where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
 										group by "chatID","UID"
 									) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
-								order by "LastTime1" desc;';
+								order by "Priority" desc,"LastTime1" desc';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
