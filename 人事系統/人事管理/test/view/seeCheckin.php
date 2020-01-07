@@ -10,7 +10,21 @@
             <h1  class="font-weight-bold" name = "typeUpdate">查看打卡</h1></br>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-form-label col-md-4">上班時數</label>
+            <div class="col-md-8">  
+              <select required class="custom-select" name="buttonType">
+                <option name = "selectType" selected disabled value="">請選擇</option>
+                <option value="8H">8H</option>
+                <option value="9H">9H</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
         </div>
         <div class="col-md-4">
           <div class="form-group row">
@@ -20,7 +34,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-1">
+        <div class="col-md-2">
           <div class="text-center">
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#basicModal" >查看</button>
             </div>
@@ -123,15 +137,16 @@ $(function(){
   $('[name=checkButton]').unbind().on('click',function(){
       $('[name=addList]').empty()
       var checkDate = $('[name=viewCheckinDate]').val();
+      var checkType = $('[name=buttonType]').val();
       console.log(checkDate);
       $('#basicModal .checkItem:checked').each(function(){
         tmpId = $(this).data('name');
         $.ajax({
-          url:'/management/checkin/getCheckin/'+tmpId+'/'+checkDate,
+          url:'/management/checkin/getCheckin/'+tmpId+'/'+checkDate+'/'+checkType,
           type:'get',
           dataType:'json',
           success:function(response){
-            console.log(response.status);
+            console.log(response.correspond);
             
             if(response.status=='failed'){
               $('[name=addList]').append("<label>查無此打卡紀錄</label></br>");
@@ -142,6 +157,7 @@ $(function(){
               $('[name=addList]').append("<label>上班打卡地點: "+response.data[0].checkinlocation+"</label></br>");
               $('[name=addList]').append("<label>下班打卡時間: "+response.data[0].checkouttime+"</label></br>");
               $('[name=addList]').append("<label>下班打卡地點: "+response.data[0].checkoutlocation+"</label></br>");
+              $('[name=addList]').append("<label>考勤: "+response.correspond+"</label></br>");
             }
           }
         });
