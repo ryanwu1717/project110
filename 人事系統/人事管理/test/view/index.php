@@ -30,10 +30,10 @@
     </div>
     <div class="mesgs">
       <div class="sticky-top">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-between" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
-          <div class="btn-group d-flex justify-content-end" id="tool_dropdown" >
-            <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" >
+          <div class="btn-group" >
+            <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" id="tool_dropdown" style="display:none;">
             </button>
             <div class="dropdown-menu dropdown-menu-right">
               <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
@@ -204,7 +204,7 @@ function searchChatroom(){
       });
       if(!scrollable)
         $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-      setTimeout(searchChatroom,1000);
+      setTimeout(searchChatroom,3000);
     }
   });
 
@@ -212,7 +212,7 @@ function searchChatroom(){
 var chatID=-1;
 var chatName = '';
 
-$('#tool_dropdown').hide()
+$('#tool_dropdown').hide();
 
 
 function getTarget(_chatID,_chatName){
@@ -224,7 +224,7 @@ function getTarget(_chatID,_chatName){
   $('[name=chatBox]').html("");
   chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
-  $('#tool_dropdown').show()
+  $('#tool_dropdown').show();
   resetLimit();
   updateLastReadTime();
   schedule();
@@ -298,7 +298,7 @@ function searchChat(){
         });
         if(!scrollable)
           $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-        setTimeout(searchChat,1000);
+        setTimeout(searchChat,3000);
       }
     });
   }
@@ -324,6 +324,7 @@ $("#textinput").keyup(function(e){
 });
 function uploadFile(button){
   $('#basicModal').modal('hide');
+  $('[name=inputFile]').val('');
   $('[name=inputFile]').click();
 }
 function uploadPicture(button){
@@ -469,7 +470,7 @@ function getReadcount(){
             return false;
         }
       });
-      setTimeout(getReadcount,1000);
+      setTimeout(getReadcount,3000);
     }
   });
 }
