@@ -123,6 +123,7 @@ var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dis
   });
 var queue = [];
 queue['chatroom'] = null;
+queue['commentreadtime'] = null;
 var scrollable = false;
 function schedule(){
   // searchChatroom();
@@ -141,6 +142,18 @@ function updateLastReadTime(){
     url:'/chat/lastReadTime',
     type:'post',
     data:{chatID:chatID,_METHOD:'PATCH'},
+    dataType:'json'
+  });
+}
+function updateCommentReadTime(data){
+  //console.log("UPDATE CMT")
+  if(queue['commentreadtime']!=null){
+    queue['commentreadtime'].abort();
+  }
+  queue['commentreadtime'] = $.ajax({
+    url:'/chat/commentReadTime',
+    type:'patch',
+    data:{data:JSON.stringify(data)},
     dataType:'json'
   });
 }
@@ -508,12 +521,14 @@ function getReadlist(relatedData){
   });
 }
 function getComment(relatedData){//TODO
-  console.log(relatedData);
+  //console.log(relatedData);
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
   data['content'] = decodeURIComponent(relatedData['content']);
   data['chatID'] = chatID;
+  updateCommentReadTime(data);
+  getCommentReadList(data);
   
   $('#basicModal .modal-title').text('留言板');
   $('#basicModal .modal-body').html(
@@ -526,20 +541,19 @@ function getComment(relatedData){//TODO
     '<div class="type_msg">'+
       '<div class="input_msg_write">'+
         '<textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>'+
-        '<button class="comment_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>'+
+        '<button class="msg_send_btn" type="button" id="commentbutton"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>'+
         '</div>'+
       '</div>'
 
   );
-  $('.comment_send_btn').on('click',function(){
+  $('#commentbutton').on('click',function(){
     if($("#commentinput").val()!=""){
       sendComment(relatedData['uid'],relatedData['senttime'],data);
       $("#commentinput").val("");
     }
   });
-  getCommentContent(data);
 }
-function getCommentContent(data){
+function getCommentContent(data,readlist){
   $.ajax({
     url:'/chat/comment',
     type:'get',
@@ -549,6 +563,10 @@ function getCommentContent(data){
       console.log(response)
       $('[name=comment]').html("");
       $(response).each(function(){
+        var count = 0;
+        for (var i = 0; i < readlist.length; i++) {
+          if(readlist[i].lasttime > this.sentTime)count++;
+        }
         $('[name=comment]').append(
             '<div class="incoming_msg">'+
                 '<div class="">'+this.sender+'</div>'+
@@ -557,12 +575,25 @@ function getCommentContent(data){
                     '<p class="text-break">'+
                       this.content+
                     '</p>'+
-                    '<span class="time_date"> '+this.sentTime+'</span>'+
+                    '<span class="time_date"> '+this.formatTime+'</span>'+
+                    '<i class="fa fa-eye" aria-hidden="true"></i>'+count+
                   '</div>'+
                 '</div>'+
               '</div>'
           )
       });
+    }
+  });
+}
+function getCommentReadList(data){//TODO : promise
+  $.ajax({
+    url:'/chat/commentReadList',
+    type:'get',
+    data:{data:JSON.stringify(data)},
+    dataType:'json',
+    success:function(response){
+      console.log(response)
+      getCommentContent(data,response);
     }
   });
 }

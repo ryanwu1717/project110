@@ -305,6 +305,13 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+	$app->get('/commentReadList', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
+		$chat = new Chat($this->db);
+		$result = $chat->getCommentReadList($_GET);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->get('/readcount', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getReadCount($_GET);
@@ -375,6 +382,13 @@ $app->group('/chat', function () use ($app) {
 	$app->patch('/lastReadTime', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->updateLastReadTime($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->patch('/commentReadTime', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->updateCommentReadTime($request->getParsedBody());
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
