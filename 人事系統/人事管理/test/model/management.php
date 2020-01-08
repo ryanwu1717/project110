@@ -129,14 +129,28 @@
 			$staff_id = $_SESSION['id'];	
 			switch($_POST['type']){
 				case 'start':
-					try{	 	
-						$sql ="INSERT INTO staff.checkin(staff_id, checkintime, checkin, checkout, checkindate,checkinlocation )
-								VALUES (:staff, :checkinTime, true , false, :checkinDate,:checkinlocation);";
+					try{	
+						if($_POST['hours']+8>=24)
+						{
+							$eightHours = "00:00:00";
+						}else {
+							$eightHours =  ($_POST['hours']+8).":".$_POST['minutes'].":".$_POST['seconds']; 
+						}
+						if($_POST['hours']+9>=24)
+						{
+							$ninesHours = "00:00:00";
+						}else {
+							$ninesHours =  ($_POST['hours']+9).":".$_POST['minutes'].":".$_POST['seconds']; 
+						}
+						$sql ="INSERT INTO staff.checkin(staff_id, checkintime, checkin, checkout, checkindate,checkinlocation,eight,nine )
+								VALUES (:staff, :checkinTime, true , false, :checkinDate,:checkinlocation,:eight,:nine);";
 						$sth = $this->conn->prepare($sql);
-					   $sth->bindParam(':staff',$staff_id);
-					   $sth->bindParam(':checkinTime',$_POST['checkinTime']);
-					   $sth->bindParam(':checkinDate',$_POST['checkinDate']);
-					   $sth->bindParam(':checkinlocation',$_POST['location']);
+					    $sth->bindParam(':staff',$staff_id);
+					    $sth->bindParam(':checkinTime',$_POST['checkinTime']);
+					    $sth->bindParam(':checkinDate',$_POST['checkinDate']);
+					    $sth->bindParam(':checkinlocation',$_POST['location']);
+					    $sth->bindParam(':eight',$eightHours);
+					    $sth->bindParam(':nine',$ninesHours);
 						$sth->execute();
 						$row = $sth->fetchAll();
 						$ack = array(
@@ -156,10 +170,10 @@
 								SET checkouttime=:checkoutTime, checkout = true, checkoutlocation=:checkoutlocation
 								WHERE staff_id= :staff AND checkindate = :checkindate;";
 						$sth = $this->conn->prepare($sql);
-					   $sth->bindParam(':staff',$staff_id);
-					   $sth->bindParam(':checkoutTime',$_POST['checkinTime']);
-					   $sth->bindParam(':checkindate',$_POST['checkinDate']);
-					   $sth->bindParam(':checkoutlocation',$_POST['location']);
+					    $sth->bindParam(':staff',$staff_id);
+					    $sth->bindParam(':checkoutTime',$_POST['checkinTime']);
+					    $sth->bindParam(':checkindate',$_POST['checkinDate']);
+					    $sth->bindParam(':checkoutlocation',$_POST['location']);
 						$sth->execute();
 						$row = $sth->fetchAll();
 						$ack = array(
@@ -198,22 +212,56 @@
 			$row = $sth->fetchAll();
 			return $row;
 		}
-		function getCheckin($staff_id,$checkDate){
+		function getCheckin($staff_id,$checkDate,$type){
 			try{	 	
-				$sql ="SELECT checkintime,checkouttime,checkinlocation,checkoutlocation,staff_name FROM staff.checkin NATURAL JOIN staff.staff where staff_id = :id AND checkindate = :checkindate;";
+				$sql ="SELECT checkintime,checkouttime,checkinlocation,checkoutlocation,staff_name,eight,nine 
+				FROM staff.checkin NATURAL JOIN staff.staff where staff_id = :id AND checkindate = :checkindate;";
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':id',$staff_id);
 				$sth->bindParam(':checkindate',$checkDate);
 				$sth->execute();
 				$row = $sth->fetchAll();
+				$tmpjson = json_encode($row);
+
+
 				if(empty($row)  ){
 					$ack = array(
 						'status' => 'failed', 
 					);
 				}else{
+					if($type == '8H'){
+						if($row[0]["eight"]=="00:00:00"){
+							$ack = array(
+								'status' => 'success', 
+								'data' => $row,
+								'correspond' => "未滿八小時"
+							);
+							return $ack;
+						}
+						if((strtotime($row[0]["checkouttime"])-strtotime($row[0]["eight"]))>0){
+							$condition = "上滿八小時";
+						}else{
+							$condition = "未滿八小時";
+						}
+					}else if ($type == '9H'){
+						if($row[0]["nine"]=="00:00:00"){
+							$ack = array(
+								'status' => 'success', 
+								'data' => $row,
+								'correspond' => "未滿九小時"
+							);
+							return $ack;
+						}
+						if((strtotime($row[0]["checkouttime"])-strtotime($row[0]["nine"]))>0){
+							$condition = "上滿九小時";
+						}else{
+							$condition = "未滿九小時";
+						}
+					}
 					$ack = array(
 						'status' => 'success', 
-						'data' => $row
+						'data' => $row,
+						'correspond' => $condition
 					);
 				}
 				return $ack;
