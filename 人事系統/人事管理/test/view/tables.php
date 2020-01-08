@@ -42,8 +42,6 @@
         </div>
         <!-- /.container-fluid -->
 
-      </div>
-      <!-- End of Main Content -->
 
   <!-- Basic Modal-->
   <div class="modal fade" id="basicModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

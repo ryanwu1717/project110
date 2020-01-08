@@ -121,7 +121,6 @@ html,body{
 	
 
 
-	</br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
 	<div class="col-md-4">
 	</div>
 	<div class="col-md-3">
@@ -142,8 +141,8 @@ html,body{
 		<!-- <button type="button" class="btn btn-primary" data-dismiss="modal" data-id="婚姻狀態" data-toggle="modal" data-target="#firstModel">新增</button> -->
 	</div>
 	<div class="col-md-1" name = "workMode"></br>
-		<button type = "button" class ="btn btn-primary" name = "checkInButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="上" data-do="start"  data-toggle="modal" data-target="#checkInModel" >上班打卡</button>
-		<button type = "button" class ="btn btn-primary" name = "checkOutButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="下" data-do="finish"  data-toggle="modal" data-target="#checkInModel" >下班打卡</button>
+		<button type = "button" class ="btn btn-primary" name = "checkInButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="上" data-do="start"  data-toggle="modal" data-target="#checkInModel" style="display:none">上班打卡</button>
+		<button type = "button" class ="btn btn-primary" name = "checkOutButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="下" data-do="finish"  data-toggle="modal" data-target="#checkInModel" style="display:none">下班打卡</button>
 	</div>
 	<div class="col-md-4">
 	</div>
@@ -205,8 +204,6 @@ html,body{
 
 	    todayDate = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
 	    tmpId = $('[name=checkInButton]').data('id');
-	    $('[name=checkInButton]').show();
-	    $('[name=checkOutButton]').hide();
 		console.log(todayDate);
 		$.ajax({
 	        url:'/management/work/check/'+tmpId+"/"+todayDate,
@@ -217,6 +214,9 @@ html,body{
 	          if(response.checkin){
 	          	$('[name=checkInButton]').hide();
 	          	$('[name=checkOutButton]').show();
+	          }else{
+			    $('[name=checkInButton]').show();
+			    $('[name=checkOutButton]').hide();
 	          }
 	        }
 	    });
@@ -262,12 +262,15 @@ html,body{
         		url:'/management/work/checkin',
         		type:'POST',
         		data:{
-        			data:JSON.stringify({staff_id : tmpId,
-        								 checkinDate : todayDate,
-        								 checkinTime : time,
-        								 location : tempLocation,
-        								 type : doType
-        			})
+        			data:JSON.stringify(
+        				{
+        					staff_id : tmpId,
+						 	checkinDate : todayDate,
+							checkinTime : time,
+							location : tempLocation,
+							type : doType
+        				}
+    				)
       			},
         		dataType:'json',
         		success:function(response){

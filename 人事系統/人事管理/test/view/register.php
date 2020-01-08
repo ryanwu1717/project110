@@ -262,8 +262,6 @@
           </div>
         </div>
       </div>
-
-    </div>
   <!-- Modal -->
   <div class="modal fade" id="basicExampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
@@ -352,7 +350,8 @@
     });
     $("button[name=registerFirstButton]").on('click', function(e){
       e.preventDefault();
-      ch();
+      // ch();
+      tmpmodify();
     });
     $("button[name=registerButton]").on('click', function(){
       modify();
@@ -368,6 +367,29 @@
     });
     
 
+  }
+  function tmpmodify(){
+    var data = new Object();
+    data['staff_id'] = isUpdate;
+    $('input').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $('select').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $.ajax({
+      url:'/staff/tmpmodify/post',
+      type:'POST',
+      data:{data:JSON.stringify(data)},        
+      dataType:'json',
+      success:function(data){
+        window.location='<?=@$url?>/table';
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        console.log("failed");
+        // window.location.href='register.html';
+      }
+    });
   }
 
   function ch(){

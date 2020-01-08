@@ -234,6 +234,14 @@ $app->group('/staff', function () use ($app) {
 		$response = $response->withJson($ack);
 	    return $response;   
 	});
+    $app->post('/tmpmodify/post', function (Request $request, Response $response, array $args) {
+        $staff = new Staff($this->db);
+        $ack = $staff->tmpmodify();  
+        $response = $response->withHeader('Content-type', 'application/json' );
+        $response = $response->withJson($ack);
+        return $response;   
+    });
+
 });
 $app->group('/table', function () use ($app) {
 	$app->get('/getTable', function (Request $request, Response $response, array $args) {
@@ -249,7 +257,7 @@ $app->group('/table', function () use ($app) {
 	$app->get('/allInfo/{staff_id}', function (Request $request, Response $response, array $args) {
 		
 	    $staff = new Table($this->db);
-	    $result = $staff->allInfo($args['staff_id']);   
+	    $ack = $staff->allInfo($args['staff_id']);   
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 
