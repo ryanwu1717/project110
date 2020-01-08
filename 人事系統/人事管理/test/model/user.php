@@ -993,18 +993,41 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
-		function getComment($body){//TODO
+		function getComment($body){
 			$data = json_decode($body['data'],true);
 			$sql ='
-				SELECT "sender","content","sentTime"
+				SELECT "sender","content","sentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "formatTime"
 				FROM staff_chat."chatComment"
 				WHERE "chatID"=:CID and "chatOrigin"=:UID and "chatTime"=:CT
 			';
 			$sth = $this->conn->prepare($sql);
-			//bindParam
 			$sth->bindParam(':UID',$data['UID'],PDO::PARAM_STR);
 			$sth->bindParam(':CID',$data['chatID'],PDO::PARAM_INT);
 			$sth->bindParam(':CT',$data['sentTime']);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+			return $row;
+		}
+		function getCommentReadList($body){//TODO
+			$data = json_decode($body['data'],true);
+			$sql = '
+				SELECT "staff_name","staff_id","lasttime"
+				FROM
+						((SELECT "UID" as "RealUID" FROM staff_chat."chatHistory" WHERE "chatID"=:CID1) as "temp"
+						LEFT JOIN
+						(SELECT * FROM staff_chat."commentHistory" WHERE "chatID"=:CID2 and "chatOrigin"=:CO and "chatTime"=:t2) as "temp2"
+						on "RealUID" = "UID") as "CD"
+						LEFT JOIN
+						(SELECT "staff_name","staff_id" FROM  staff."staff") as "SD"
+						on "RealUID" = "staff_id"
+			';
+			$sth = $this->conn->prepare($sql);
+			//$sth->bindParam(':t1',$data['sentTime']);
+			$sth->bindParam(':CID1',$data['chatID']);
+			$sth->bindParam(':CID2',$data['chatID']);
+			$sth->bindParam('CO',$data['UID']);
+			$sth->bindParam(':t2',$data['sentTime']);
 			$sth->execute();
 
 			$row = $sth->fetchAll();
@@ -1103,7 +1126,7 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
-		function updateComment($body){//TODO
+		function updateComment($body){
 			$sql = 'INSERT INTO staff_chat."chatComment"("chatID","chatOrigin","chatTime","content","sender","sentTime")
 					VALUES (:CID,:UID,:CT,:Msg,:SID,NOW())';
 			$sth = $this->conn->prepare($sql);
@@ -1141,7 +1164,35 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
-
+		function updateCommentReadTime($body){//TODO
+			$body=json_decode($body['data'],true);
+			//return $body;
+			$sql = 'UPDATE staff_chat."commentHistory" SET "lasttime"=NOW() WHERE "commentHistory"."chatID" = :CID AND "commentHistory"."UID"= :UID AND "chatOrigin" = :CO AND "chatTime" = :CT;';
+			$sth = $this->conn->prepare($sql);
+			$UID = $_SESSION['id'];
+			$CID = $body['chatID'];
+			$CT = $body['sentTime'];
+			$CO = $body['UID'];
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':CID',$CID,PDO::PARAM_INT);
+			$sth->bindParam(':CO',$CO,PDO::PARAM_STR);
+			$sth->bindParam(':CT',$CT);
+			$sth->execute();
+			$count = $sth->rowCount();
+			if($count == 0){
+				$sql = 'INSERT INTO staff_chat."commentHistory"("chatID","UID","chatOrigin","chatTime","lasttime") VALUES(:CID, :UID, :CO, :CT, NOW())';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':CID',$CID,PDO::PARAM_INT);
+				$sth->bindParam(':CO',$CO,PDO::PARAM_STR);
+				$sth->bindParam(':CT',$CT);
+				$sth->execute();
+			}
+			$ack = array(
+				'status'=>'success'
+			);
+			return $ack;	
+		}
 		function createChatroom($body){
 			$body=json_decode($body['data'],true);
 			$sql = 'INSERT INTO staff_chat."chatroomInfo"( "chatName") VALUES (:chatName);';
