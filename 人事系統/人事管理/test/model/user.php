@@ -1289,22 +1289,24 @@ use Slim\Http\UploadedFile;
 						VALUES ( :Msg , :UID , NOW(), :chatID );';
 				$sth = $this->conn->prepare($sql);
 				$UID = $_SESSION['id'];
-				if($isPicture){
-					$Msg = '
-						<a href="#" data-toggle="modal" data-target="#basicModal" data-type="photo" data-src="/chat/picture/'.$this->conn->lastInsertId().'">
-							<img src="/chat/thumbnail/'.$this->conn->lastInsertId().'" alt="..." class="img-thumbnail">
-						</a>
-					';
-				}else{
-					$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
-				}
+				// if($isPicture){
+				// 	$Msg = '
+				// 		<a href="#" data-toggle="modal" data-target="#basicModal" data-type="photo" data-src="/chat/picture/'.$this->conn->lastInsertId().'">
+				// 			<img src="/chat/thumbnail/'.$this->conn->lastInsertId().'" alt="..." class="img-thumbnail">
+				// 		</a>
+				// 	';
+				// }else{
+				// 	$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
+				// }
+				$Msg = '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
 				$sth->execute();
 				
 			    $result = array(
-			    	'status' => 'success'
+			    	'status' => 'success',
+		    		'extension' => exif_imagetype($uploadedFile->getClientFilename())
 			    );
 		    }else{
 			    $result = array(
@@ -1322,7 +1324,38 @@ use Slim\Http\UploadedFile;
 		    $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
 		    return $filename;
 		}
-		
+		function getFileFormat($fileID){
+			$supported_image = array(
+			    'gif',
+			    'jpg',
+			    'jpeg',
+			    'png'
+			);
+			$sql = '
+				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"
+				FROM staff_chat.files
+				WHERE id = :fileID;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':fileID',$fileID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row)==1){	
+			    $result = array(
+			    	'status' => 'success',
+			    );
+			    $result['type'] = 'file';
+		    	$ext = strtolower(pathinfo($row[0]['fileName'], PATHINFO_EXTENSION));
+				if (in_array($ext, $supported_image)) {
+			    	$result['type'] = 'picture';
+				}
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
+		}
 		function downloadFile($fileID){	
 			$sql = '
 				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"

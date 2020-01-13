@@ -56,7 +56,7 @@
           <!-- <input id="textinput"type="text" /> -->
           <input style="display:none;" type="file" name="inputFile">
           <input style="display:none;" type="file" name="inputPicture" accept="image/*" >
-          <button class="msg_attach_btn" type="button" data-toggle="modal" data-target="#basicModal" data-type="attach"><i class="fa fa-plus" aria-hidden="true"></i></button>
+          <button class="msg_attach_btn" type="button" onclick="uploadFile(this)"><i class="fa fa-plus" aria-hidden="true"></i></button>
            <!-- name="buttonAttchFile" -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
@@ -280,7 +280,7 @@ function searchChat(){
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
                     '<p class="text-break">'+
-                      this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
+                      this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
                     '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
                     '<span class="read ml-1">'+
@@ -298,7 +298,7 @@ function searchChat(){
               '<div class="outgoing_msg">'+
                 '<div class="sent_msg">'+
                   '<p class="text-break content">'+
-                    this.content+
+                    this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
                   '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
                   '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
@@ -404,7 +404,7 @@ function sendComment(msgsender,msgtime,data){
             _METHOD:'PATCH'},
       dataType:'json',
       success:function(response){
-        getCommentContent(data)
+        getCommentContent(data);
         console.log(response);
     }
   });
@@ -428,11 +428,34 @@ $('#basicModal').on('show.bs.modal',function(e){
     viewPhoto($(e.relatedTarget).data('src'));
   }else if(type=='comments'){
     getComment($(e.relatedTarget).data());
+  }else if(type=='file'){
+    getFile($(e.relatedTarget).data());
   }
 });
+function getFile(relatedData){
+  $('#basicModal .modal-title').text('讀取中...');
+  $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
+  $.ajax({
+    url:relatedData['href'].replace(/chat\/file/g,'chat\/fileFormat'),
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      if(response.type=='file'){
+        var win = window.open(relatedData['href']);
+        if (win) {
+            //Browser has allowed it to be opened
+            win.focus();
+        } 
+        setTimeout(function(){ $('#basicModal').modal('hide'); },3000);
+      }else if(response.type=='picture'){
+        viewPhoto(relatedData['href'].replace(/chat\/file/g,'chat\/picture'));
+      }
+    }
+  });
+}
 function viewPhoto(src){
   $('#basicModal .modal-title').text('圖片');
-  $('#basicModal .modal-body').html('<img class="img-fluid"/>');
+  $('#basicModal .modal-body').html('<img class="img-fluid" download="logo.png"/>');
   $('#basicModal .modal-body img').attr('src',src);
   $('#basicModal .modal-dialog').addClass('modal-xl');
   $('#basicModal .modal-body').addClass('text-center');
@@ -442,21 +465,6 @@ $('#basicModal').on('hidden.bs.modal',function(e){
     $('#basicModal .modal-body').removeClass('text-center');
 });
 
-function attachType(){
-  $('#basicModal .modal-title').text('檔案類型'); 
-  $('#basicModal .modal-body').html(
-    '<div class="container-fluid">'+
-      '<div class="row">'+
-        '<div class="col-6">'+
-          '<button type="button" class="btn btn-secondary float-right" onclick="uploadPicture(this)">分享圖片</button>'+
-        '</div>'+
-        '<div class="col-6">'+
-          '<button type="button" class="btn btn-secondary" onclick="uploadFile(this)">上傳檔案</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>'
-  );
-}
 function getReadcount(){
   var data = new Object();
   data['chatID'] = chatID;
@@ -514,9 +522,9 @@ function getReadlist(relatedData){
       $('[name=unreadList]').html("");
       $(response).each(function(){
         if(this.checkread=='true')
-          $('[name=readList]').append('<p>'+this.staff_name+'</p>')
+          $('[name=readList]').append('<p>'+this.staff_name+'</p>');
         else
-          $('[name=unreadList]').append('<p class="font-weight-bold">'+this.staff_name+'</p>')
+          $('[name=unreadList]').append('<p class="font-weight-bold">'+this.staff_name+'</p>');
       });
     }
   });
@@ -565,8 +573,10 @@ function getCommentContent(data,readlist){
       $('[name=comment]').html("");
       $(response).each(function(){
         var count = 0;
-        for (var i = 0; i < readlist.length; i++) {
-          if(readlist[i].lasttime > this.sentTime)count++;
+        if(readlist!=null){
+          for (var i = 0; i < readlist.length; i++) {
+            if(readlist[i].lasttime > this.sentTime)count++;
+          }
         }
         $('[name=comment]').append(
             '<div class="incoming_msg">'+
@@ -593,7 +603,7 @@ function getCommentReadList(data){//TODO : promise
     data:{data:JSON.stringify(data)},
     dataType:'json',
     success:function(response){
-      console.log(response)
+      console.log(response);
       getCommentContent(data,response);
     }
   });

@@ -428,6 +428,13 @@ $app->group('/chat', function () use ($app) {
 		}
 		return $response;
 	});
+	$app->get('/fileFormat/{fileID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getFileFormat($args['fileID']);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+		return $response;
+	});
 	$app->post('/picture/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->uploadFile($args['chatID'],$this->upload_directory,$request->getUploadedFiles(),true);
@@ -442,7 +449,8 @@ $app->group('/chat', function () use ($app) {
 	    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
     	    $image = @file_get_contents($file);
     		$response->write($image);
-		    return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
+		    return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE)
+			   	->withHeader('Content-Disposition', 'inline;filename="'.$result['data']['fileNameClient'].'"');
 		}else{
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
