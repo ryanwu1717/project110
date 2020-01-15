@@ -145,7 +145,7 @@
 						$sql ="INSERT INTO staff.checkin(staff_id, checkintime, checkin, checkout, checkindate,checkinlocation,eight,nine )
 								VALUES (:staff, :checkinTime, true , false, :checkinDate,:checkinlocation,:eight,:nine);";
 						$sth = $this->conn->prepare($sql);
-					    $sth->bindParam(':staff',$staff_id);
+					   $sth->bindParam(':staff',$staff_id);
 					    $sth->bindParam(':checkinTime',$_POST['checkinTime']);
 					    $sth->bindParam(':checkinDate',$_POST['checkinDate']);
 					    $sth->bindParam(':checkinlocation',$_POST['location']);
@@ -170,10 +170,10 @@
 								SET checkouttime=:checkoutTime, checkout = true, checkoutlocation=:checkoutlocation
 								WHERE staff_id= :staff AND checkindate = :checkindate;";
 						$sth = $this->conn->prepare($sql);
-					    $sth->bindParam(':staff',$staff_id);
-					    $sth->bindParam(':checkoutTime',$_POST['checkinTime']);
-					    $sth->bindParam(':checkindate',$_POST['checkinDate']);
-					    $sth->bindParam(':checkoutlocation',$_POST['location']);
+					   $sth->bindParam(':staff',$staff_id);
+					   $sth->bindParam(':checkoutTime',$_POST['checkinTime']);
+					   $sth->bindParam(':checkindate',$_POST['checkinDate']);
+					   $sth->bindParam(':checkoutlocation',$_POST['location']);
 						$sth->execute();
 						$row = $sth->fetchAll();
 						$ack = array(
@@ -222,8 +222,6 @@
 				$sth->execute();
 				$row = $sth->fetchAll();
 				$tmpjson = json_encode($row);
-
-
 				if(empty($row)  ){
 					$ack = array(
 						'status' => 'failed', 

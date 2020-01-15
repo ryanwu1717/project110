@@ -32,11 +32,11 @@
       <div class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-between" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
-          <div class="btn-group" >
+<div class="btn-group" >
             <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" id="tool_dropdown" style="display:none;">
             </button>
             <div class="dropdown-menu dropdown-menu-right">
-              <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+                <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
             </div>
@@ -56,7 +56,7 @@
           <!-- <input id="textinput"type="text" /> -->
           <input style="display:none;" type="file" name="inputFile">
           <input style="display:none;" type="file" name="inputPicture" accept="image/*" >
-          <button class="msg_attach_btn" type="button" onclick="uploadFile(this)"><i class="fa fa-plus" aria-hidden="true"></i></button>
+           <button class="msg_attach_btn" type="button" onclick="uploadFile(this)"><i class="fa fa-plus" aria-hidden="true"></i></button>
            <!-- name="buttonAttchFile" -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
@@ -175,11 +175,11 @@ function searchChatroom(){
       $('[name=inbox_chat]').html("");
       $(response).each(function(){
         var chatName ='';
-        if (this.chatToWhom==null){
-          chatName=this.chatName;
+        if (this.staff_name!=null){
+          chatName=this.staff_name;
         }
         else{
-          chatName=this.staff_name;
+          chatName=this.chatName;
         }
         var haveUnread ='';
         if(window.isTabActive){
@@ -465,6 +465,7 @@ $('#basicModal').on('hidden.bs.modal',function(e){
     $('#basicModal .modal-body').removeClass('text-center');
 });
 
+
 function getReadcount(){
   var data = new Object();
   data['chatID'] = chatID;
@@ -506,7 +507,6 @@ function getReadlist(relatedData){
       '<div name="unreadList"></div>'+
     '</div>'
   );
-
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];

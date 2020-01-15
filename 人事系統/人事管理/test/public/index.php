@@ -234,14 +234,13 @@ $app->group('/staff', function () use ($app) {
 		$response = $response->withJson($ack);
 	    return $response;   
 	});
-    $app->post('/tmpmodify/post', function (Request $request, Response $response, array $args) {
-        $staff = new Staff($this->db);
-        $ack = $staff->tmpmodify();  
-        $response = $response->withHeader('Content-type', 'application/json' );
-        $response = $response->withJson($ack);
-        return $response;   
-    });
-
+	$app->post('/tmpmodify/post', function (Request $request, Response $response, array $args) {
+	    $staff = new Staff($this->db);
+	    $ack = $staff->tmpmodify();  
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($ack);
+	    return $response;   
+	});
 });
 $app->group('/table', function () use ($app) {
 	$app->get('/getTable', function (Request $request, Response $response, array $args) {
@@ -313,6 +312,7 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+
 	$app->get('/commentReadList', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
 		$chat = new Chat($this->db);
 		$result = $chat->getCommentReadList($_GET);
@@ -408,6 +408,7 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+
 	$app->get('/file/{fileID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->downloadFile($args['fileID']);

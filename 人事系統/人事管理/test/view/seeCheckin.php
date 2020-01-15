@@ -146,7 +146,7 @@ $(function(){
           type:'get',
           dataType:'json',
           success:function(response){
-             console.log(response.correspond);
+            console.log(response.correspond);
             
             if(response.status=='failed'){
               $('[name=addList]').append("<label>查無此打卡紀錄</label></br>");
