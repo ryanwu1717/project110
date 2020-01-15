@@ -145,9 +145,9 @@ $app->group('/management', function () use ($app) {
 			$response = $response->withJson($result);
 			return $response;
 		});
-		$app->get('/getCheckin/{staff_id}/{checkDate}', function (Request $request, Response $response, array $args) {
+		$app->get('/getCheckin/{staff_id}/{checkDate}/{type}', function (Request $request, Response $response, array $args) {
 		    $checkin = new CheckinList($this->db);
-		    $result = $checkin->getCheckin($args['staff_id'],$args['checkDate']);
+		    $result = $checkin->getCheckin($args['staff_id'],$args['checkDate'],$args['type']);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 			return $response;

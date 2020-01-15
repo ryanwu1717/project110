@@ -495,6 +495,9 @@ $(document).ready(function () {
       		$('[name=checkInModalLabel]').empty();
       		$('[name=checkInModalLabel]').append(checkType+"班打卡");
       		time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            hours = date.getHours();
+            minutes = date.getMinutes();
+            seconds = date.getSeconds();
       		$('[name=showText]').empty();
       		$('[name=showText]').append("打卡時間:　"+time);
       		if (navigator.geolocation) {
@@ -519,7 +522,10 @@ $(document).ready(function () {
         								 checkinDate : todayDate,
         								 checkinTime : time,
         								 location : tempLocation,
-        								 type : doType
+        								 type : doType,
+                                         hours : hours,
+                                         minutes : minutes,
+                                         seconds : seconds 
         			})
       			},
         		dataType:'json',
