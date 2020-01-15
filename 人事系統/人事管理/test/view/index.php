@@ -165,11 +165,11 @@ function searchChatroom(){
       $('[name=inbox_chat]').html("");
       $(response).each(function(){
         var chatName ='';
-        if (this.chatToWhom==null){
-          chatName=this.chatName;
+        if (this.staff_name!=null){
+          chatName=this.staff_name;
         }
         else{
-          chatName=this.staff_name;
+          chatName=this.chatName;
         }
         var haveUnread ='';
         if(window.isTabActive){
