@@ -517,7 +517,6 @@ function addIssue(){
           } 
         });
         addIssue();
-
       });
     }
   }); 
