@@ -2,7 +2,7 @@
  include('partial/header.php')
 ?>
 <!-- Custom styles for this template -->
-<link href="/css/ictrc-chatroom.min.css" rel="stylesheet">
+<link href="/css/ictrc-chatroom.css" rel="stylesheet">
 
 <h3 class=" text-center">訊息</h3>
 <div class="messaging">
@@ -21,7 +21,19 @@
           </div>
         </div> -->
         <div class="tool_bar btn-group">
-          <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#basicModal" data-type="create">+</button>
+          <div class="btn-group">
+            <button class="fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
+            <button class="btn btn-secondary " type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >+</button>
+            <!-- <div class="dropleft">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="choose_dropdown" data-display="static" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
+                +
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" >
+                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >新增議題</button>
+                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="addIssue" >新增議題群組</button>
+              </div>
+            </div> -->
+          </div>
         </div>
       </div>
       <div class="inbox_chat" name=inbox_chat>
@@ -199,17 +211,31 @@ function searchChatroom(){
         }
      
         $('[name=inbox_chat]').append(
-          '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
-            '<div class="chat_people">'+
-              '<div class="chat_img">'+
-                '<div class="circleBase type2"></div>'+
+          '<div class="accordion" id="accordionExample">'+
+            '<div class="card">'+
+              '<div class="card-header" id="headingOne">'+
+                '<h2 class="mb-0">'+
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">'+
+                  'Collapsible Group Item #1'+
+                '</button>'+
+                '</h2>'+
               '</div>'+
-              '<div class="chat_ib">'+
-                '<h5>'+chatName+
-                  '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
-                '</h5>'+
-                '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
-                haveUnread +
+              '<div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+                '<div class="card-body">'+
+                  '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
+                  '<div class="chat_people">'+
+                    '<div class="chat_img">'+
+                      '<div class="circleBase type2"></div>'+
+                    '</div>'+
+                    '<div class="chat_ib">'+
+                      '<h5>'+chatName+
+                        '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
+                      '</h5>'+
+                      '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
+                      haveUnread +
+                    '</div>'+
+                  '</div>'+
+                '</div>'+
               '</div>'+
             '</div>'+
           '</div>'
@@ -428,8 +454,89 @@ $('#basicModal').on('show.bs.modal',function(e){
     viewPhoto($(e.relatedTarget).data('src'));
   }else if(type=='comments'){
     getComment($(e.relatedTarget).data());
+  }else if(type=='addClass'){
+    addIssue();
+  }else if(type=='chooseIssues'){
+    Chatroom(type);
   }
 });
+
+function addIssue(){
+  $('#basicModal .modal-title').text('新增議題群組'); 
+  $('#basicModal .modal-body').html(
+    '<div class="sticky-top">'+
+      '<div class="input-group mb-3">'+
+        '<span class="input-group-text" id="inputGroup-sizing-default">分類名稱</span>'+
+        '<input type="text" class="form-control" name="inputAddClassName" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">'+
+        '<button type="button" class="btn btn-dark" name="buttonAddClass">新增</button>'+
+      '</div>'+
+      '<h6 class="card-subtitle mb-2 text-muted listBox">'+
+    '</div>');
+  $('#basicModal .modal-footer').html('<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>');
+
+  queue['search'] = null;
+    $('.searchInput').unbind().on('keyup',function(){
+      clearTimeout(queue['search']);
+      queue['search'] = setTimeout(function(){
+        $('.listItem').each(function(){
+          if($(this).find('.listName').val().indexOf($('.searchInput').val())>-1){
+            $(this).show();
+          }else{
+            $(this).hide();
+          }
+        });
+      },300);
+    });
+  $.ajax({
+    url:'/chat/class/',
+    type:'GET',
+    dataType:'json',
+    success:function(response){
+      $(response).each(function(){
+        $('#basicModal .listBox').append(
+          '<div class="input-group mb-2 listItem">'+
+            '<div class="input-group-prepend">'+
+              '<input type="text" class="form-control listName" disabled value='+this.name+'>'+
+              '<button type="button" class="btn" name="buttonDeleteClass" data-id='+this.id+'>'+
+               '<i class="fa fa-times" aria-hidden="true"></i>'+
+              '</button>'+
+            '</div>'+
+          '</div>'
+        );
+      });
+      $('[name=buttonDeleteClass]').on('click',function(e){
+        var classId = $(this).data('id');
+        console.log(classId);
+        $.ajax({
+          url:'/chat/class/'+classId+'/',
+          type:'POST',
+          data:{_METHOD:'delete'},
+          dataType:'json',
+          success:function(response){
+            console.log(response);
+          } 
+        });
+        addIssue();
+
+      });
+    }
+  }); 
+  $('[name=buttonAddClass]').on('click',function(e){
+    var groupname = $('[name=inputAddClassName]').val();
+    $.ajax({
+      url:'/chat/class/',
+      type:'POST',
+      data:{data:JSON.stringify({
+              name : groupname
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      } 
+    });
+     $('#basicModal').modal('hide');
+  });
+}
 function viewPhoto(src){
   $('#basicModal .modal-title').text('圖片');
   $('#basicModal .modal-body').html('<img class="img-fluid"/>');
@@ -441,7 +548,6 @@ $('#basicModal').on('hidden.bs.modal',function(e){
   $('#basicModal .modal-dialog').removeClass('modal-xl');
     $('#basicModal .modal-body').removeClass('text-center');
 });
-
 function attachType(){
   $('#basicModal .modal-title').text('檔案類型'); 
   $('#basicModal .modal-body').html(
@@ -610,7 +716,8 @@ function getMember(){
       $('#basicModal .modal-body').append(
         '<div class="card">'+
           '<div class="card-body">'+
-            '<button class="btn btn-secondary" onclick="Chatroom(\'update\');">修改議題</button>'+
+            '<button class="btn btn-secondary" onclick="Chatroom(\'update\');">修改議題</button></br>'+
+            '<button class="btn btn-secondary" onclick="Chatroom(\'choooseIssues\');">選擇分類</button>'+
             '<p class="card-text">'+
               '<h6 class="card-subtitle mb-2 text-muted listBox">'+
               '</h6>'+
@@ -732,6 +839,10 @@ function Chatroom(type){
         }
       });
     });
+  }else if(type=='choooseIssues'){
+    $('#basicModal .modal-title').text('選擇分類');
+    $('#basicModal .modal-body').html('');
+
   }
   $('#basicModal .modal-body').append(
     '<div class="card">'+

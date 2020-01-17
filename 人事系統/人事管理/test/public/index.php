@@ -87,6 +87,10 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/checkin.php', $viewParam);
 		});
+		$app->get('/issue', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');	
+			return $this->view->render($response, '/issue.php', $viewParam);
+		});
 		// $app->get('/register', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
 		// 	return $this->view->render($response, '/register.php', $viewParam);
@@ -462,6 +466,40 @@ $app->group('/chat', function () use ($app) {
 			$response = $response->withJson($result);
 		}
 		return $response;
+	});
+	$app->group('/class', function () use ($app) {
+		$app->get('/', function (Request $request, Response $response, array $args) {
+		    $class = new Class_($this->db);
+		    $result = $class->getClass();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->delete('/{classId}/', function (Request $request, Response $response, array $args) {
+		    $class = new Class_($this->db);
+		    $result = $class->deleteClass($args['classId']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		// $app->get('/getIssueName', function (Request $request, Response $response, array $args) {
+		//     $class = new Class_($this->db);
+		//     $result = $class->getIssueName();   
+		//     $response = $response->withHeader('Content-type', 'application/json' );
+		// 	$response = $response->withJson($result);
+		//     return $response;
+		    
+		// });
+		$app->post('/', function (Request $request, Response $response, array $args) {
+		    $class = new Class_($this->db);
+		    $result = $class->addClass();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
 	});
 });
 

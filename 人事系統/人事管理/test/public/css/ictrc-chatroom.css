@@ -31,7 +31,9 @@
     display: inline;
   }
 }
-
+.dropdown-item {
+  z-index:9999;
+}
 .container{max-width:1170px; margin:auto;}
 img{ max-width:100%;}
 .inbox_people {
