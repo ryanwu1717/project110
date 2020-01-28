@@ -64,8 +64,14 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="<?=@$url?>/checkin">
+            <a class="nav-link" href="<?=@$url?>/issue">
               <i class="fas fa-fw fa-table"></i>
+              <span>議題列表</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/checkin">
+              <i class="fa fa-th-list" aria-hidden="true"></i>
               <span>打卡</span>
             </a>
           </li>

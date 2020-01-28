@@ -368,29 +368,8 @@
     
 
   }
-  function tmpmodify(){
-    var data = new Object();
-    data['staff_id'] = isUpdate;
-    $('input').each(function(eachid,eachdata){
-      data[eachdata.name] = $(eachdata).val();
-    });
-    $('select').each(function(eachid,eachdata){
-      data[eachdata.name] = $(eachdata).val();
-    });
-    $.ajax({
-      url:'/staff/tmpmodify/post',
-      type:'POST',
-      data:{data:JSON.stringify(data)},        
-      dataType:'json',
-      success:function(data){
-        window.location='<?=@$url?>/table';
-      },
-      error:function(jqXHR, textStatus, errorThrown){
-        console.log("failed");
-        // window.location.href='register.html';
-      }
-    });
-  }
+  
+  
 
   function ch(){
     $('#exampleModalLabel').empty();
@@ -457,6 +436,7 @@
       }
     });
   }
+  
   function regis(){
     var data = new Object();
     $('input').each(function(eachid,eachdata){
@@ -485,6 +465,31 @@
       }
     });
   }
+
+  function tmpmodify(){
+    var data = new Object();
+    data['staff_id'] = isUpdate;
+    $('input').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $('select').each(function(eachid,eachdata){
+      data[eachdata.name] = $(eachdata).val();
+    });
+    $.ajax({
+      url:'/staff/tmpmodify/post',
+      type:'POST',
+      data:{data:JSON.stringify(data)},        
+      dataType:'json',
+      success:function(data){
+         console.log("success");
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        console.log("failed");
+        // window.location.href='register.html';
+      }
+    });
+  }
+
   function modify(){
     var data = new Object();
     data['staff_id'] = isUpdate;
