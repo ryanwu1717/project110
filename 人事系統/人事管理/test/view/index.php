@@ -553,6 +553,18 @@ function getComment(relatedData){//TODO
       $("#commentinput").val("");
     }
   });
+  $("#commentinput").keypress(function(e){
+  var code=e.which;
+  if((code&&e.shiftKey) &&code==13){
+    e.preventDefault();
+    $('.msg_send_btn').click();
+  }
+  });
+  $("#commentinput").keyup(function(e){
+    var code=e.which;
+    if((code&&e.shiftKey) &&code==13){
+    }
+  });
 }
 function getCommentContent(data,readlist){
   $.ajax({
@@ -582,7 +594,17 @@ function getCommentContent(data,readlist){
                 '</div>'+
               '</div>'
           )
-      });
+      });    
+      //TODO, scroll to bottom, bootstrap bug??
+      /*
+      $('#basicModal .modal-content').css('overflow','hidden');
+      $('#modal').animate({ scrollTop: $('#modal .modal-content').height() }, 'slow');
+      console.log($('#basicModal .modal-content').height());
+      console.log($('#basicModal .modal-content'));
+      console.log($('#basicModal').height());
+      */
+      //$('#basicModal .modal-content').scrollTop($('#basicModal .modal-content').height());
+      //console.log($('#basicModal .modal-content'));
     }
   });
 }
