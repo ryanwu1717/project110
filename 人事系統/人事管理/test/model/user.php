@@ -507,7 +507,7 @@ use Slim\Http\UploadedFile;
 				);
 			}
 			return $ack;
-		}
+			}
 		function modify(){
 			try{
 				$sql = 'UPDATE staff.staff
@@ -586,7 +586,7 @@ use Slim\Http\UploadedFile;
 			}
 			return $ack;
 		}
-        function tmpmodify(){
+		function tmpmodify(){
             try{
                 $sql = 'UPDATE staff.staff
                             SET staff_department = :staff_department, staff_position = :staff_position, staff_name = :staff_name,
@@ -861,6 +861,51 @@ use Slim\Http\UploadedFile;
 			return $ack;
 		}
 	}
+
+	Class Class_{
+		var $result;   
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function getClass()
+		{  	
+			$staff_id = $_SESSION['id'];	
+			$sql ='SELECT  name,id
+					FROM staff_chat."chatClass"
+					WHERE staff_id = :id';
+			$statement = $this->conn->prepare($sql);
+			$statement->bindParam(':id',$staff_id);
+			$statement->execute();
+			$row = $statement->fetchAll();			
+			return $row;
+		}
+		function deleteClass($classId)
+		{  	
+			$staff_id = $_SESSION['id'];	
+			$sql ='DELETE FROM staff_chat."chatClass"
+					WHERE id = :id ';
+			$statement = $this->conn->prepare($sql);
+			$statement->bindParam(':id',$classId);
+			$statement->execute();
+			$row = $statement->fetchAll();			
+			return $row;
+		}
+		function addClass(){
+			$staff_id = $_SESSION['id'];
+			$_POST=json_decode($_POST['data'],true);
+			$sql ='INSERT INTO staff_chat."chatClass"(staff_id, name)VALUES (:id, :name);';
+			$statement = $this->conn->prepare($sql);
+			$statement->bindParam(':id',$staff_id);
+			$statement->bindParam(':name',$_POST['name']);
+			$statement->execute();
+			$ack = array(
+					'status'=>'success'
+				);
+			return $ack; 
+		}
+	}
+
 	Class Chat{
 
 		var $conn;
@@ -1153,7 +1198,6 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
-
 		function updateLastReadTime($body){
 			$sql = 'UPDATE staff_chat."chatHistory" SET "time"= NOW() WHERE "chatHistory"."chatID"= :chatID AND "chatHistory"."UID"= :UID ;';
 			$sth = $this->conn->prepare($sql);
@@ -1168,6 +1212,7 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
+
 		function updateCommentReadTime($body){//TODO
 			$body=json_decode($body['data'],true);
 			//return $body;
@@ -1197,6 +1242,7 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;	
 		}
+		
 		function createChatroom($body){
 			$body=json_decode($body['data'],true);
 			$sql = 'INSERT INTO staff_chat."chatroomInfo"( "chatName") VALUES (:chatName);';
@@ -1302,7 +1348,8 @@ use Slim\Http\UploadedFile;
 				// }else{
 				// 	$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
 				// }
-				$Msg = '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
+				$Msg = '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
+				
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
@@ -1319,7 +1366,6 @@ use Slim\Http\UploadedFile;
 		    }
 		    return $result;
 		}
-
 		private function moveUploadedFile($directory, UploadedFile $uploadedFile)
 		{
 		    $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
@@ -1360,6 +1406,8 @@ use Slim\Http\UploadedFile;
 		    }
 		    return $result;
 		}
+		
+		
 		function downloadFile($fileID){	
 			$sql = '
 				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"
