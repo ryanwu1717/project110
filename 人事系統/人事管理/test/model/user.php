@@ -11,7 +11,7 @@ use Slim\Http\UploadedFile;
 			$_POST=json_decode($_POST['data'],true);
 		   	$loginStaffId = $_POST['loginStaffId'];
 			$loginPassword = $_POST['loginPassword'];		 	
-			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
+			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false and \"seniority_workStatus\" =1;";
 			$sth = $this->conn->prepare($sql);
 		   	$sth->bindParam(':staff_id',$loginStaffId);
 		   	$sth->bindParam(':staff_password',$loginPassword);
@@ -883,49 +883,53 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getChatroom(){
-			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread"
+            $sql = '
+            	SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content",case when "chatName" = \'\' then "staff_name" else "chatName" end as "chatName","staff_name","LastTime" as "LastTime1","CountUnread",case when "CountUnread" > 0 then \'1\'else\'0\' end as "Priority"
+				FROM(
+					SELECT "chatWith"."chatID","chatToWhom"
+					FROM(
+						SELECT "chatID", "time", "UID"
+						FROM staff_chat."chatHistory"
+						where "UID"= :UID
+						)as "chatWith" 
+					LEFT JOIN (
+						SELECT "cH3"."chatID","UID" as "chatToWhom"
 						FROM(
-							SELECT "chatWith"."chatID","chatToWhom"
+							SELECT "couUID","chatID","time"
 							FROM(
-								SELECT "chatID", "time", "UID"
+								SELECT "chatID" as "cID", COUNT("UID")as "couUID"
 								FROM staff_chat."chatHistory"
-								where "UID"= :UID
-								)as "chatWith" 
-								LEFT JOIN (
-									SELECT "cH3"."chatID","UID" as "chatToWhom"
-									FROM(
-										SELECT "couUID","chatID","time"
-										FROM(
-											SELECT "chatID" as "cID", COUNT("UID")as "couUID"
-											FROM staff_chat."chatHistory"
-											group by "chatID") as "cUID"
-											LEFT JOIN staff_chat."chatHistory" as "cH2"
-											on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
-									LEFT join staff_chat."chatHistory" as "cH3"
-									on "check"."chatID"="cH3"."chatID"
-									where "UID"!= :UID
-									)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
-								LEFT JOIN (
-									SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
-									FROM(
-										SELECT "chatID",MAX("sentTime")as "LastTime"
-										FROM staff_chat."chatContent"
-										Group by "chatID"
-									)as "cILT" 
-									LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
-									Where "LastTime"="sentTime"
-								)as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
-								LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
-								LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
-								LEFT JOIN (
-									SELECT "chatID","UID",COUNT("c")as "CountUnread"
-									FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
-										FROM staff_chat."chatHistory"
-										join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
-										where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
-										group by "chatID","UID"
-									) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
-								order by "LastTime1" desc;';
+								group by "chatID") as "cUID"
+								LEFT JOIN staff_chat."chatHistory" as "cH2"
+								on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
+						LEFT join staff_chat."chatHistory" as "cH3"
+						on "check"."chatID"="cH3"."chatID"
+						where "UID"!= :UID
+					)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
+					LEFT JOIN (
+						SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
+						FROM(
+							SELECT "chatID",MAX("sentTime")as "LastTime"
+							FROM staff_chat."chatContent"
+							Group by "chatID"
+						)as "cILT" 
+					LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
+					Where "LastTime"="sentTime"
+				)as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
+				LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
+				LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
+				LEFT JOIN (
+					SELECT "chatID","UID",COUNT("c")as "CountUnread"
+					FROM(
+						SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+						FROM staff_chat."chatHistory"
+						join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+						where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID
+					) as "countUnread"
+					group by "chatID","UID"
+				) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+				order by "Priority" desc,"LastTime1" desc
+			';
 			$sth = $this->conn->prepare($sql);
 			$UID =$_SESSION['id'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
@@ -936,7 +940,7 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getMember($chatID){
-			$sql = 'SELECT staff_name as name,"UID" as id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" WHERE "chatID"= :chatID;';
+			$sql = 'SELECT staff_name as name,"UID" as id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" WHERE "chatID"= :chatID and staff_delete=false and "seniority_workStatus" =1;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
@@ -979,7 +983,7 @@ use Slim\Http\UploadedFile;
 					Where content=:whichTalk and "chatHistory"."chatID"=:chatID and "sentTime" = :sentTime
 				)as "checkUnread"
 				left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
-				where "staff_id"!=:UID
+				where "staff_id"!=:UID and staff_delete=false and "seniority_workStatus" =1
 				group by"staff_name","staff_id","checkread";
 			';
 			$sth = $this->conn->prepare($sql);
@@ -1255,14 +1259,14 @@ use Slim\Http\UploadedFile;
 
 		function getList($chatID=null){
 			if(is_null($chatID)){
-				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id;";
+				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id and staff_delete=false and \"seniority_workStatus\" =1;";
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->execute();
 
 				$row = $sth->fetchAll();	
 			}else{
-				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id;';
+				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id and staff_delete=false and "seniority_workStatus" =1;';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);

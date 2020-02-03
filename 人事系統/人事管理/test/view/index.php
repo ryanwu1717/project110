@@ -103,6 +103,8 @@ window.onblur = function () {
   window.isTabActive = false; 
 }; 
 //focus end
+
+
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
@@ -174,13 +176,13 @@ function searchChatroom(){
       // }
       $('[name=inbox_chat]').html("");
       $(response).each(function(){
-        var chatName ='';
-        if (this.chatToWhom==null){
-          chatName=this.chatName;
-        }
-        else{
-          chatName=this.staff_name;
-        }
+        var chatName = this.chatName;
+        // if (this.chatToWhom==null){
+        //   chatName=this.chatName;
+        // }
+        // else{
+        //   chatName=this.staff_name;
+        // }
         var haveUnread ='';
         if(window.isTabActive){
           $('title').text(titleOrg);
@@ -391,7 +393,6 @@ function sendMsg(){
   });
 }
 function sendComment(msgsender,msgtime,data){
-  console.log(msgtime);
   Msg=$("#commentinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
@@ -405,7 +406,6 @@ function sendComment(msgsender,msgtime,data){
       dataType:'json',
       success:function(response){
         getCommentContent(data);
-        console.log(response);
     }
   });
 }
@@ -531,6 +531,7 @@ function getReadlist(relatedData){
 }
 function getComment(relatedData){//TODO
   //console.log(relatedData);
+  var scrollableComment = false;
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
@@ -555,10 +556,22 @@ function getComment(relatedData){//TODO
       '</div>'
 
   );
-  $('#commentbutton').on('click',function(){
+  $('#commentbutton').unbind().on('click',function(){
     if($("#commentinput").val()!=""){
       sendComment(relatedData['uid'],relatedData['senttime'],data);
       $("#commentinput").val("");
+    }
+  });
+  $("#commentinput").unbind().keypress(function(e){
+    var code=e.which;
+    if((code&&e.shiftKey) &&code==13){
+      e.preventDefault();
+      $('#commentbutton').click();
+    }
+  });
+  $("#commentinput").keyup(function(e){
+    var code=e.which;
+    if((code&&e.shiftKey) &&code==13){
     }
   });
 }
