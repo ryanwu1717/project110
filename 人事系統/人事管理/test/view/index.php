@@ -117,6 +117,8 @@ window.onblur = function () {
   window.isTabActive = false; 
 }; 
 //focus end
+
+
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
@@ -171,6 +173,7 @@ function updateCommentReadTime(data){
     dataType:'json'
   });
 }
+
 
 
 var chatID=-1;
@@ -435,7 +438,6 @@ function sendMsg(){
   });
 }
 function sendComment(msgsender,msgtime,data){
-  console.log(msgtime);
   Msg=$("#commentinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
@@ -448,8 +450,7 @@ function sendComment(msgsender,msgtime,data){
             _METHOD:'PATCH'},
       dataType:'json',
       success:function(response){
-        getCommentContent(data)
-        console.log(response);
+        getCommentContent(data);
     }
   });
 }
@@ -707,6 +708,7 @@ function getReadlist(relatedData){
 }
 function getComment(relatedData){//TODO
   //console.log(relatedData);
+  var scrollableComment = false;
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
@@ -731,10 +733,22 @@ function getComment(relatedData){//TODO
       '</div>'
 
   );
-  $('#commentbutton').on('click',function(){
+  $('#commentbutton').unbind().on('click',function(){
     if($("#commentinput").val()!=""){
       sendComment(relatedData['uid'],relatedData['senttime'],data);
       $("#commentinput").val("");
+    }
+  });
+  $("#commentinput").unbind().keypress(function(e){
+    var code=e.which;
+    if((code&&e.shiftKey) &&code==13){
+      e.preventDefault();
+      $('#commentbutton').click();
+    }
+  });
+  $("#commentinput").keyup(function(e){
+    var code=e.which;
+    if((code&&e.shiftKey) &&code==13){
     }
   });
 }
@@ -766,7 +780,17 @@ function getCommentContent(data,readlist){
                 '</div>'+
               '</div>'
           )
-      });
+      });    
+      //TODO, scroll to bottom, bootstrap bug??
+      /*
+      $('#basicModal .modal-content').css('overflow','hidden');
+      $('#modal').animate({ scrollTop: $('#modal .modal-content').height() }, 'slow');
+      console.log($('#basicModal .modal-content').height());
+      console.log($('#basicModal .modal-content'));
+      console.log($('#basicModal').height());
+      */
+      //$('#basicModal .modal-content').scrollTop($('#basicModal .modal-content').height());
+      //console.log($('#basicModal .modal-content'));
     }
   });
 }

@@ -11,7 +11,7 @@ use Slim\Http\UploadedFile;
 			$_POST=json_decode($_POST['data'],true);
 		   	$loginStaffId = $_POST['loginStaffId'];
 			$loginPassword = $_POST['loginPassword'];		 	
-			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
+			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false and \"seniority_workStatus\" =1;";
 			$sth = $this->conn->prepare($sql);
 		   	$sth->bindParam(':staff_id',$loginStaffId);
 		   	$sth->bindParam(':staff_password',$loginPassword);
@@ -975,7 +975,6 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
-
 		function testGetChatRoom($body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
@@ -1094,7 +1093,7 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getMember($chatID){
-			$sql = 'SELECT staff_name as name,"UID" as id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" WHERE "chatID"= :chatID;';
+			$sql = 'SELECT staff_name as name,"UID" as id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" WHERE "chatID"= :chatID and staff_delete=false and "seniority_workStatus" =1;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
@@ -1137,7 +1136,7 @@ use Slim\Http\UploadedFile;
 					Where content=:whichTalk and "chatHistory"."chatID"=:chatID and "sentTime" = :sentTime
 				)as "checkUnread"
 				left join staff."staff" as "staff" on "staff"."staff_id"="checkUnread"."UID"
-				where "staff_id"!=:UID
+				where "staff_id"!=:UID and staff_delete=false and "seniority_workStatus" =1
 				group by"staff_name","staff_id","checkread";
 			';
 			$sth = $this->conn->prepare($sql);
@@ -1414,14 +1413,14 @@ use Slim\Http\UploadedFile;
 
 		function getList($chatID=null){
 			if(is_null($chatID)){
-				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id;";
+				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id and staff_delete=false and \"seniority_workStatus\" =1;";
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->execute();
 
 				$row = $sth->fetchAll();	
 			}else{
-				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id;';
+				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id and staff_delete=false and "seniority_workStatus" =1;';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
