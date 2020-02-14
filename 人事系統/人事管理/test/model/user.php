@@ -862,23 +862,82 @@ use Slim\Http\UploadedFile;
 		}
 	}
 
-	Class Class_{
-		var $result;   
+	Class Chat{
+
 		var $conn;
+
 		function __construct($db){
 			$this->conn = $db;
+			session_write_close();
 		}
-		function getClass()
+
+
+		function getClass($classId = null)
 		{  	
-			$staff_id = $_SESSION['id'];	
-			$sql ='SELECT  name,id
-					FROM staff_chat."chatClass"
-					WHERE staff_id = :id';
-			$statement = $this->conn->prepare($sql);
+			$staff_id = $_SESSION['id'];		
+			if(is_null($classId)){
+				$sql ='SELECT  name,id
+						FROM staff_chat."chatClass"
+						WHERE "UID" = :id';
+				$statement = $this->conn->prepare($sql);
+			}else{
+				$sql ='SELECT  name
+						FROM staff_chat."chatClass"
+						WHERE "UID" = :id and id=:classid';
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':classid',$classId);
+			}
 			$statement->bindParam(':id',$staff_id);
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
+		}
+		function insertClass($classId,$chatID)
+		{
+			try{	
+				$sql ='DELETE 
+						FROM staff_chat."chatClassify"
+						WHERE "chatID"=:chatID 
+								AND EXISTS(SELECT "chatID"
+									FROM staff_chat."chatClassify"
+									WHERE  "chatID"=:chatID AND "UID"=:UID);';
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':chatID',$chatID);
+				$statement->bindParam(':UID',$_SESSION['id']);
+				$statement->execute();
+
+				$sql ='INSERT INTO staff_chat."chatClassify"("classID", "chatID","UID")
+						VALUES (:id, :chatID, :UID);';
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':id',$classId);
+				$statement->bindParam(':chatID',$chatID);
+				$statement->bindParam(':UID',$_SESSION['id']);
+				$statement->execute();
+				$ack = array(
+					'status'=>'success',
+				);	
+			}catch(PDOException $e){
+				$ack = array(
+					'status'=>'failed',
+				);	
+			}
+			// try{	
+			// 	$sql ='INSERT INTO staff_chat."chatClassify"("classID", "chatID")
+			// 			VALUES (:id, :chatID);';
+			// 	$statement = $this->conn->prepare($sql);
+			// 	$statement->bindParam(':id',$classId);
+			// 	$statement->bindParam(':chatID',$chatID);
+			// 	$statement->execute();
+			// 	$ack = array(
+			// 		'status'=>'success2',
+			// 	);	
+			// 	return $ack;
+			// }catch(PDOException $e){
+			// 	$ack = array(
+			// 		'status'=>'failed',
+			// 	);	
+			// }
+			return $ack;
 		}
 		function deleteClass($classId)
 		{  	
@@ -894,7 +953,7 @@ use Slim\Http\UploadedFile;
 		function addClass(){
 			$staff_id = $_SESSION['id'];
 			$_POST=json_decode($_POST['data'],true);
-			$sql ='INSERT INTO staff_chat."chatClass"(staff_id, name)VALUES (:id, :name);';
+			$sql ='INSERT INTO staff_chat."chatClass"("UID", name)VALUES (:id, :name);';
 			$statement = $this->conn->prepare($sql);
 			$statement->bindParam(':id',$staff_id);
 			$statement->bindParam(':name',$_POST['name']);
@@ -903,16 +962,6 @@ use Slim\Http\UploadedFile;
 					'status'=>'success'
 				);
 			return $ack; 
-		}
-	}
-
-	Class Chat{
-
-		var $conn;
-
-		function __construct($db){
-			$this->conn = $db;
-			session_write_close();
 		}
 
 		function getChatroomTitle($chatID){
@@ -927,57 +976,121 @@ use Slim\Http\UploadedFile;
 			return $row;
 		}
 
-		function getChatroom(){
-			$sql = 'SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')as "LastTime","content","chatName","staff_name","LastTime" as "LastTime1","CountUnread",case when "CountUnread" > 0 then \'1\'else\'0\' end as "Priority"
+		function testGetChatRoom($body){
+			$data = json_decode($body['data'],true);
+			$UID =$_SESSION['id'];
+			$ack= array();
+			$classType = $this->getClass();
+			for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
+				$sql = 'SELECT SUM(count) AS "countNum"
+						FROM staff_chat."chatHistory"
+						left join  (select "chatID",count(*)
+						from "staff_chat"."chatContent"
+						group by "chatID")AS "chatWith" on "chatWith"."chatID" = "chatHistory"."chatID"
+						WHERE "UID"= :UID';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				$returnCount = $row[0]["countNum"];
+				if($data['countchat'] == $row[0]["countNum"]){
+					usleep(1000000);
+					// array_push($ack,array('num' => 'test'));
+					// return $ack;
+				}else{
+					$sql = '
+						SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')AS "LastTime","content","chatName","staff_name","LastTime" AS "LastTime1","CountUnread",CASE WHEN "CountUnread" > 0 then \'1\'ELSE\'0\' END AS "Priority",cl.name AS "className",cl.id AS "classId"
 						FROM(
 							SELECT "chatWith"."chatID","chatToWhom"
 							FROM(
 								SELECT "chatID", "time", "UID"
 								FROM staff_chat."chatHistory"
-								where "UID"= :UID
-								)as "chatWith" 
-								LEFT JOIN (
-									SELECT "cH3"."chatID","UID" as "chatToWhom"
+								WHERE "UID"= :UID
+							)AS "chatWith" 
+							LEFT JOIN (
+								SELECT "cH3"."chatID","UID" AS "chatToWhom"
+								FROM(
+									SELECT "couUID","chatID","time"
 									FROM(
-										SELECT "couUID","chatID","time"
-										FROM(
-											SELECT "chatID" as "cID", COUNT("UID")as "couUID"
-											FROM staff_chat."chatHistory"
-											group by "chatID") as "cUID"
-											LEFT JOIN staff_chat."chatHistory" as "cH2"
-											on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2)as "check"
-									LEFT join staff_chat."chatHistory" as "cH3"
-									on "check"."chatID"="cH3"."chatID"
-									where "UID"!= :UID
-									)as "receiver" on "chatWith"."chatID"="receiver"."chatID")as "receiverList"
-								LEFT JOIN (
-									SELECT "cILT"."chatID","LastTime","content","UID" as "sender"
-									FROM(
-										SELECT "chatID",MAX("sentTime")as "LastTime"
-										FROM staff_chat."chatContent"
-										Group by "chatID"
-									)as "cILT" 
-									LEFT JOIN staff_chat."chatContent" as "cC2" on "cILT"."chatID"="cC2"."chatID" 
-									Where "LastTime"="sentTime"
-								)as "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
-								LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
-								LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
-								LEFT JOIN (
-									SELECT "chatID","UID",COUNT("c")as "CountUnread"
-									FROM(SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+										SELECT "chatID" AS "cID", COUNT("UID")AS "couUID"
 										FROM staff_chat."chatHistory"
-										join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
-										where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID) as "countUnread"
-										group by "chatID","UID"
-									) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
-								order by "Priority" desc,"LastTime1" desc';
-			$sth = $this->conn->prepare($sql);
-			$UID =$_SESSION['id'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->execute();
-
-			$row = $sth->fetchAll();
-			return $row;
+										group by "chatID"
+									) AS "cUID"
+									LEFT JOIN staff_chat."chatHistory" AS "cH2" on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2
+								)AS "check"
+								LEFT join staff_chat."chatHistory" AS "cH3" on "check"."chatID"="cH3"."chatID"
+								where "UID"!= :UID
+							)AS "receiver" on "chatWith"."chatID"="receiver"."chatID")AS "receiverList"
+							LEFT JOIN (
+								SELECT "cILT"."chatID","LastTime","content","UID" AS "sender"
+								FROM(
+									SELECT "chatID",MAX("sentTime")AS "LastTime"
+									FROM staff_chat."chatContent"
+									Group by "chatID"
+								)AS "cILT" 
+								LEFT JOIN staff_chat."chatContent" AS "cC2" on "cILT"."chatID"="cC2"."chatID" 
+								Where "LastTime"="sentTime"
+							)AS "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
+							LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
+							LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
+							LEFT JOIN (
+								SELECT "chatID","UID",COUNT("c")as "CountUnread"
+								FROM(
+									SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end
+								) as "c"
+								FROM staff_chat."chatHistory"
+								join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+								where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID
+							) as "countUnread"
+								group by "chatID","UID"
+						) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+						LEFT JOIN (
+							SELECT *
+							FROM staff_chat."chatClass"
+							LEFT JOIN staff_chat."chatClassify" 
+							ON "chatClass".id="chatClassify" ."classID"
+							WHERE "chatClassify"."UID"=:UID
+						) as cl on cl."chatID"="receiverList" ."chatID"
+						order by "classId","Priority" desc,"LastTime1" desc	
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+					$sth->execute();
+					$row = $sth->fetchAll();
+					$tmp = $row[0]["className"];
+					$arrayClass=array();
+					foreach($row as $array){
+						if($tmp == $array["className"]){
+							array_push($arrayClass,$array);
+						}else{
+							if(is_null($tmp)){
+								$tmp = "未分類議題";
+							}
+							$arrayJoin= array(
+								'class' => $tmp,
+								'chatInfo' => $arrayClass
+							);
+							array_push($ack,$arrayJoin);
+							$arrayClass=array();
+							array_push($arrayClass,$array);
+							$tmp = $array["className"];
+						}
+					}
+					if(is_null($tmp)){
+						$tmp = "未分類議題";
+					}
+					$arrayJoin= array(
+						'class' => $tmp,
+						'chatInfo' => $arrayClass
+					);
+					array_push($ack,$arrayJoin);
+					array_push($ack,array('num' => $returnCount));
+					return $ack;
+				}
+			}
+			array_push($ack,array('num' => 'none'));
+			return $ack;
+			// return $ack;
 		}
 
 		function getMember($chatID){
@@ -1081,7 +1194,7 @@ use Slim\Http\UploadedFile;
 		function getChatContent($chatID,$body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
-			for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
+			for ($i = 0, $timeout = 15; $i < $timeout; $i++ ) {
 
 				$sql = '
 					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
@@ -1123,7 +1236,7 @@ use Slim\Http\UploadedFile;
 				$sth->execute();
 				$row = $sth->fetchAll();
 				if(count($row)==$data['count']){
-					usleep(1000000);
+					usleep(3000000);
 				}else{
 					$result = array();
 					for($j=$data['count'];$j<count($row);$j++){

@@ -1,4 +1,4 @@
-<?php
+<?php 
  include('partial/header.php')
 ?>
 <!-- Custom styles for this template -->
@@ -49,6 +49,8 @@
             </button>
             <div class="dropdown-menu dropdown-menu-right">
               <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="insertClass">加入議題類別</button>
               <div class="dropdown-divider"></div>
               <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
             </div>
@@ -170,84 +172,7 @@ function updateCommentReadTime(data){
   });
 }
 
-function searchChatroom(){
-  if(queue['chatroom']!=null)
-    queue['chatroom'].abort();
-  queue['chatroom'] = $.ajax({
-    url:'/chat/chatroom',
-    type:'get',
-    data:{},
-    dataType:'json',
-    success:function(response){
-      // console.log($($('.chat_list')[0]).attr('data-name'));
-      // console.log(response[0].chatID);
-      // if(parseInt($($('.chat_list')[0]).attr('data-name'))==parseInt(response[0].chatID)){
-      //   return;
-      // }
-      $('[name=inbox_chat]').html("");
-      $(response).each(function(){
-        var chatName ='';
-        if (this.chatToWhom==null){
-          chatName=this.chatName;
-        }
-        else{
-          chatName=this.staff_name;
-        }
-        var haveUnread ='';
-        if(window.isTabActive){
-          $('title').text(titleOrg);
-        }
-        if(this.CountUnread!='0'&&this.CountUnread!=null){
-          haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> ';
-          if(!window.isTabActive){
-            if($('title').text().indexOf('您有訊息!!')>-1)
-              $('title').text(titleOrg);
-            else
-              $('title').text('[您有訊息!!]'+titleOrg);
-          }
-        }
-        else{
-          haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
-        }
-     
-        $('[name=inbox_chat]').append(
-          '<div class="accordion" id="accordionExample">'+
-            '<div class="card">'+
-              '<div class="card-header" id="headingOne">'+
-                '<h2 class="mb-0">'+
-                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">'+
-                  'Collapsible Group Item #1'+
-                '</button>'+
-                '</h2>'+
-              '</div>'+
-              '<div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
-                '<div class="card-body">'+
-                  '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
-                  '<div class="chat_people">'+
-                    '<div class="chat_img">'+
-                      '<div class="circleBase type2"></div>'+
-                    '</div>'+
-                    '<div class="chat_ib">'+
-                      '<h5>'+chatName+
-                        '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
-                      '</h5>'+
-                      '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
-                      haveUnread +
-                    '</div>'+
-                  '</div>'+
-                '</div>'+
-              '</div>'+
-            '</div>'+
-          '</div>'
-        );
-      });
-      if(!scrollable)
-        $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-      setTimeout(searchChatroom,3000);
-    }
-  });
 
-}
 var chatID=-1;
 var chatName = '';
 
@@ -280,6 +205,99 @@ function resetLimit(){
 var last = new Object();
 last['limit'] = 20;
 last['count'] = 0;
+last['countchat'] = 0;
+function searchChatroom(){
+  if(queue['chatroom']!=null)
+    queue['chatroom'].abort();
+  queue['chatroom'] = $.ajax({
+    url:'/chat/chatroom',
+    type:'get',
+    data:{data:JSON.stringify(last)},
+    dataType:'json',
+    success:function(response){
+      // if(response[response.length-1].num == last['countchat']){
+      //   return false;
+      // }else{
+      // }
+      $popNum = response.pop();
+      if($popNum.num == 'none'){
+        return;
+      }
+      last['countchat']=$popNum.num;
+      console.log($popNum.num);
+      $('[name=inbox_chat]').html("");
+      $('[name=inbox_chat]').append(
+        '<div class="accordion" id="accordionExample" name="accordionExample">'+
+        '</div>'
+      );
+      $(response).each(function(){
+        $('[name=inbox_chat]').append(
+          '<div class="card">'+
+            '<div class="card-header" id="headingOne">'+
+              '<h2 class="mb-0">'+
+              '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+this.class+'" aria-expanded="true" aria-controls="'+this.class+'">'+
+                this.class+
+              '</button>'+
+              '</h2>'+
+            '</div>'+
+            '<div id= "'+this.class+'"  name= "'+this.class+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+            '</div>'+
+          '</div>'
+        );
+        var tmpClass = this.class;
+        $(this.chatInfo).each(function(){
+          var chatName ='';
+          if (this.chatToWhom==null){
+            chatName=this.chatName;
+          }
+          else{
+            chatName=this.staff_name;
+          }
+          var haveUnread ='';
+          if(window.isTabActive){
+            $('title').text(titleOrg);
+          }
+
+          if(this.CountUnread!='0'&&this.CountUnread!=null){
+            haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> ';
+            if(!window.isTabActive){
+              if($('title').text().indexOf('您有訊息!!')>-1)
+                $('title').text(titleOrg);
+              else
+                $('title').text('[您有訊息!!]'+titleOrg);
+            }
+          }
+          else{
+            haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
+          }
+          // console.log(last['countchat']);
+          $('[name="'+tmpClass+'"]').append(
+            '<div class="card-body" name="room'+this.chatID+'">'+
+              '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
+              '<div class="chat_people">'+
+                '<div class="chat_img">'+
+                  '<div class="circleBase type2"></div>'+
+                '</div>'+
+                '<div class="chat_ib">'+
+                  '<h5>'+chatName+
+                    '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
+                  '</h5>'+
+                  '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
+                  haveUnread +
+                '</div>'+
+              '</div>'+
+            '</div>'
+          );
+        });
+      });
+      if(!scrollable)
+        $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
+
+      setTimeout(searchChatroom,3000);
+    }
+  });
+
+}
 function searchChat(){
   if(chatID!=-1 && chatID!==undefined){
     if(queue['chat'] != null)
@@ -440,6 +458,7 @@ $('#basicModal').on('show.bs.modal',function(e){
   var type = $(e.relatedTarget).data('type');
   if(type=='create'){
     Chatroom(type);
+    searchChatroom();
   }else if(type=='update'){
     Chatroom(type);
   }else if(type=='member'){
@@ -458,9 +477,67 @@ $('#basicModal').on('show.bs.modal',function(e){
     addIssue();
   }else if(type=='chooseIssues'){
     Chatroom(type);
+  }else if(type=='insertClass'){
+    insertIssue();
   }
 });
+function insertIssue(){
+   $('#basicModal .modal-title').text('選擇分類');
+   console.log(chatID);
+   $('#basicModal .modal-body').html('<h6 class="card-subtitle mb-2 text-muted listBox">');
+   $.ajax({
+    url:'/chat/class/',
+    type:'GET',
+    dataType:'json',
+    success:function(response){
+      $(response).each(function(){
+        $('#basicModal .listBox').append(
+          '<div class="input-group mb-2 listItem">'+
+            '<div class="input-group-prepend">'+
+              '<button type="button" class="btn btn-dark" name="buttonInsetClass" data-id='+this.id+'>'+
+                this.name+
+              '</button>'+
+            '</div>'+
+          '</div>'
+        );
+      });
+      $('[name=buttonInsetClass]').on('click',function(e){
+        var classId = $(this).data('id');
+        var newclass;
+        $.ajax({
+          url:'/chat/class/'+classId+'/',
+          type:'GET',
+          dataType:'json',
+          success:function(response){
+            newclass = this.name;
+          }
+        });
 
+        $.ajax({
+          url:'/chat/class/'+classId+'/'+chatID+'/',
+          type:'POST',
+          data:{_METHOD:'patch'},
+          dataType:'json',
+          success:function(response){
+            var extendObject = $('[name=chatBox]').children().clone(true);
+            extendObject.find('[name="room'+classId+'"]').remove();
+            $('[name="'+newclass+'"]').append(
+              '<div class="card-body" name="room'+classId+'">'+
+              '</div>'
+            );
+            $('[name="room'+classId+'"]').append(extendObject);
+            // $(function(){
+            //   $('#copy').clone().appendTo('#copied');
+            // });
+          } 
+        });
+        $('#basicModal').modal('hide');
+      });
+    }
+  });
+   $('#basicModal .modal-footer').html('<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>'
+  );
+}
 function addIssue(){
   $('#basicModal .modal-title').text('新增議題群組'); 
   $('#basicModal .modal-body').html(
@@ -471,8 +548,10 @@ function addIssue(){
         '<button type="button" class="btn btn-dark" name="buttonAddClass">新增</button>'+
       '</div>'+
       '<h6 class="card-subtitle mb-2 text-muted listBox">'+
-    '</div>');
-  $('#basicModal .modal-footer').html('<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>');
+    '</div>'
+  );
+  $('#basicModal .modal-footer').html('<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>'
+  );
 
   queue['search'] = null;
     $('.searchInput').unbind().on('keyup',function(){
@@ -716,7 +795,6 @@ function getMember(){
         '<div class="card">'+
           '<div class="card-body">'+
             '<button class="btn btn-secondary" onclick="Chatroom(\'update\');">修改議題</button></br>'+
-            '<button class="btn btn-secondary" onclick="Chatroom(\'choooseIssues\');">選擇分類</button>'+
             '<p class="card-text">'+
               '<h6 class="card-subtitle mb-2 text-muted listBox">'+
               '</h6>'+

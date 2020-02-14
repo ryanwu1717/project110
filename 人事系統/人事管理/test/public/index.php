@@ -334,7 +334,7 @@ $app->group('/chat', function () use ($app) {
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
-			$result = $chat->getChatroom();
+			$result = $chat->testGetChatRoom($_GET);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
@@ -478,31 +478,39 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->group('/class', function () use ($app) {
 		$app->get('/', function (Request $request, Response $response, array $args) {
-		    $class = new Class_($this->db);
+		    $class = new Chat($this->db);
 		    $result = $class->getClass();   
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
 		    
 		});
+		$app->get('/{classId}/', function (Request $request, Response $response, array $args) {
+		    $class = new Chat($this->db);
+		    $result = $class->getClass($args['classId']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
 		$app->delete('/{classId}/', function (Request $request, Response $response, array $args) {
-		    $class = new Class_($this->db);
+		    $class = new Chat($this->db);
 		    $result = $class->deleteClass($args['classId']);   
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
 		    
 		});
-		// $app->get('/getIssueName', function (Request $request, Response $response, array $args) {
-		//     $class = new Class_($this->db);
-		//     $result = $class->getIssueName();   
-		//     $response = $response->withHeader('Content-type', 'application/json' );
-		// 	$response = $response->withJson($result);
-		//     return $response;
+		$app->patch('/{classId}/{chatID}/', function (Request $request, Response $response, array $args) {
+		    $class = new Chat($this->db);
+		    $result = $class->insertClass($args['classId'],$args['chatID']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
 		    
-		// });
+		});
 		$app->post('/', function (Request $request, Response $response, array $args) {
-		    $class = new Class_($this->db);
+		    $class = new Chat($this->db);
 		    $result = $class->addClass();   
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
