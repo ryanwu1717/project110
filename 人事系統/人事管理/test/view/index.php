@@ -450,6 +450,27 @@ $("#textinput").keyup(function(e){
   if((code&&e.shiftKey) &&code==13){
   }
 });
+$("#textinput").on('paste', function (e) {
+    var clipboardData = e.originalEvent.clipboardData;
+    var items = clipboardData.items;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") == -1) continue;
+      var file_data = items[i].getAsFile();
+      var form_data = new FormData();
+      form_data.append('inputFile', file_data);
+      $.ajax({
+        url: '/chat/file/'+chatID,
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,     //data只能指定單一物件                 
+        type: 'post',
+        success: function(data){
+          
+        }
+      });
+    }
+});
 function uploadFile(button){
   $('#basicModal').modal('hide');
   $('[name=inputFile]').val('');
