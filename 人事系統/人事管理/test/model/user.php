@@ -979,24 +979,75 @@ use Slim\Http\UploadedFile;
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
 			$ack= array();
-			$classType = $this->getClass();
-			for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
-				$sql = 'SELECT SUM(count) AS "countNum"
-						FROM staff_chat."chatHistory"
-						left join  (select "chatID",count(*)
-						from "staff_chat"."chatContent"
-						group by "chatID")AS "chatWith" on "chatWith"."chatID" = "chatHistory"."chatID"
-						WHERE "UID"= :UID';
-				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':UID',$UID);
-				$sth->execute();
-				$row = $sth->fetchAll();
-				$returnCount = $row[0]["countNum"];
-				if($data['countchat'] == $row[0]["countNum"]){
-					usleep(1000000);
-					// array_push($ack,array('num' => 'test'));
-					// return $ack;
-				}else{
+			$boolCheckClassType = false;
+			$boolCheckClass = false;
+			$boolCheckLastTime = false;
+			$change = array();
+
+			// var_dump(count($data['clientClass']));
+
+			if($data["countchat"] != 0){
+				// return(count($data['chatClientInfo']));
+				
+				for ($i = 0, $timeout = 50; $i < $timeout; $i++ ) {
+					$classType = $this->getClass();
+					array_push($classType,array("name"=>"未分類議題","id"=>0));
+					if(count($classType)>count($data['clientClass'])){
+						$checkClassNum = 1;
+					}else if(count($classType)<count($data['clientClass'])){
+						$checkClassNum = 2;
+					}else {
+						$checkClassNum = 3;
+					}
+							// var_dump(count($classType),count($data['clientClass']));
+					foreach($classType as $eachClass){
+						if($checkClassNum == 1){
+							$boolCheckClassType = true;
+							if(!array_key_exists($eachClass['id'], $data['clientClass'])){
+								$change = array('changetype' => 'changeclass',
+											'changething'=> $eachClass,
+											'type' => "add"
+											);
+							}
+						}else if($checkClassNum == 2){
+							// array_push($ack,"2");
+							$boolCheckClassType = true;
+							if (array_key_exists($eachClass['id'], $data['clientClass'])){
+								unset($data['clientClass'][$eachClass['id']]);
+							}		
+							// var_dump($data['clientClass']);
+							$change = array('changetype' => 'changeclass',
+											'changething'=>$data['clientClass'],
+											'type' => "delete"
+										);
+						}else if($checkClassNum == 3){
+							// var_dump($eachClass['id']);
+							// array_push($ack, $data['clientClass'][$eachClass['id']]['name']);
+							if ($eachClass['name'] != $data['clientClass'][$eachClass['id']]['name'])
+							{
+								// array_push($ack,array("new"=>$eachClass['name'],"old"=> $data['clientClass'][$eachClass['id']]['name']));
+								$boolCheckClassType = true;
+								$change = array('changetype' => 'changeclass',
+																'changething'=>$eachClass,
+																'type' => "modify"
+													);
+							}
+						}
+						
+
+					}
+					$sql = 'SELECT SUM(count) AS "countNum"
+							FROM staff_chat."chatHistory"
+							left join  (select "chatID",count(*)
+							from "staff_chat"."chatContent"
+							group by "chatID")AS "chatWith" on "chatWith"."chatID" = "chatHistory"."chatID"
+							WHERE "UID"= :UID';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$UID);
+					$sth->execute();
+					$row = $sth->fetchAll();
+					$returnCount = $row[0]["countNum"];
+
 					$sql = '
 						SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')AS "LastTime","content","chatName","staff_name","LastTime" AS "LastTime1","CountUnread",CASE WHEN "CountUnread" > 0 then \'1\'ELSE\'0\' END AS "Priority",cl.name AS "className",cl.id AS "classId"
 						FROM(
@@ -1056,39 +1107,242 @@ use Slim\Http\UploadedFile;
 					$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 					$sth->execute();
 					$row = $sth->fetchAll();
-					$tmp = $row[0]["className"];
-					$arrayClass=array();
-					foreach($row as $array){
-						if($tmp == $array["className"]){
-							array_push($arrayClass,$array);
+					foreach($row as $eachChatClass){
+						// array_push($ack,array("new"=>$eachChatClass['classId'],"old"=> $data['chatClientInfo'][$eachChatClass['chatID']]['classId']));
+						//check chatroom
+						if(count($row)>count($data['chatClientInfo'])){
+							$checkChatRoomNum =1;
+						}else if(count($row)>count($data['chatClientInfo'])){
+							$checkChatRoomNum =2;
 						}else{
-							if(is_null($tmp)){
-								$tmp = "未分類議題";
-							}
-							$arrayJoin= array(
-								'class' => $tmp,
-								'chatInfo' => $arrayClass
-							);
-							array_push($ack,$arrayJoin);
-							$arrayClass=array();
-							array_push($arrayClass,$array);
-							$tmp = $array["className"];
+							$checkChatRoomNum =3;
 						}
+
+						if($checkChatRoomNum == 1){
+							$boolCheckClass =true;
+							if(!array_key_exists($eachChatClass['classId'], $data['clientClass'])){
+								$change = array('changetype' => 'changeclass',
+											'changething'=> $eachChatClass,
+											'type' => "add"
+											);
+							}
+						}else if($checkChatRoomNum == 2){
+							$boolCheckClass =true;
+							if(array_key_exists($eachChatClass['classId'], $data['clientClass'])){
+								unset($data['clientClass'][$eachChatClass['classId']]);
+							}
+							$change = array('changetype' => 'changeclass',
+															'changething'=> $eachChatClass,
+															'type' => "delete"
+															);
+						}else if($checkChatRoomNum ==3){
+							if($eachChatClass['classId'] != $data['chatClientInfo'][$eachChatClass['chatID']]['classId']){
+								$change = array('changetype' => 'changeclass',
+																'changething'=>$eachChatClass,
+																'type' => 'changeClass'
+											 					);
+								array_push($ack,$eachChatClass);
+								$boolCheckClass =true;
+							}	
+						}
+						
+						if($eachChatClass['LastTime1'] != $data['chatClientInfo'][$eachChatClass['chatID']]['lastTime']){
+							$boolCheckLastTime = true;
+							$change = array('changetype' => 'changeLastTime',
+															'changeChatroom'=>$eachChatClass
+											 				);
+							array_push($ack,$eachChatClass);
+						}
+
 					}
-					if(is_null($tmp)){
-						$tmp = "未分類議題";
+					if($boolCheckClass == true || $boolCheckClassType == true || $boolCheckLastTime == true){
+						$tmp = $row[0]["className"];
+						$arrayClass=array();
+						foreach($row as $array){
+							if($tmp == $array["className"]){
+								array_push($arrayClass,$array);
+							}else{
+								if(is_null($tmp)){
+									$tmp = "未分類議題";
+								}
+								$arrayJoin= array(
+									'class' => $tmp,
+									'chatInfo' => $arrayClass
+								);
+								array_push($ack,$arrayJoin);
+								$arrayClass=array();
+								array_push($arrayClass,$array);
+								$tmp = $array["className"];
+							}
+						}
+						if(is_null($tmp)){
+							$tmp = "未分類議題";
+						}
+						$arrayJoin= array(
+							'class' => $tmp,
+							'chatInfo' => $arrayClass
+						);
 					}
-					$arrayJoin= array(
-						'class' => $tmp,
-						'chatInfo' => $arrayClass
-					);
-					array_push($ack,$arrayJoin);
-					array_push($ack,array('num' => $returnCount));
-					return $ack;
+					if($i==49){
+						$tmp = $row[0]["className"];
+						$arrayClass=array();
+						foreach($row as $array){
+							if($tmp == $array["className"]){
+								array_push($arrayClass,$array);
+							}else{
+								if(is_null($tmp)){
+									$tmp = "未分類議題";
+								}
+								$arrayJoin= array(
+									'class' => $tmp,
+									'chatInfo' => $arrayClass
+								);
+								array_push($ack,$arrayJoin);
+								$arrayClass=array();
+								array_push($arrayClass,$array);
+								$tmp = $array["className"];
+							}
+						}
+						if(is_null($tmp)){
+							$tmp = "未分類議題";
+						}
+						$arrayJoin= array(
+							'class' => $tmp,
+							'chatInfo' => $arrayClass
+						);
+						// array_push($classType,array("name"=>"未分類議題","id"=>0));\
+						$change = array('changetype' => 'none');
+						array_push($ack,$arrayJoin);
+						array_push($ack,array('allclass' => $classType));
+						array_push($ack,array('changetype' => $change));
+						array_push($ack,array('num' => $returnCount));
+						return $ack;
+					}
+					if($data['countchat'] == $returnCount && $boolCheckLastTime==false && $boolCheckClass == false && $boolCheckClassType == false){
+						// var_dump($data['countchat'],$returnCount,$boolCheckClass,$boolCheckClassType);
+						usleep(1000000);
+					}else{
+						// var_dump($data['countchat'],$returnCount,$boolCheckLastTime,$boolCheckClass,$boolCheckClassType);
+						array_push($ack,$arrayJoin);
+						array_push($ack,array('allclass' => $classType));
+						array_push($ack,array('changetype' => $change));
+						array_push($ack,array('num' => $returnCount));
+						return $ack;
+					}
 				}
+				// array_push($classType,array("name"=>"未分類議題","id"=>0));
+				array_push($ack,$arrayJoin);
+				array_push($ack,array('allclass' => $classType));
+				array_push($ack,array('changetype' => $change));
+				array_push($ack,array('num' => $returnCount));
+				return $ack;
+			}else{
+				$classType = $this->getClass();
+				array_push($classType,array("name"=>"未分類議題","id"=>0));
+				$sql = 'SELECT SUM(count) AS "countNum"
+						FROM staff_chat."chatHistory"
+						left join  (select "chatID",count(*)
+						from "staff_chat"."chatContent"
+						group by "chatID")AS "chatWith" on "chatWith"."chatID" = "chatHistory"."chatID"
+						WHERE "UID"= :UID';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				$returnCount = $row[0]["countNum"];
+
+				$sql = '
+					SELECT "receiverList"."chatID","chatToWhom",to_char("LastTime",\'MM-DD\')AS "LastTime","content","chatName","staff_name","LastTime" AS "LastTime1","CountUnread",CASE WHEN "CountUnread" > 0 then \'1\'ELSE\'0\' END AS "Priority",cl.name AS "className",cl.id AS "classId"
+					FROM(
+						SELECT "chatWith"."chatID","chatToWhom"
+						FROM(
+							SELECT "chatID", "time", "UID"
+							FROM staff_chat."chatHistory"
+							WHERE "UID"= :UID
+						)AS "chatWith" 
+						LEFT JOIN (
+							SELECT "cH3"."chatID","UID" AS "chatToWhom"
+							FROM(
+								SELECT "couUID","chatID","time"
+								FROM(
+									SELECT "chatID" AS "cID", COUNT("UID")AS "couUID"
+									FROM staff_chat."chatHistory"
+									group by "chatID"
+								) AS "cUID"
+								LEFT JOIN staff_chat."chatHistory" AS "cH2" on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2
+							)AS "check"
+							LEFT join staff_chat."chatHistory" AS "cH3" on "check"."chatID"="cH3"."chatID"
+							where "UID"!= :UID
+						)AS "receiver" on "chatWith"."chatID"="receiver"."chatID")AS "receiverList"
+						LEFT JOIN (
+							SELECT "cILT"."chatID","LastTime","content","UID" AS "sender"
+							FROM(
+								SELECT "chatID",MAX("sentTime")AS "LastTime"
+								FROM staff_chat."chatContent"
+								Group by "chatID"
+							)AS "cILT" 
+							LEFT JOIN staff_chat."chatContent" AS "cC2" on "cILT"."chatID"="cC2"."chatID" 
+							Where "LastTime"="sentTime"
+						)AS "searchResault" on "receiverList"."chatID"="searchResault"."chatID"	
+						LEFT JOIN staff_chat."chatroomInfo" on "receiverList"."chatID"="chatroomInfo"."chatID"
+						LEFT JOIN staff."staff" on "receiverList"."chatToWhom"=staff."staff"."staff_id"
+						LEFT JOIN (
+							SELECT "chatID","UID",COUNT("c")as "CountUnread"
+							FROM(
+								SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end
+							) as "c"
+							FROM staff_chat."chatHistory"
+							join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+							where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID
+						) as "countUnread"
+							group by "chatID","UID"
+					) as "countUnread" on "receiverList"."chatID"="countUnread"."chatID"
+					LEFT JOIN (
+						SELECT *
+						FROM staff_chat."chatClass"
+						LEFT JOIN staff_chat."chatClassify" 
+						ON "chatClass".id="chatClassify" ."classID"
+						WHERE "chatClassify"."UID"=:UID
+					) as cl on cl."chatID"="receiverList" ."chatID"
+					order by "classId","Priority" desc,"LastTime1" desc	
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				$tmp = $row[0]["className"];
+				$arrayClass=array();
+				foreach($row as $array){
+					if($tmp == $array["className"]){
+						array_push($arrayClass,$array);
+					}else{
+						if(is_null($tmp)){
+							$tmp = "未分類議題";
+						}
+						$arrayJoin= array(
+							'class' => $tmp,
+							'chatInfo' => $arrayClass
+						);
+						array_push($ack,$arrayJoin);
+						$arrayClass=array();
+						array_push($arrayClass,$array);
+						$tmp = $array["className"];
+					}
+				}
+				if(is_null($tmp)){
+					$tmp = "未分類議題";
+				}
+				$arrayJoin= array(
+					'class' => $tmp,
+					'chatInfo' => $arrayClass
+				);
+				array_push($ack,$arrayJoin);
+				array_push($ack,array('allclass' => $classType));
+				array_push($ack,array('changetype' => "firstime"));
+				array_push($ack,array('num' => $returnCount));
+				return $ack;
 			}
-			array_push($ack,array('num' => 'none'));
-			return $ack;
+			
 			// return $ack;
 		}
 

@@ -209,6 +209,8 @@ var last = new Object();
 last['limit'] = 20;
 last['count'] = 0;
 last['countchat'] = 0;
+last['clientClass'] ={};
+last['chatClientInfo'] = {};
 function searchChatroom(){
   if(queue['chatroom']!=null)
     queue['chatroom'].abort();
@@ -218,84 +220,150 @@ function searchChatroom(){
     data:{data:JSON.stringify(last)},
     dataType:'json',
     success:function(response){
-      // if(response[response.length-1].num == last['countchat']){
-      //   return false;
-      // }else{
-      // }
+      last['clientClass'] ={};
+      last['chatClientInfo'] = new Object();
+      // console.log(response);
       $popNum = response.pop();
+      $change = response.pop();
+      $allClass = response.pop();
       if($popNum.num == 'none'){
         return;
       }
       last['countchat']=$popNum.num;
-      console.log($popNum.num);
-      $('[name=inbox_chat]').html("");
+      // console.log($popNum.num);
+      // $('[name=inbox_chat]').html("");
       $('[name=inbox_chat]').append(
         '<div class="accordion" id="accordionExample" name="accordionExample">'+
         '</div>'
       );
-      $(response).each(function(){
-        $('[name=inbox_chat]').append(
-          '<div class="card">'+
-            '<div class="card-header" id="headingOne">'+
-              '<h2 class="mb-0">'+
-              '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+this.class+'" aria-expanded="true" aria-controls="'+this.class+'">'+
-                this.class+
-              '</button>'+
-              '</h2>'+
-            '</div>'+
-            '<div id= "'+this.class+'"  name= "'+this.class+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
-            '</div>'+
-          '</div>'
-        );
-        var tmpClass = this.class;
-        $(this.chatInfo).each(function(){
-          var chatName ='';
-          if (this.chatToWhom==null){
-            chatName=this.chatName;
-          }
-          else{
-            chatName=this.staff_name;
-          }
-          var haveUnread ='';
-          if(window.isTabActive){
-            $('title').text(titleOrg);
-          }
 
-          if(this.CountUnread!='0'&&this.CountUnread!=null){
-            haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> ';
-            if(!window.isTabActive){
-              if($('title').text().indexOf('您有訊息!!')>-1)
-                $('title').text(titleOrg);
-              else
-                $('title').text('[您有訊息!!]'+titleOrg);
-            }
-          }
-          else{
-            haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
-          }
-          // console.log(last['countchat']);
-          $('[name="'+tmpClass+'"]').append(
-            '<div class="card-body" name="room'+this.chatID+'">'+
-              '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
-              '<div class="chat_people">'+
-                '<div class="chat_img">'+
-                  '<div class="circleBase type2"></div>'+
-                '</div>'+
-                '<div class="chat_ib">'+
-                  '<h5>'+chatName+
-                    '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
-                  '</h5>'+
-                  '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
-                  haveUnread +
-                '</div>'+
+      $($allClass.allclass).each(function(){
+        last['clientClass'][this.id] = {"name":this.name};
+      });
+
+      $(response).each(function(){
+        $(this.chatInfo).each(function(){
+          // console.log(this.chatID);
+          var newdata = {};
+          newdata[this.chatID] = {"chatID":this.chatID,"classId": this.classId, "lastTime" : this.LastTime1};
+          $.extend(true, last['chatClientInfo'], newdata);
+        });
+      });
+
+      if($change.changetype['changetype'] == 'changeclass'){
+        // console.log('in'+$change.type+$change.changething)
+
+        if($change.changetype['type'] == "delete"){
+           console.log($change.changetype['changething']);
+           $($change.changetype['changething']).each(function(key,value){
+            console.log($(this).first());
+            $(value).each(function(key,value){
+              console.log(value);
+            });
+           });
+           $('[name='+$change.changetype["changething"].name+']').remove();
+        }else if($change.changetype['type'] == "add"){
+            console.log($change.changetype['changething'].name);
+          $('[name=inbox_chat]').append(
+            '<div class="card" name = "class'+$change.changetype["changething"].name+'">'+
+              '<div class="card-header" id="headingOne">'+
+                '<h2 class="mb-0">'+
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+$change.changetype["changething"].name+'" aria-expanded="true" aria-controls="'+$change.changetype["changething"].name+'">'+
+                  $change.changetype["changething"].name+
+                '</button>'+
+                '</h2>'+
+              '</div>'+
+              '<div id= "'+$change.changetype["changething"].name+'"  name= "'+$change.changetype["changething"].name+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+              '</div>'+
+            '</div>'
+          );
+        }else if($change.type == "modify"){
+
+        }
+
+      }else if ($change.changetype == 'changechatroom'){
+        if($change.type == "delete"){
+          
+
+        }else if($change.type == "add"){
+
+        }else if($change.type == "changeClass"){
+
+        }
+      }else if ($change.changetype == 'changeLastTime'){
+
+      }else if ($change.changetype == 'none'){
+
+      }else if ($change.changetype == 'firstime'){  
+        console.log($change.changetype);
+
+        $($allClass.allclass).each(function(){
+          // console.log(this);
+          $('[name=inbox_chat]').append(
+            '<div class="card" name = "class'+this.name+'">'+
+              '<div class="card-header" id="headingOne">'+
+                '<h2 class="mb-0">'+
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+this.name+'" aria-expanded="true" aria-controls="'+this.name+'">'+
+                  this.name+
+                '</button>'+
+                '</h2>'+
+              '</div>'+
+              '<div id= "'+this.name+'"  name= "'+this.name+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
               '</div>'+
             '</div>'
           );
         });
-      });
+        $(response).each(function(){
+          var tmpClass = this.class;
+
+          $(this.chatInfo).each(function(){
+            var chatName ='';
+            if (this.chatToWhom==null){
+              chatName=this.chatName;
+            }
+            else{
+              chatName=this.staff_name;
+            }
+            var haveUnread ='';
+            if(window.isTabActive){
+              $('title').text(titleOrg);
+            }
+            if(this.CountUnread!='0'&&this.CountUnread!=null){
+              haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> ';
+              if(!window.isTabActive){
+                if($('title').text().indexOf('您有訊息!!')>-1)
+                  $('title').text(titleOrg);
+                else
+                  $('title').text('[您有訊息!!]'+titleOrg);
+              }
+            }
+            else{
+              haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
+            }
+            $('[name="'+tmpClass+'"]').append(
+              '<div class="card-body" name="room'+this.chatID+'">'+
+                '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
+                '<div class="chat_people">'+
+                  '<div class="chat_img">'+
+                    '<div class="circleBase type2"></div>'+
+                  '</div>'+
+                  '<div class="chat_ib">'+
+                    '<h5>'+chatName+
+                      '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
+                    '</h5>'+
+                    '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
+                    haveUnread +
+                  '</div>'+
+                '</div>'+
+              '</div>'
+            );
+          });
+        });
+
+      }
+      console.log("out");
       if(!scrollable)
         $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-
       setTimeout(searchChatroom,3000);
     }
   });
@@ -459,7 +527,6 @@ $('#basicModal').on('show.bs.modal',function(e){
   var type = $(e.relatedTarget).data('type');
   if(type=='create'){
     Chatroom(type);
-    searchChatroom();
   }else if(type=='update'){
     Chatroom(type);
   }else if(type=='member'){
