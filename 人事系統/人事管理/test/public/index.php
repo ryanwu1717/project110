@@ -334,7 +334,7 @@ $app->group('/chat', function () use ($app) {
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
-			$result = $chat->testGetChatRoom($_GET);
+			$result = $chat->testGetChatroom($_GET);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;

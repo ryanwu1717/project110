@@ -22,17 +22,8 @@
         </div> -->
         <div class="tool_bar btn-group">
           <div class="btn-group">
-            <button class="fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
+            <button class="btn btn-secondary fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
             <button class="btn btn-secondary " type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >+</button>
-            <!-- <div class="dropleft">
-              <button class="btn btn-secondary dropdown-toggle" type="button" id="choose_dropdown" data-display="static" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
-                +
-              </button>
-              <div class="dropdown-menu dropdown-menu-right" >
-                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >新增議題</button>
-                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="addIssue" >新增議題群組</button>
-              </div>
-            </div> -->
           </div>
         </div>
       </div>
@@ -251,19 +242,17 @@ function searchChatroom(){
       });
 
       if($change.changetype['changetype'] == 'changeclass'){
-        // console.log('in'+$change.type+$change.changething)
 
         if($change.changetype['type'] == "delete"){
-           console.log($change.changetype['changething']);
-           $($change.changetype['changething']).each(function(key,value){
-            console.log($(this).first());
-            $(value).each(function(key,value){
-              console.log(value);
-            });
-           });
-           $('[name='+$change.changetype["changething"].name+']').remove();
+          console.log('delete');
+          console.log($change.changetype);
+          console.log('delete');
+          $.each($change.changetype['changething'],function(key,value){
+            // console.log($change.changetype['changething'][key]);
+            $('[name='+value.name+']').remove();
+          });
         }else if($change.changetype['type'] == "add"){
-            console.log($change.changetype['changething'].name);
+          console.log($change.changetype['changething'].name);
           $('[name=inbox_chat]').append(
             '<div class="card" name = "class'+$change.changetype["changething"].name+'">'+
               '<div class="card-header" id="headingOne">'+
@@ -295,26 +284,24 @@ function searchChatroom(){
       }else if ($change.changetype == 'none'){
 
       }else if ($change.changetype == 'firstime'){  
-        console.log($change.changetype);
-
         $($allClass.allclass).each(function(){
           // console.log(this);
           $('[name=inbox_chat]').append(
-            '<div class="card" name = "class'+this.name+'">'+
+            '<div class="card" name = "class'+this.id+'">'+
               '<div class="card-header" id="headingOne">'+
                 '<h2 class="mb-0">'+
-                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+this.name+'" aria-expanded="true" aria-controls="'+this.name+'">'+
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+this.id+'" aria-expanded="true" aria-controls="class'+this.id+'">'+
                   this.name+
                 '</button>'+
                 '</h2>'+
               '</div>'+
-              '<div id= "'+this.name+'"  name= "'+this.name+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+              '<div id= "class'+this.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
               '</div>'+
             '</div>'
           );
         });
         $(response).each(function(){
-          var tmpClass = this.class;
+          var tmpClass = this.classID;
 
           $(this.chatInfo).each(function(){
             var chatName ='';
@@ -340,8 +327,8 @@ function searchChatroom(){
             else{
               haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
             }
-            $('[name="'+tmpClass+'"]').append(
-              '<div class="card-body" name="room'+this.chatID+'">'+
+            $('#class'+tmpClass).append(
+              '<div class="" name="room'+this.chatID+'">'+
                 '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
                 '<div class="chat_people">'+
                   '<div class="chat_img">'+
