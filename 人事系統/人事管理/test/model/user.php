@@ -999,9 +999,9 @@ use Slim\Http\UploadedFile;
 					}else {
 						$checkClassNum = 3;
 					}
-							// var_dump(count($classType),count($data['clientClass']));
 					foreach($classType as $eachClass){
 						if($checkClassNum == 1){
+							var_dump(count($classType),count($data['clientClass']));
 							$boolCheckClassType = true;
 							if(!array_key_exists($eachClass['id'], $data['clientClass'])){
 								$change = array('changetype' => 'changeclass',
