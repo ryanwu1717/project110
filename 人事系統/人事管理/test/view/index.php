@@ -22,17 +22,8 @@
         </div> -->
         <div class="tool_bar btn-group">
           <div class="btn-group">
-            <button class="fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
+            <button class="btn btn-secondary fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
             <button class="btn btn-secondary " type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >+</button>
-            <!-- <div class="dropleft">
-              <button class="btn btn-secondary dropdown-toggle" type="button" id="choose_dropdown" data-display="static" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
-                +
-              </button>
-              <div class="dropdown-menu dropdown-menu-right" >
-                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >新增議題</button>
-                <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="addIssue" >新增議題群組</button>
-              </div>
-            </div> -->
           </div>
         </div>
       </div>
@@ -141,16 +132,182 @@ var queue = [];
 queue['chatroom'] = null;
 queue['commentreadtime'] = null;
 var scrollable = false;
-function schedule(){
-  // searchChatroom();
-  // searchChat();
-  // clearTimeout(queue['chatroom']);
-  // clearTimeout(queue['chat']);
-  setTimeout(searchChatroom,1000);
-  setTimeout(searchChat,1000);
-}
-schedule();
 
+
+var todatDate = null;
+function init(){
+  todayDate = Date.now();
+  $.ajax({
+    url:'/chat/init/'+todayDate,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      if(response.status=='success'){
+        $.each(response,function(key,value){
+          if(key=='class'){
+            changeClass('init',value);
+          }
+          else if(key=='chatroom'){
+            changeChatroom('init',value);
+          }
+        });
+        routine();
+      }
+    }
+  });
+}
+init();
+
+function routine(){
+  $.ajax({
+    url:'/chat/routine/'+todayDate+'/'+chatID,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      if(response.status=='success'){
+        $.each(response.result,function(key,value){
+          if(key=='class'){
+            changeClass('routine',value);
+          }else if(key=='chatroom'){
+            changeChatroom('routine',response);
+          }
+        });
+      }
+      // routine();
+    }
+  });
+}
+
+
+
+// function schedule(){
+//   // searchChatroom();
+//   // searchChat();
+//   // clearTimeout(queue['chatroom']);
+//   // clearTimeout(queue['chat']);
+//   setTimeout(searchChatroom,1000);
+//   setTimeout(searchChat,1000);
+// }
+// schedule();
+function changeClass(type,data){
+  function addClass(key,value){
+    // console.log(value);
+    $('[name=inbox_chat]').append(
+      '<div class="card" name = "class'+value.id+'">'+
+        '<div class="card-header" id="headingOne">'+
+          '<h2 class="mb-0">'+
+          '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+value.id+'" aria-expanded="true" aria-controls="class'+value.id+'">'+
+            value.name+
+          '</button>'+
+          '</h2>'+
+        '</div>'+
+        '<div id= "class'+value.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+        '</div>'+
+      '</div>'
+    );
+  }
+  function deleteClass(key,value){
+    $('[name=class'+value.id+']').remove();
+  }
+  if(type=='init'){
+    $('[name=inbox_chat]').append(
+      '<div class="accordion" id="accordionExample" name="accordionExample">'+
+      '</div>'
+    );
+    $(data).each(addClass);
+    addClass(null,{id:0,name:"未命名議題"});
+  }else if(type=='routine'){
+    $.each(data.change,function(){
+      $('[name=class'+this.id+']').find('button').text(this.name);
+    });
+    $(data.new).each(addClass);
+    $(data.delete).each(deleteClass);
+  }
+}
+function changeChatroom(type,data){
+  function addChatRoom(key,value){
+    // console.log(value);
+    var tmpClass = (value.classID==null?0:value.classID);
+    var chatName ='';
+    if (value.chatToWhom==null){
+      chatName=value.chatName;
+    }
+    else{
+      chatName=value.staff_name;
+    }
+    var haveUnread ='';
+    if(window.isTabActive){
+      $('title').text(titleOrg);
+    }
+    if(value.CountUnread!='0'&&value.CountUnread!=null){
+      haveUnread='<span class="badge badge-primary">有'+value.CountUnread+'則新訊息</span> ';
+      if(!window.isTabActive){
+        if($('title').text().indexOf('您有訊息!!')>-1)
+          $('title').text(titleOrg);
+        else
+          $('title').text('[您有訊息!!]'+titleOrg);
+      }
+    }
+    else{
+      haveUnread ='<span class="badge badge-primary" style="display:none;">有'+value.CountUnread+'則新訊息</span> ';
+    }
+    $('#class'+tmpClass).append(
+      '<div class="" name="room'+value.chatID+'">'+
+        '<div class="chat_list" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'">'+
+        '<div class="chat_people">'+
+          '<div class="chat_img">'+
+            '<div class="circleBase type2"></div>'+
+          '</div>'+
+          '<div class="chat_ib">'+
+            '<h5>'+chatName+
+              '<span class="chat_date">'+ (value.LastTime==null?' ':value.LastTime) +'</span>'+
+            '</h5>'+
+            '<p class="text-truncate chatContent">'+ (value.content==null?' ':(value.content.indexOf('<a ')>-1?'收到一個檔案':value.content)) +'</p>'+
+            haveUnread +
+          '</div>'+
+        '</div>'+
+      '</div>'
+    );
+  }
+  if(type=='init'){
+    $(data).each(addChatRoom);
+  }else if(type=='routine'){
+    $.each(data.result.chatroom.new,function(){
+      $(this).each(addChatRoom);
+      console.log(this);
+    });
+    $.each(data.result.chatroom.delete,function(){
+      $('[name=room'+this.chatID+']').remove();
+      // $(this).each(addChatRoom);
+      console.log(this);
+    });
+    // $(data.result.chatroom.new).each(addChatRoom);
+    $.each(data.chatroom,function(){
+      var room = $('[name=room'+this.chatID+']');
+      if($('[name=room'+this.chatID+']').length==1){
+        var chatName ='';
+        if (this.chatName==''){
+          chatName=this.staff_name;
+        }
+        else{
+          chatName=this.chatName;
+        }
+        room.find('.chat_list').attr('onclick','getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');');
+        room.find('.chat_list').attr('data-name',this.chatID);
+        room.find('h5').html(
+          chatName+
+          '<span class="chat_date">'+ 
+            (this.LastTime==null?' ':this.LastTime) +
+          '</span>'
+        );
+        room.find('.chatContent').html(
+          (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content))
+        );
+      }
+    });
+  }
+}
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
     queue['lastReadTime'].abort();
@@ -251,19 +408,17 @@ function searchChatroom(){
       });
 
       if($change.changetype['changetype'] == 'changeclass'){
-        // console.log('in'+$change.type+$change.changething)
 
         if($change.changetype['type'] == "delete"){
-           console.log($change.changetype['changething']);
-           $($change.changetype['changething']).each(function(key,value){
-            console.log($(this).first());
-            $(value).each(function(key,value){
-              console.log(value);
-            });
-           });
-           $('[name='+$change.changetype["changething"].name+']').remove();
+          console.log('delete');
+          console.log($change.changetype);
+          console.log('delete');
+          $.each($change.changetype['changething'],function(key,value){
+            // console.log($change.changetype['changething'][key]);
+            $('[name='+value.name+']').remove();
+          });
         }else if($change.changetype['type'] == "add"){
-            console.log($change.changetype['changething'].name);
+          console.log($change.changetype['changething'].name);
           $('[name=inbox_chat]').append(
             '<div class="card" name = "class'+$change.changetype["changething"].name+'">'+
               '<div class="card-header" id="headingOne">'+
@@ -295,26 +450,24 @@ function searchChatroom(){
       }else if ($change.changetype == 'none'){
 
       }else if ($change.changetype == 'firstime'){  
-        console.log($change.changetype);
-
         $($allClass.allclass).each(function(){
           // console.log(this);
           $('[name=inbox_chat]').append(
-            '<div class="card" name = "class'+this.name+'">'+
+            '<div class="card" name = "class'+this.id+'">'+
               '<div class="card-header" id="headingOne">'+
                 '<h2 class="mb-0">'+
-                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+this.name+'" aria-expanded="true" aria-controls="'+this.name+'">'+
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+this.id+'" aria-expanded="true" aria-controls="class'+this.id+'">'+
                   this.name+
                 '</button>'+
                 '</h2>'+
               '</div>'+
-              '<div id= "'+this.name+'"  name= "'+this.name+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+              '<div id= "class'+this.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
               '</div>'+
             '</div>'
           );
         });
         $(response).each(function(){
-          var tmpClass = this.class;
+          var tmpClass = this.classID;
 
           $(this.chatInfo).each(function(){
             var chatName ='';
@@ -340,8 +493,8 @@ function searchChatroom(){
             else{
               haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
             }
-            $('[name="'+tmpClass+'"]').append(
-              '<div class="card-body" name="room'+this.chatID+'">'+
+            $('#class'+tmpClass).append(
+              '<div class="" name="room'+this.chatID+'">'+
                 '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
                 '<div class="chat_people">'+
                   '<div class="chat_img">'+

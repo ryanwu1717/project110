@@ -281,6 +281,30 @@ $app->group('/table', function () use ($app) {
 });
 
 $app->group('/chat', function () use ($app) {
+	$app->get('/init/{timestamp}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->init();
+		session_start();
+		$_SESSION['last'][$args['timestamp']] = $result;
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/routine/{timestamp}/{chatID}', function (Request $request, Response $response, array $args) {
+		$data = $_SESSION['last'][$args['timestamp']];
+		$chat = new Chat($this->db);
+		$result = $chat->routine($data,$args['chatID']);
+		session_start();
+		$_SESSION['last'][$args['timestamp']] = $result;
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/session', function (Request $request, Response $response, array $args) {
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($_SESSION);
+	    return $response;
+	});
 	$app->get('/list', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getList();
@@ -334,7 +358,7 @@ $app->group('/chat', function () use ($app) {
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
-			$result = $chat->testGetChatRoom($_GET);
+			$result = $chat->testGetChatroom($_GET);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
@@ -518,7 +542,7 @@ $app->group('/chat', function () use ($app) {
 		    
 		});
 	});
-});
+})->add('ViewMiddleware');
 
 $app->group('/work', function () use ($app) {
 	$app->get('/check/{todayDate}', function (Request $request, Response $response, array $args) {
