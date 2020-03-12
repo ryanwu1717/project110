@@ -410,6 +410,7 @@ function searchChatroom(){
       if($change.changetype['changetype'] == 'changeclass'){
 
         if($change.changetype['type'] == "delete"){
+<<<<<<< HEAD
           console.log('delete');
           console.log($change.changetype);
           console.log('delete');
@@ -417,6 +418,13 @@ function searchChatroom(){
             // console.log($change.changetype['changething'][key]);
             $('[name='+value.name+']').remove();
           });
+=======
+           // console.log($change.changetype['changething']);
+            $.each($change.changetype['changething'],function(key,id){
+              // console.log(this.name);
+              $('[name=class'+this.name+']').remove();
+            });
+>>>>>>> afc039c7e4b8c4834a46d2698aeab929abb14198
         }else if($change.changetype['type'] == "add"){
           console.log($change.changetype['changething'].name);
           $('[name=inbox_chat]').append(
@@ -436,22 +444,59 @@ function searchChatroom(){
 
         }
 
-      }else if ($change.changetype == 'changechatroom'){
+      }else if ($change.changetype['changetype']  == 'changechatroom'){
         if($change.type == "delete"){
-          
+          $.each($change.changetype['changething'],function(key,id){
+            console.log(this);
+            $('[name=room'+this+']').remove();
+
+          });
 
         }else if($change.type == "add"){
 
         }else if($change.type == "changeClass"){
 
         }
-      }else if ($change.changetype == 'changeLastTime'){
+      }else if ($change.changetype['changetype']  == 'changeLastTime'){
+        haveUnread ='<span class="badge badge-primary" style="display:none;">有'+$change.changetype['changeChatroom'].CountUnread+'則新訊息</span> ';
+        var tmpClassName = $change.changetype['changeChatroom'].className;
+        if(tmpClassName == null)
+        {
+          tmpClassName = "未分類議題";
+        }
+        console.log(tmpClassName);
+        var chatName ='';
+        if ($change.changetype['changeChatroom'].chatToWhom==null){
+          chatName=$change.changetype['changeChatroom'].chatName;
+        }
+        else{
+          chatName=$change.changetype['changeChatroom'].staff_name;
+        }
+        // $('[name=room'+$change.changetype['changeChatroom'].chatID+']').remove();
+        $('[name="'+tmpClassName+'"]').prepend(
+          '<div class="card-body" name="room'+$change.changetype['changeChatroom'].chatID+'">'+
+            '<div class="chat_list" onclick="getTarget('+$change.changetype['changeChatroom'].chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+$change.changetype['changeChatroom'].chatID+'">'+
+            '<div class="chat_people">'+
+              '<div class="chat_img">'+
+                '<div class="circleBase type2"></div>'+
+              '</div>'+
+              '<div class="chat_ib">'+
+                '<h5>'+chatName+
+                  '<span class="chat_date">'+ ($change.changetype['changeChatroom'].LastTime==null?' ':$change.changetype['changeChatroom'].LastTime) +'</span>'+
+                '</h5>'+
+                '<p class="text-truncate chatContent">'+ ($change.changetype['changeChatroom'].content==null?' ':($change.changetype['changeChatroom'].content.indexOf('<a ')>-1?'收到一個檔案':$change.changetype['changeChatroom'].content)) +'</p>'+
+                haveUnread +
+              '</div>'+
+            '</div>'+
+          '</div>'
+        );
 
       }else if ($change.changetype == 'none'){
 
       }else if ($change.changetype == 'firstime'){  
         $($allClass.allclass).each(function(){
           // console.log(this);
+       
           $('[name=inbox_chat]').append(
             '<div class="card" name = "class'+this.id+'">'+
               '<div class="card-header" id="headingOne">'+
@@ -602,27 +647,6 @@ $("#textinput").keyup(function(e){
   var code=e.which;
   if((code&&e.shiftKey) &&code==13){
   }
-});
-$("#textinput").on('paste', function (e) {
-    var clipboardData = e.originalEvent.clipboardData;
-    var items = clipboardData.items;
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf("image") == -1) continue;
-      var file_data = items[i].getAsFile();
-      var form_data = new FormData();
-      form_data.append('inputFile', file_data);
-      $.ajax({
-        url: '/chat/file/'+chatID,
-        cache: false,
-        contentType: false,
-        processData: false,
-        data: form_data,     //data只能指定單一物件                 
-        type: 'post',
-        success: function(data){
-          
-        }
-      });
-    }
 });
 function uploadFile(button){
   $('#basicModal').modal('hide');

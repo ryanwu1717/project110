@@ -962,6 +962,7 @@ use Slim\Http\UploadedFile;
 		    foreach($map as $val => $ok) if($ok['type']==1) $out['delete'][] = $ok['data']; else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
 		    return $out;
 		}
+		
 		function getClass($classID = null)
 		{  	
 			$staff_id = $_SESSION['id'];		
@@ -982,6 +983,7 @@ use Slim\Http\UploadedFile;
 			$row = $statement->fetchAll();			
 			return $row;
 		}
+
 		function getChatroom(){
 		   $sql = '
 		    SELECT "chatResult"."chatID","receiver"."staff_name","chatResult"."chatName",cl.id AS"classID",cl.name AS "className","countContent","outerContent"."UID","outerContent"."sentTime" AS "LastTime1",to_char("sentTime",\'MM-DD\')as "LastTime","outerContent"."content",CASE WHEN "chatResult"."time"<"outerContent"."sentTime" THEN 0 ELSE 1 END AS "Priority"
@@ -1029,51 +1031,8 @@ use Slim\Http\UploadedFile;
 		   $sth->execute();
 		   $row = $sth->fetchAll();
 		   return $row;
-		  }
-		// function getChatroom(){
-		// 	$sql = '
-		// 		SELECT "chatResult"."chatID","receiver"."staff_name","chatResult"."chatName",cl.id AS"classID",cl.name AS "className","countContent","outerContent"."UID","outerContent"."sentTime" AS "LastTime1",to_char("sentTime",\'MM-DD\')as "LastTime","outerContent"."content",CASE WHEN "chatResult"."time"<"outerContent"."sentTime" THEN 0 ELSE 1 END AS "Priority"
-		// 		FROM (SELECT "chatHistory"."chatID","chatClassify"."classID","chatHistory"."time","chatroomInfo"."chatName"
-		// 		FROM "staff_chat"."chatHistory","staff_chat"."chatClassify","staff_chat"."chatroomInfo"
-		// 		WHERE "chatHistory"."UID" = :UID AND "chatClassify"."chatID" = "chatHistory"."chatID" AND "chatHistory"."chatID" = "chatroomInfo"."chatID")AS "chatResult"
-		// 		LEFT JOIN (SELECT "chatID",count(*) AS "countContent" FROM "staff_chat"."chatContent" GROUP BY "chatID") AS "countChatroom" ON "countChatroom"."chatID" = "chatResult"."chatID"
-		// 		LEFT JOIN "staff_chat"."chatContent" AS "outerContent" ON "outerContent"."chatID" = "chatResult"."chatID" AND "outerContent"."sentTime" = (SELECT MAX("sentTime") FROM "staff_chat"."chatContent" AS "innerContent" WHERE "innerContent"."chatID"="chatResult"."chatID")
-		// 		LEFT JOIN (
-		// 			SELECT "cH3"."chatID","UID" AS "chatToWhom","staff_name"
-		// 			FROM(
-		// 				SELECT "couUID","chatID","time"
-		// 				FROM(
-		// 					SELECT "chatID" AS "cID", COUNT("UID")AS "couUID"
-		// 					FROM staff_chat."chatHistory"
-		// 					group by "chatID"
-		// 				) AS "cUID"
-		// 				LEFT JOIN staff_chat."chatHistory" AS "cH2" on "cUID"."cID"="cH2"."chatID" AND "cH2"."UID"= :UID AND "couUID"=2
-		// 			)AS "check"
-		// 			LEFT join staff_chat."chatHistory" AS "cH3" on "check"."chatID"="cH3"."chatID"
-		// 			LEFT JOIN staff.staff ON "UID" = "staff_id"
-		// 			where "UID"!= :UID
-		// 		)AS "receiver" on "chatResult"."chatID"="receiver"."chatID"
-		// 		LEFT JOIN (
-		// 			SELECT *
-		// 			FROM staff_chat."chatClass"
-		// 			LEFT JOIN staff_chat."chatClassify" 
-		// 			ON "chatClass".id="chatClassify" ."classID"
-		// 			WHERE "chatClassify"."UID"=:UID
-		// 		) as cl on cl."chatID"="chatResult" ."chatID"
-		// 		UNION 
-		// 		SELECT -1 AS "SUM",\'-1\' AS "SUM",\'-1\' AS "SUM",-1 AS "SUM",\'-1\' AS "SUM",SUM("countContent"), \'-1\' AS "SUM",\'1000-01-01 00:00:00\' AS "SUM", \'-1\' AS "SUM", \'-1\' AS "SUM",-1 AS "SUM"
-		// 		FROM (SELECT "staff_chat"."chatHistory"."chatID","countContent"
-		// 		FROM "staff_chat"."chatHistory"
-		// 		LEFT JOIN (SELECT "chatID",count(*) AS "countContent" FROM "staff_chat"."chatContent" GROUP BY "chatID") AS "countChatroom" ON "countChatroom"."chatID" = "staff_chat"."chatHistory"."chatID"
-		// 		WHERE "UID" = :UID)AS "SELECT"
-		// 		order by "classID","Priority","LastTime1"
-		// 	';
-		// 	$sth = $this->conn->prepare($sql);
-		// 	$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-		// 	$sth->execute();
-		// 	$row = $sth->fetchAll();
-		// 	return $row;
-		// }
+		}
+
 		function insertClass($classID,$chatID)
 		{
 			try{	
@@ -1181,9 +1140,9 @@ use Slim\Http\UploadedFile;
 					}else {
 						$checkClassNum = 3;
 					}
-							// var_dump(count($classType),count($data['clientClass']));
 					foreach($classType as $eachClass){
 						if($checkClassNum == 1){
+							var_dump(count($classType),count($data['clientClass']));
 							$boolCheckClassType = true;
 							if(!array_key_exists($eachClass['id'], $data['clientClass'])){
 								$change = array(
