@@ -151,30 +151,32 @@ function init(){
             changeChatroom('init',value);
           }
         });
-        routine();
       }
     }
   });
 }
 init();
-
+var ajax = null;
 function routine(){
-  $.ajax({
+  if(ajax!=null)
+    ajax.abort();
+  ajax = $.ajax({
     url:'/chat/routine/'+todayDate+'/'+chatID,
     type:'get',
     dataType:'json',
     success:function(response){
-      console.log(response);
       if(response.status=='success'){
         $.each(response.result,function(key,value){
           if(key=='class'){
             changeClass('routine',value);
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
+          }else if(key=='chat'){
+            changeChat('routine',response.chat);
           }
         });
       }
-      // routine();
+      routine();
     }
   });
 }
@@ -275,12 +277,10 @@ function changeChatroom(type,data){
   }else if(type=='routine'){
     $.each(data.result.chatroom.new,function(){
       $(this).each(addChatRoom);
-      console.log(this);
     });
     $.each(data.result.chatroom.delete,function(){
       $('[name=room'+this.chatID+']').remove();
       // $(this).each(addChatRoom);
-      console.log(this);
     });
     // $(data.result.chatroom.new).each(addChatRoom);
     $.each(data.chatroom,function(){
@@ -307,6 +307,48 @@ function changeChatroom(type,data){
       }
     });
   }
+}
+function changeChat(type,data){
+  $('[name=chatBox]').html("");
+  $(data).each(function(){
+    if(this.diff!='me'){
+      $('[name=chatBox]').append(
+        '<div class="incoming_msg">'+
+          '<div class="">'+this.UID+','+this.staff_name+'</div>'+
+          '<div class="received_msg">'+
+            '<div class="received_withd_msg">'+
+              '<p class="text-break">'+
+                this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
+              '</p>'+
+              '<span class="time_date"> '+this.sentTime+'</span>'+
+              '<span class="read ml-1">'+
+                '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
+              '</span>'+
+              '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#">6</span></a>'+
+              '<a class="badge badge-danger ml-1" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>6</a>'+
+            '</div>'+
+          '</div>'+
+        '</div>'
+      );
+    }
+    else{
+      $('[name=chatBox]').append(
+        '<div class="outgoing_msg">'+
+          '<div class="sent_msg">'+
+            '<p class="text-break content">'+
+              this.content+
+            '</p>'+
+            '<span class="time_date" > '+this.sentTime+'</span>'+
+            '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
+            '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+            '<a class="badge badge-light ml-1" href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>'+
+          '</div>'+
+        '</div>'
+      );
+    }
+  });
+  if(!scrollable)
+    $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
 }
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
@@ -340,19 +382,21 @@ $('#tool_dropdown').hide();
 
 
 function getTarget(_chatID,_chatName){
-  // console.log($(div).attr("data-name"));
-  // chatID=$(div).attr("data-name");
-  scrollable = false;
-  chatID = _chatID;
-  last['count'] = 0;
-  $('[name=chatBox]').html("");
+  // // console.log($(div).attr("data-name"));
+  // // chatID=$(div).attr("data-name");
+  // scrollable = false;
+  // last['count'] = 0;
+  // $('[name=chatBox]').html("");
   chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
   $('#tool_dropdown').show();
-  resetLimit();
+  // resetLimit();
   updateLastReadTime();
-  schedule();
-  getReadcount();
+  // schedule();
+  // getReadcount();
+  
+  chatID = _chatID;
+  routine();
 }
 
 function expendLimit(){
@@ -735,8 +779,31 @@ $('#basicModal').on('show.bs.modal',function(e){
     Chatroom(type);
   }else if(type=='insertClass'){
     insertIssue();
+  }else if(type=='file'){
+    getFile($(e.relatedTarget).data());
   }
 });
+function getFile(relatedData){
+  $('#basicModal .modal-title').text('讀取中...');
+  $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
+  $.ajax({
+    url:relatedData['href'].replace(/chat\/file/g,'chat\/fileFormat'),
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      if(response.type=='file'){
+        var win = window.open(relatedData['href']);
+        if (win) {
+            //Browser has allowed it to be opened
+            win.focus();
+        } 
+        setTimeout(function(){ $('#basicModal').modal('hide'); },3000);
+      }else if(response.type=='picture'){
+        viewPhoto(relatedData['href'].replace(/chat\/file/g,'chat\/picture'));
+      }
+    }
+  });
+}
 function insertIssue(){
    $('#basicModal .modal-title').text('選擇分類');
    console.log(chatID);
