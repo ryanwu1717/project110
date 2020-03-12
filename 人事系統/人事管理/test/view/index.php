@@ -410,21 +410,11 @@ function searchChatroom(){
       if($change.changetype['changetype'] == 'changeclass'){
 
         if($change.changetype['type'] == "delete"){
-<<<<<<< HEAD
-          console.log('delete');
-          console.log($change.changetype);
-          console.log('delete');
-          $.each($change.changetype['changething'],function(key,value){
-            // console.log($change.changetype['changething'][key]);
-            $('[name='+value.name+']').remove();
-          });
-=======
            // console.log($change.changetype['changething']);
             $.each($change.changetype['changething'],function(key,id){
               // console.log(this.name);
               $('[name=class'+this.name+']').remove();
             });
->>>>>>> afc039c7e4b8c4834a46d2698aeab929abb14198
         }else if($change.changetype['type'] == "add"){
           console.log($change.changetype['changething'].name);
           $('[name=inbox_chat]').append(
