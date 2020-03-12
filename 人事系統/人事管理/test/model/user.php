@@ -959,7 +959,7 @@ use Slim\Http\UploadedFile;
 		    foreach($a as $val) {$map[$val['chatID']]['type'] = 1; $map[$val['chatID']]['data'] = $val;}
 		    foreach($b as $val) {
 		    	if(isset($map[$val['chatID']])) {
-		    		if($map[$val['chatID']]['data']['chatName']!=$val['chatName'] && $map[$val['chatID']]['data']['classID']!=$val['classID'] && $map[$val['chatID']]['data']['countContent']!=$val['countContent']) {
+		    		if($map[$val['chatID']]['data']['chatName']!=$val['chatName'] || $map[$val['chatID']]['data']['classID']!=$val['classID'] || $map[$val['chatID']]['data']['countContent']!=$val['countContent']) {
 		    			$map[$val['chatID']]['type'] = 3;
 		    			$map[$val['chatID']]['data'] = $val;
 		    			$this->change=true;

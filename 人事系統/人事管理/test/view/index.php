@@ -286,6 +286,11 @@ function changeChatroom(type,data){
     $.each(data.chatroom,function(){
       var room = $('[name=room'+this.chatID+']');
       if($('[name=room'+this.chatID+']').length==1){
+        if($('#class'+this.classID)==0){
+          $('#class0').append($('[name=room'+this.chatID+']'));
+        }else{
+          $('#class'+this.classID).append($('[name=room'+this.chatID+']'));
+        }
         var chatName ='';
         if (this.chatName==''){
           chatName=this.staff_name;
