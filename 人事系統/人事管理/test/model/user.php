@@ -875,10 +875,22 @@ use Slim\Http\UploadedFile;
 			$class = $this->getClass();
 			$chatroom = $this->getChatroom();
 			// unset($chatroom[0]);
+			// $chat = $this->getChat();
 			$ack = array(
 				'status'=>'success',
 				'class'=>$class,
 				'chatroom'=>$chatroom,
+				'chat'=>array(),
+				'result'=>array(
+					'class'=>array(),
+					'chatroom'=>array(),
+					'chat'=>array(
+						'chatID'=>0,
+						'comchatID'=>0,
+						'count'=>-1,
+						'new'=>array()
+					)
+				)
 			);
 			return $ack;
 		}
@@ -905,7 +917,7 @@ use Slim\Http\UploadedFile;
 				// var_dump($chat);
 				$result['chatroom'] = $this->checkChatroom($data['chatroom'], $chatroom);
 				$chat = $this->getChat($chatID);
-				$result['chat'] = $this->checkChat($data,$chat);
+				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$now = new DateTime( 'NOW' );
 			}
 			
@@ -976,7 +988,7 @@ use Slim\Http\UploadedFile;
 		    foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
 		    return $out;
 		}
-		function checkChat($data, $chat){
+		function checkChat($data, $chat,$chatID){
 			$new = array();
 			if($chatID==$data['result']['chat']['chatID']){
 				if(count($chat)-count($data['chat'])!=0){
@@ -1058,7 +1070,7 @@ use Slim\Http\UploadedFile;
 		    FROM "staff_chat"."chatHistory"
 		    LEFT JOIN (SELECT "chatID",count(*) AS "countContent" FROM "staff_chat"."chatContent" GROUP BY "chatID") AS "countChatroom" ON "countChatroom"."chatID" = "staff_chat"."chatHistory"."chatID"
 		    WHERE "UID" = :UID)AS "SELECT"
-		    order by "classID","Priority","LastTime1"
+		    order by "classID","Priority","LastTime1"desc 
 		   ';
 		   $sth = $this->conn->prepare($sql);
 		   $sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);

@@ -152,6 +152,7 @@ function init(){
           }
         });
       }
+      routine();
     }
   });
 }
@@ -168,7 +169,7 @@ function routine(){
       if(response.status=='success'){
         $.each(response.result,function(key,value){
           if(key=='class'){
-            changeClass('routine',value);
+            changeClass('routine',value,response.class);
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
           }else if(key=='chat'){
@@ -192,7 +193,7 @@ function routine(){
 //   setTimeout(searchChat,1000);
 // }
 // schedule();
-function changeClass(type,data){
+function changeClass(type,data,oldClass){
   function addClass(key,value){
     // console.log(value);
     $('[name=inbox_chat]').append(
@@ -223,7 +224,15 @@ function changeClass(type,data){
     $.each(data.change,function(){
       $('[name=class'+this.id+']').find('button').text(this.name);
     });
+    // $(oldClass).each(addClass);
+    $.each(oldClass,function(){
+      $('[name=inbox_chat]').append( $('[name=class'+this.id+']'));
+    });
     $(data.new).each(addClass);
+    $('[name=inbox_chat]').append( $('[name=class0]'));
+    // $.each(data.class,function(){
+    //   console.log(this.id);
+    // });
     $(data.delete).each(deleteClass);
   }
 }

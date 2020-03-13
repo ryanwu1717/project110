@@ -91,9 +91,9 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/issue.php', $viewParam);
 		});
-		// $app->get('/register', function (Request $request, Response $response, array $args) {	
+		// $app->get('/test', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
-		// 	return $this->view->render($response, '/register.php', $viewParam);
+		// 	return $this->view->render($response, 'C:\inetpub\wwwroot\Joomla_3.9.16-Stable-Full_Package\index.php', $viewParam);
 		// });
 		// $app->get('/table', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
