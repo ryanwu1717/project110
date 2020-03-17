@@ -52,9 +52,9 @@
         
         
       </div>
-        <a class="scroll-to-down rounded">
-          <i class="fas fa-angle-down"></i>
-        </a>
+      <a class="scroll-to-down rounded">
+        <i class="fas fa-angle-down"></i>
+      </a>
       <div class="type_msg">
         <div class="input_msg_write">
           <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
@@ -82,6 +82,24 @@
         </button>
       </div>
       <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Basic Modal-->
+<div class="modal fade" id="loadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">通知</h5>
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">讀取中.....請稍候</div>
       <div class="modal-footer">
         <button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>
       </div>
@@ -179,6 +197,7 @@ function routine(){
           }
         });
       }
+      $('#loadModal').modal('hide');
       routine();
     }
   });
@@ -451,6 +470,12 @@ function getTarget(_chatID,_chatName){
   // scrollable = false;
   // last['count'] = 0;
   // $('[name=chatBox]').html("");
+  if(chatID!=_chatID)
+    $('[name=chatBox]').html(
+      '<div class="spinner-border text-primary" role="status">'+
+        '<span class="sr-only">Loading...</span>'+
+      '</div>'
+    );
   chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
   $('#tool_dropdown').show();
@@ -460,7 +485,7 @@ function getTarget(_chatID,_chatName){
   // schedule();
   // getReadcount();
   
-  // routine();
+  routine();
 }
 
 function expendLimit(){
@@ -1385,4 +1410,25 @@ function Chatroom(type){
     }
   });
 }
+$("#textinput").on('paste', function (e) {
+    var clipboardData = e.originalEvent.clipboardData;
+    var items = clipboardData.items;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") == -1) continue;
+      var file_data = items[i].getAsFile();
+      var form_data = new FormData();
+      form_data.append('inputFile', file_data);
+      $.ajax({
+        url: '/chat/file/'+chatID,
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,     //data只能指定單一物件                 
+        type: 'post',
+        success: function(data){
+          
+        }
+      });
+    }
+});
 </script>
