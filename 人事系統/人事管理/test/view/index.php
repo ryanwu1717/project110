@@ -173,7 +173,9 @@ function routine(){
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
           }else if(key=='chat'){
-            changeChat('routine',response.chat);
+            changeChat('routine',response);
+          }else if(key=='readCount'){
+            changeReadCount('routine',response);
           }
         });
       }
@@ -181,9 +183,21 @@ function routine(){
     }
   });
 }
-
-
-
+function changeReadCount(type,data){
+  if(data.result.readCount.new.length!=0 || data.result.readCount.change.length!=0 ||data.result.readCount.delete.length!=0 ){
+    var readcountElement = data.readCount.shift();
+    if(readcountElement===undefined)
+      return false;
+    $('a[data-type=readlist]').each(function(){
+      $(this).html('<i class="fa fa-eye" aria-hidden="true"></i>'+readcountElement.sum);
+      if($(this).attr('data-senttime')==readcountElement.sentTime){
+        readcountElement = data.readCount.shift();
+        if(readcountElement===undefined)
+          return false;
+      }
+    });
+  }
+}
 // function schedule(){
 //   // searchChatroom();
 //   // searchChat();
@@ -193,6 +207,7 @@ function routine(){
 //   setTimeout(searchChat,1000);
 // }
 // schedule();
+var dd = '';
 function changeClass(type,data,oldClass){
   function addClass(key,value){
     // console.log(value);
@@ -211,6 +226,9 @@ function changeClass(type,data,oldClass){
     );
   }
   function deleteClass(key,value){
+    $('[name=class'+value.id+']').find('.chat_list').each(function(){
+      $('#class0').append($(this).parent());
+    });
     $('[name=class'+value.id+']').remove();
   }
   if(type=='init'){
@@ -219,7 +237,7 @@ function changeClass(type,data,oldClass){
       '</div>'
     );
     $(data).each(addClass);
-    addClass(null,{id:0,name:"未命名議題"});
+    addClass(null,{id:0,name:"未分類議題"});
   }else if(type=='routine'){
     $.each(data.change,function(){
       $('[name=class'+this.id+']').find('button').text(this.name);
@@ -241,11 +259,11 @@ function changeChatroom(type,data){
     // console.log(value);
     var tmpClass = (value.classID==null?0:value.classID);
     var chatName ='';
-    if (value.chatToWhom==null){
-      chatName=value.chatName;
+    if (this.chatName==''){
+      chatName=this.staff_name;
     }
     else{
-      chatName=value.staff_name;
+      chatName=this.chatName;
     }
     var haveUnread ='';
     if(window.isTabActive){
@@ -295,7 +313,7 @@ function changeChatroom(type,data){
     $.each(data.chatroom,function(){
       var room = $('[name=room'+this.chatID+']');
       if($('[name=room'+this.chatID+']').length==1){
-        if($('#class'+this.classID)==0){
+        if($('#class'+this.classID).length==0){
           $('#class0').append($('[name=room'+this.chatID+']'));
         }else{
           $('#class'+this.classID).append($('[name=room'+this.chatID+']'));
@@ -318,13 +336,42 @@ function changeChatroom(type,data){
         room.find('.chatContent').html(
           (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content))
         );
+        if(this.CountUnread!='0'&&this.CountUnread!=null){
+          room.find('.badge').show();
+          haveUnread ='有'+this.CountUnread+'則新訊息';
+          room.find('.badge').text(haveUnread);
+        }
+        else{
+          room.find('.badge').hide();
+        }
       }
     });
   }
 }
 function changeChat(type,data){
-  $('[name=chatBox]').html("");
-  $(data).each(function(){
+  // $('[name=chatBox]').html("");
+  if(chatID==-1){
+    return;
+  }
+  var newChat = [];
+  if(!data.result.chat.comchatID){
+    $('[name=chatBox]').html("");
+    newChat = data.chat;
+  }else{
+    for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
+      newChat.push(data.chat[data.chat.length-(1+i)]);
+    }
+  }
+  $(newChat).each(function(){
+    var mydate = new Date(this.fullsentTime);
+    if(dd != mydate.getDate()){
+      $('[name=chatBox]').append(
+        '<div class="alert alert-success text-center" role="alert">'+
+          this.fullsentTime.split(' ')[0] +
+        '</div>'
+      );
+    }
+    dd = mydate.getDate();
     if(this.diff!='me'){
       $('[name=chatBox]').append(
         '<div class="incoming_msg">'+
@@ -332,14 +379,14 @@ function changeChat(type,data){
           '<div class="received_msg">'+
             '<div class="received_withd_msg">'+
               '<p class="text-break">'+
-                this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
-              '</p>'+
+			this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+	      '</p>'+
               '<span class="time_date"> '+this.sentTime+'</span>'+
               '<span class="read ml-1">'+
                 '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
               '</span>'+
-              '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#">6</span></a>'+
-              '<a class="badge badge-danger ml-1" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>6</a>'+
+              '<a style="display:none;" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#">6</span></a>'+
+              '<a style="display:none;" class="badge badge-danger ml-1" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>6</a>'+
             '</div>'+
           '</div>'+
         '</div>'
@@ -349,13 +396,13 @@ function changeChat(type,data){
       $('[name=chatBox]').append(
         '<div class="outgoing_msg">'+
           '<div class="sent_msg">'+
-            '<p class="text-break content">'+
-              this.content+
-            '</p>'+
+		'<p class="text-break content">'+
+			this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+		'</p>'+
             '<span class="time_date" > '+this.sentTime+'</span>'+
             '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-            '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-            '<a class="badge badge-light ml-1" href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>'+
+            '<a style="display:none;" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+            '<a style="display:none;" class="badge badge-light ml-1" href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>'+
           '</div>'+
         '</div>'
       );
@@ -371,7 +418,10 @@ function updateLastReadTime(){
     url:'/chat/lastReadTime',
     type:'post',
     data:{chatID:chatID,_METHOD:'PATCH'},
-    dataType:'json'
+    dataType:'json',
+    success:function(response){
+      routine();
+    }
   });
 }
 function updateCommentReadTime(data){
@@ -405,12 +455,12 @@ function getTarget(_chatID,_chatName){
   $('[name=navbarChatroomTitle]').text(chatName);
   $('#tool_dropdown').show();
   // resetLimit();
+  chatID = _chatID;
   updateLastReadTime();
   // schedule();
   // getReadcount();
   
-  chatID = _chatID;
-  routine();
+  // routine();
 }
 
 function expendLimit(){
