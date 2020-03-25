@@ -11,7 +11,7 @@
       <div class="headind_srch">
         <div class="recent_heading">
           <h4>議題列表</h4>
-        </div><!-- 
+        </div>
         <div class="srch_bar">
           <div class="stylish-input-group">
             <input type="text" class="search-bar"  placeholder="Search" >
@@ -19,7 +19,7 @@
             <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
             </span> 
           </div>
-        </div> -->
+        </div>
         <div class="tool_bar btn-group">
           <div class="btn-group">
             <button class="btn btn-secondary fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
@@ -116,9 +116,9 @@ var titleOrg=$('title').text();
 $(function(){
   titleOrg=$('title').text();
 });
+var notify = [];
 window.onfocus = function () { 
   window.isTabActive = true; 
-  $('title').text(titleOrg);
   updateLastReadTime();
 }; 
 
@@ -128,7 +128,7 @@ window.onblur = function () {
 //focus end
 
 
-  if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
+if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-500>$(this).scrollTop()){
@@ -151,6 +151,19 @@ queue['chatroom'] = null;
 queue['commentreadtime'] = null;
 var scrollable = false;
 
+queue['search-bar'] = null;
+$('.search-bar').unbind().on('keyup',function(){
+  clearTimeout(queue['search-bar']);
+  queue['search-bar'] = setTimeout(function(){
+    $('.listItem').each(function(){
+      if($(this).find('.listName').val().indexOf($('.searchInput').val())>-1){
+        $(this).show();
+      }else{
+        $(this).hide();
+      }
+    });
+  },300);
+});
 
 var todatDate = null;
 function init(){
@@ -176,6 +189,7 @@ function init(){
 }
 init();
 var ajax = null;
+var start = Date.now();
 function routine(){
   if(ajax!=null)
     ajax.abort();
@@ -185,6 +199,7 @@ function routine(){
     dataType:'json',
     success:function(response){
       if(response.status=='success'){
+        console.log(Date.now()-start);
         $.each(response.result,function(key,value){
           if(key=='class'){
             changeClass('routine',value,response.class);
@@ -285,20 +300,16 @@ function changeChatroom(type,data){
       chatName=this.chatName;
     }
     var haveUnread ='';
-    if(window.isTabActive){
-      $('title').text(titleOrg);
-    }
+    
+    clearTimeout(notify['Unread']);
+    $('title').text(titleOrg);
     if(value.CountUnread!='0'&&value.CountUnread!=null){
-      haveUnread='<span class="badge badge-primary">有'+value.CountUnread+'則新訊息</span> ';
-      if(!window.isTabActive){
-        if($('title').text().indexOf('您有訊息!!')>-1)
-          $('title').text(titleOrg);
-        else
-          $('title').text('[您有訊息!!]'+titleOrg);
-      }
+      haveUnread='<span class="badge badge-primary">'+value.CountUnread+'</span> ';
+      clearTimeout(notify['Unread']);
+      notify['Unread'] = setTimeout(notifyUnread,1000);
     }
     else{
-      haveUnread ='<span class="badge badge-primary" style="display:none;">有'+value.CountUnread+'則新訊息</span> ';
+      haveUnread ='<span class="badge badge-primary" style="display:none;">'+value.CountUnread+'</span> ';
     }
     $('#class'+tmpClass).append(
       '<div class="" name="room'+value.chatID+'">'+
@@ -309,10 +320,9 @@ function changeChatroom(type,data){
           '</div>'+
           '<div class="chat_ib">'+
             '<h5>'+chatName+
+              haveUnread +
               '<span class="chat_date">'+ (value.LastTime==null?' ':value.LastTime) +'</span>'+
             '</h5>'+
-            '<p class="text-truncate chatContent">'+ (value.content==null?' ':(value.content.indexOf('<a ')>-1?'收到一個檔案':value.content)) +'</p>'+
-            haveUnread +
           '</div>'+
         '</div>'+
       '</div>'
@@ -329,6 +339,8 @@ function changeChatroom(type,data){
       // $(this).each(addChatRoom);
     });
     // $(data.result.chatroom.new).each(addChatRoom);
+    clearTimeout(notify['Unread']);
+    $('title').text(titleOrg);
     $.each(data.chatroom,function(){
       var room = $('[name=room'+this.chatID+']');
       if($('[name=room'+this.chatID+']').length==1){
@@ -346,26 +358,31 @@ function changeChatroom(type,data){
         }
         room.find('.chat_list').attr('onclick','getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');');
         room.find('.chat_list').attr('data-name',this.chatID);
+        if(this.CountUnread!='0'&&this.CountUnread!=null){
+          haveUnread='<span class="badge badge-primary">'+this.CountUnread+'</span> ';
+          clearTimeout(notify['Unread']);
+          notify['Unread'] = setTimeout(notifyUnread,1000);
+        }
+        else{
+          haveUnread ='<span class="badge badge-primary" style="display:none;">'+this.CountUnread+'</span> ';
+        }
         room.find('h5').html(
           chatName+
+          haveUnread +
           '<span class="chat_date">'+ 
             (this.LastTime==null?' ':this.LastTime) +
           '</span>'
         );
-        room.find('.chatContent').html(
-          (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content))
-        );
-        if(this.CountUnread!='0'&&this.CountUnread!=null){
-          room.find('.badge').show();
-          haveUnread ='有'+this.CountUnread+'則新訊息';
-          room.find('.badge').text(haveUnread);
-        }
-        else{
-          room.find('.badge').hide();
-        }
       }
     });
   }
+}
+function notifyUnread(){
+  if($('title').text().indexOf('您有訊息!!')>-1)
+    $('title').text(titleOrg);
+  else
+    $('title').text('[您有訊息!!]'+titleOrg);
+  notify['Unread'] = setTimeout(notifyUnread,1000);
 }
 function changeChat(type,data){
   // $('[name=chatBox]').html("");
@@ -470,6 +487,7 @@ function getTarget(_chatID,_chatName){
   // scrollable = false;
   // last['count'] = 0;
   // $('[name=chatBox]').html("");
+  start = Date.now();
   if(chatID!=_chatID)
     $('[name=chatBox]').html(
       '<div class="spinner-border text-primary" role="status">'+
@@ -481,11 +499,11 @@ function getTarget(_chatID,_chatName){
   $('#tool_dropdown').show();
   // resetLimit();
   chatID = _chatID;
+  routine();
   updateLastReadTime();
   // schedule();
   // getReadcount();
   
-  routine();
 }
 
 function expendLimit(){

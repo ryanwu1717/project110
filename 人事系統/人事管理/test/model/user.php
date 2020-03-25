@@ -866,6 +866,7 @@ use Slim\Http\UploadedFile;
 
 		var $conn;
 		var $change = false;
+		var $firstCheck = false;
 		function __construct($db){
 			$this->conn = $db;
 			session_write_close();
@@ -891,7 +892,11 @@ use Slim\Http\UploadedFile;
 						'count'=>-1,
 						'new'=>array()
 					),
-					'readCount'=>array(),
+					'readCount'=>array(
+						'new'=>array(),
+						'delete'=>array(),
+						'change'=>array()
+					),
 				)
 			);
 			return $ack;
@@ -900,7 +905,9 @@ use Slim\Http\UploadedFile;
 			$start = new DateTime( 'NOW' );
 			$now = new DateTime( 'NOW' );
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
-				usleep(1000000);
+				if($this->firstCheck)
+					usleep(1000000);
+				$this->firstCheck=true;
 				$class = $this->getClass();
 				// unset($class[0]);
 				// $new = $class[0];
@@ -922,8 +929,6 @@ use Slim\Http\UploadedFile;
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
-
-				$now = new DateTime( 'NOW' );
 			}
 			
 			$ack=array(
