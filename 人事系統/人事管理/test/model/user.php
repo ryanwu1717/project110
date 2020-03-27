@@ -1080,9 +1080,9 @@ use Slim\Http\UploadedFile;
 		}
 		function getChat($chatID){
 				$sql = '
-					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name,"likeID"
 					FROM (
-						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name,"likeID"
 						FROM staff_chat."chatContent"
 						LEFT JOIN (
 							SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
@@ -1220,7 +1220,7 @@ use Slim\Http\UploadedFile;
 					}
 					foreach($classType as $eachClass){
 						if($checkClassNum == 1){
-							var_dump(count($classType),count($data['clientClass']));
+							// var_dump(count($classType),count($data['clientClass']));
 							$boolCheckClassType = true;
 							if(!array_key_exists($eachClass['id'], $data['clientClass'])){
 								$change = array(
@@ -1899,7 +1899,110 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
+		function addlikeID($body){
+			$body=json_decode($body['data'],true);
+			$likeID=$body['likeID'];
+			var_dump($body);
+			if(is_null($likeID)){
+				$sql='
+					SELECT "likeID"
+					FROM staff_chat."chatContent"
+					where content=:content AND "UID"=:UID AND "sentTime"=:senttime AND"chatID"=:chatID;
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+				$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+				$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				var_dump($row);
+				if(count($row)==1){	
+					if($row[0]["likeID"]==null){
+					// var_dump($content,$senttime,$UID,$chatID);
+	    			$sql='
+						UPDATE staff_chat."chatContent"
+						SET "likeID"=nextval(\'staff_chat."chatContent_likeID_seq"\'::regclass)
+						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID AND "likeID" is NULL;
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+					$sth->execute();
 
+					// $likeID = $this -> $conn -> lastInsertId();
+
+					// search likeID from "chatContent" and record likeid and uid to "chatLikeCount"
+					$sql='
+						SELECT "UID","likeID"
+						FROM staff_chat."chatContent"
+						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID ;
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+					$sth->execute();
+
+					$row=$sth -> fetchAll();
+					$likeID = $row[0]["likeID"];
+
+					$sql='
+						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
+						VALUES (:likeID, :UID);						
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+					$sth->execute();
+
+					}
+		    	}
+
+			}
+			else{
+				$sql='
+					SELECT *
+					FROM staff_chat."chatLikeCount"
+					WHERE "UID"=:UID AND "likeID"=:likeID
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+				$sth->execute();
+				$row=$sth->fetchAll();
+
+				var_dump($row);
+
+				if(count($row)==1){
+				//dislike
+					if($row[0]["likeID"]!=null){
+					$sql='
+						DELETE FROM staff_chat."chatLikeCount"
+						WHERE "UID"=:UID AND "likeID" =:likeID;
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+					$sth->execute();
+					}
+				}
+				else{
+					$sql='
+						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
+						VALUES (:likeID, :UID);	
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+					$sth->execute();
+				}
+			}
+			
+		}
 		function getList($chatID=null){
 			if(is_null($chatID)){
 				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id and staff_delete=false and \"seniority_workStatus\" =1;";

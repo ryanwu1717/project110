@@ -281,6 +281,13 @@ $app->group('/table', function () use ($app) {
 });
 
 $app->group('/chat', function () use ($app) {
+	$app->post('/likeID',function (Request $request, Response $response, array $args){
+		$chat = new Chat($this->db);
+		$result = $chat->addlikeID($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->get('/init/{timestamp}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->init();
