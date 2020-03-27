@@ -307,11 +307,6 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->get('/session', function (Request $request, Response $response, array $args) {
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($_SESSION);
-	    return $response;
-	});
 	$app->get('/list', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getList();

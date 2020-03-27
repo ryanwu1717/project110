@@ -866,6 +866,7 @@ use Slim\Http\UploadedFile;
 
 		var $conn;
 		var $change = false;
+		var $firstCheck = false;
 		function __construct($db){
 			$this->conn = $db;
 			session_write_close();
@@ -881,6 +882,7 @@ use Slim\Http\UploadedFile;
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
+				'readCount'=>array(),
 				'result'=>array(
 					'class'=>array(),
 					'chatroom'=>array(),
@@ -889,7 +891,12 @@ use Slim\Http\UploadedFile;
 						'comchatID'=>0,
 						'count'=>-1,
 						'new'=>array()
-					)
+					),
+					'readCount'=>array(
+						'new'=>array(),
+						'delete'=>array(),
+						'change'=>array()
+					),
 				)
 			);
 			return $ack;
@@ -898,7 +905,9 @@ use Slim\Http\UploadedFile;
 			$start = new DateTime( 'NOW' );
 			$now = new DateTime( 'NOW' );
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
-				usleep(1000000);
+				if($this->firstCheck)
+					usleep(1000000);
+				$this->firstCheck=true;
 				$class = $this->getClass();
 				// unset($class[0]);
 				// $new = $class[0];
@@ -918,7 +927,8 @@ use Slim\Http\UploadedFile;
 				$result['chatroom'] = $this->checkChatroom($data['chatroom'], $chatroom);
 				$chat = $this->getChat($chatID);
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
-				$now = new DateTime( 'NOW' );
+				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
+				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
 			}
 			
 			$ack=array(
@@ -926,6 +936,7 @@ use Slim\Http\UploadedFile;
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
+				'readCount'=>$readCount,
 				'result'=>$result
 			);
 			return $ack;
@@ -959,19 +970,73 @@ use Slim\Http\UploadedFile;
 		    foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
 		    return $out;
 		}
+		var $readCountState = array(
+			'unchange'=>0,
+			'delete'=>1,
+			'new'=>2,
+			'changeName'=>3
+		);
+		function checkReadCount($a, $b) {
+		    $map = $out = array();
+		    $out['delete'] = $out['new'] = $out['change'] = array();
+		    foreach($a as $val) {$map[$val['sentTime']]['type'] = $this->readCountState['delete']; $map[$val['sentTime']]['data'] = $val;}
+		    foreach($b as $val) {
+		    	if(isset($map[$val['sentTime']])) {	
+		    		if($map[$val['sentTime']]['data']['sum']!=$val['sum']) {
+		    			$map[$val['sentTime']]['type'] = $this->readCountState['changeName'];
+		    			$map[$val['sentTime']]['data'] = $val;
+		    			$this->change=true;
+		    		} else {
+		    			$map[$val['sentTime']]['type'] = $this->readCountState['unchange'];
+		    			$map[$val['sentTime']]['data'] = $val;
+		    		} 
+	    		}else {
+	    			$map[$val['sentTime']]['type'] = $this->readCountState['new'];
+	    			$map[$val['sentTime']]['data'] = $val;
+	    			$this->change=true;
+		    	}
+			}
+		    foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
+		    return $out;
+		}
+		function getReadCountN($body){
+			$data = json_decode($body['data'],true);
+			$UID =$_SESSION['id'];
+			$sql = '
+				SELECT "sentTime" as "sentTime",SUM(count(*)) OVER (ORDER BY "sentTime" DESC)
+					FROM(
+					SELECT "chatHistory"."UID", MAX("chatContent"."sentTime") AS "sentTime"
+					FROM staff_chat."chatHistory"
+					LEFT JOIN staff_chat."chatContent" ON "chatHistory"."time" > "chatContent"."sentTime" AND "chatContent"."chatID" = :chatID
+					WHERE "chatHistory"."chatID" = :chatID AND "chatHistory"."UID" != :UID
+					GROUP BY "chatHistory"."UID"
+				)AS A
+				WHERE "sentTime" IS NOT NULL
+				GROUP BY "sentTime"
+				ORDER BY "sentTime" ASC;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$data['chatID'],PDO::PARAM_INT);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+			return $row;
+		}
 		var $chatroomState = array(
 			'unchange'=>0,
 			'delete'=>1,
 			'new'=>2,
 			'changeName'=>3
 		);
+
 		function checkChatroom($a, $b) {
 		    $map = $out = array();
 		    $out['delete'] = $out['new'] = $out['change'] = array();
 		    foreach($a as $val) {$map[$val['chatID']]['type'] = 1; $map[$val['chatID']]['data'] = $val;}
 		    foreach($b as $val) {
 		    	if(isset($map[$val['chatID']])) {
-		    		if($map[$val['chatID']]['data']['chatName']!=$val['chatName'] || $map[$val['chatID']]['data']['classID']!=$val['classID'] || $map[$val['chatID']]['data']['countContent']!=$val['countContent']) {
+		    		if($map[$val['chatID']]['data']['chatName']!=$val['chatName'] || $map[$val['chatID']]['data']['classID']!=$val['classID'] || $map[$val['chatID']]['data']['countContent']!=$val['countContent'] || $map[$val['chatID']]['data']['CountUnread']!=$val['CountUnread']) {
 		    			$map[$val['chatID']]['type'] = 3;
 		    			$map[$val['chatID']]['data'] = $val;
 		    			$this->change=true;
@@ -1013,14 +1078,20 @@ use Slim\Http\UploadedFile;
 		{  	
 			$staff_id = $_SESSION['id'];		
 			if(is_null($classID)){
-				$sql ='SELECT  name,id
-						FROM staff_chat."chatClass"
-						WHERE "UID" = :id';
+				$sql ='
+					SELECT  name,id
+					FROM staff_chat."chatClass"
+					WHERE "UID" = :id
+					ORDER BY name
+				';
 				$statement = $this->conn->prepare($sql);
 			}else{
-				$sql ='SELECT  name
-						FROM staff_chat."chatClass"
-						WHERE "UID" = :id and id=:classID';
+				$sql ='
+					SELECT  name
+					FROM staff_chat."chatClass"
+					WHERE "UID" = :id and id=:classID
+					ORDER BY name
+				';
 				$statement = $this->conn->prepare($sql);
 				$statement->bindParam(':classID',$classID);
 			}
@@ -1032,7 +1103,7 @@ use Slim\Http\UploadedFile;
 
 		function getChatroom(){
 		   $sql = '
-		    SELECT "chatResult"."chatID","receiver"."staff_name","chatResult"."chatName",cl.id AS"classID",cl.name AS "className","countContent","outerContent"."UID","outerContent"."sentTime" AS "LastTime1",to_char("sentTime",\'MM-DD\')as "LastTime","outerContent"."content",CASE WHEN "chatResult"."time"<"outerContent"."sentTime" THEN 0 ELSE 1 END AS "Priority"
+		    SELECT "chatResult"."chatID","receiver"."staff_name","chatResult"."chatName",cl.id AS"classID",cl.name AS "className","countContent","outerContent"."UID","outerContent"."sentTime" AS "LastTime1",to_char("sentTime",\'MM-DD\')as "LastTime","outerContent"."content","CountUnread",CASE WHEN "CountUnread" > 0 then \'1\'ELSE\'0\' END AS "Priority"
 		    FROM (
 				SELECT "chatHistory"."chatID","chatClassify"."classID","chatHistory"."time","chatroomInfo"."chatName"
 				FROM "staff_chat"."chatHistory"
@@ -1064,13 +1135,23 @@ use Slim\Http\UploadedFile;
 		     ON "chatClass".id="chatClassify" ."classID"
 		     WHERE "chatClassify"."UID"=:UID
 		    ) as cl on cl."chatID"="chatResult" ."chatID"
+		    LEFT JOIN (
+				SELECT "chatID","UID",COUNT("c")as "CountUnread"
+				FROM(
+					SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+					FROM staff_chat."chatHistory"
+					join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+					where "chatHistory"."UID"=:UID and "chatContent"."UID" != :UID
+				) as "countUnread"
+				group by "chatID","UID"
+			) as "countUnread" on "chatResult"."chatID"="countUnread"."chatID"
 		    UNION 
-		    SELECT -1 AS "SUM",\'-1\' AS "SUM",\'-1\' AS "SUM",-1 AS "SUM",\'-1\' AS "SUM",SUM("countContent"), \'-1\' AS "SUM",\'1000-01-01 00:00:00\' AS "SUM", \'-1\' AS "SUM", \'-1\' AS "SUM",-1 AS "SUM"
+		    SELECT -1 AS "SUM",\'-1\' AS "SUM",\'-1\' AS "SUM",-1 AS "SUM",\'-1\' AS "SUM",SUM("countContent"), \'-1\' AS "SUM",\'1000-01-01 00:00:00\' AS "SUM", \'-1\' AS "SUM", \'-1\' AS "SUM",-1 AS "SUM",\'-1\' AS "SUM"
 		    FROM (SELECT "staff_chat"."chatHistory"."chatID","countContent"
 		    FROM "staff_chat"."chatHistory"
 		    LEFT JOIN (SELECT "chatID",count(*) AS "countContent" FROM "staff_chat"."chatContent" GROUP BY "chatID") AS "countChatroom" ON "countChatroom"."chatID" = "staff_chat"."chatHistory"."chatID"
 		    WHERE "UID" = :UID)AS "SELECT"
-		    order by "classID","Priority","LastTime1"desc 
+		    order by "classID","Priority" desc,"LastTime1"desc 
 		   ';
 		   $sth = $this->conn->prepare($sql);
 		   $sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
