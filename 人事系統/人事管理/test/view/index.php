@@ -32,7 +32,7 @@
       </div>
     </div>
     <div class="mesgs">
-      <div class="sticky-top">
+      <div  style="z-index:99;">
         <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-between" style="background-color: #e3f2fd;">
           <a class="navbar-brand" name="navbarChatroomTitle"></a>
           <div class="btn-group" >
@@ -49,13 +49,18 @@
         </nav>
       </div>
       <div class="msg_history" name=chatBox>
-        
-        
       </div>
         <a class="scroll-to-down rounded">
           <i class="fas fa-angle-down"></i>
         </a>
       <div class="type_msg">
+        <div class="dropup">
+         <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" id="tagPeople">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </div>
         <div class="input_msg_write">
           <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
           <!-- <input id="textinput"type="text" /> -->
@@ -106,8 +111,143 @@ window.onfocus = function () {
 
 window.onblur = function () { 
   window.isTabActive = false; 
-}; 
-//focus end
+};
+
+var tagboolean = false;
+var tmpTag;
+var nowkey;
+var tagPeople = "";
+$('.dropup').hide();
+$('#textinput').keyup(function(event) {
+  if(event.key == "@"){
+    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+      getAllEmployee();
+    }
+  }
+  // console.log("in");
+  tmpSplit=$('#textinput').val().split(" ");
+  $(tmpSplit).each(function(){
+    if(this.indexOf("@") == 0){
+      tagboolean = true;
+      tmpTag= this;
+      nowkey = this.substr(1);
+      var choose = null;
+      choose = setTimeout(function(){
+        $('[name=dropdownitemTag]').each(function(){
+          // console.log(tmpTag.substr(1));
+          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
+            $(this).show();
+          }else{
+            $(this).hide();
+          }
+        });
+      },300);
+    }
+  });
+  if(tagboolean == false){
+      $('.dropup').hide();
+  }
+  tagboolean = false;
+});
+
+function addTag(tagname,tagID){
+  var textAreaContent = $("#textinput").val();
+  // console.log(textAreaContent);
+  for (i = $("#textinput").getCursorPosition();i >0;i--)
+  {
+    if($("#textinput").val().charAt(i-1) == "@"){
+        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
+        break;
+    }else{
+      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
+    }
+  }
+  $('.dropup').hide();
+  tagPeople = tagPeople+tagID+" ";
+  console.log(tagPeople);
+}
+(function ($, undefined) {
+    $.fn.getCursorPosition = function() {
+        var el = $(this).get(0);
+        var pos = 0;
+        if('selectionStart' in el) {
+            pos = el.selectionStart;
+        } else if('selection' in document) {
+            el.focus();
+            var Sel = document.selection.createRange();
+            var SelLength = document.selection.createRange().text.length;
+            Sel.moveStart('character', -el.value.length);
+            pos = Sel.text.length - SelLength;
+        }
+        return pos;
+    }
+})(jQuery);
+
+function notificationOnclick(chatID,chatName,id){
+  getTarget(chatID,chatName);
+  $.ajax({
+      url:'/chat/notification/'+id,
+      type:'post',
+      data:{_METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        // getTarget(chatID,chatName);
+    }
+  });
+}
+
+$('[name=bellbtn]').show();
+$(function(){
+    $('[name=bellbtn]').unbind().on('click',function(){
+      console.log("in");
+      getNotification();
+    });
+  });
+  
+  function getNotification(){
+    $('[name=bellDropdown]').empty();
+    $.ajax({
+      url:'/chat/notification/',
+      type:'get',
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
+        $(response).each(function(){
+          console.log(this.sendtime);
+          $('[name=bellDropdown]').append(
+            '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+');"'+
+              '<div class="mr-3">'+
+                '<div class="icon-circle bg-primary">'+
+                  '<i class="fas fa-file-alt text-white"></i>'+
+                '</div>'+
+              '</div>'+
+              '<div>'+
+                '<div class="small text-gray-500">'+
+                  this.sendtime+
+                '</div>'+
+                '<span class="font-weight-bold">'+
+                  this.detail+
+                '</span>'+
+              '</div>'+
+            '</a>'
+          );
+          if(this.unread == true){
+            console.log("unread");
+            $("#notification"+this.id).css("background-color", "#F0F8FF");
+          }else{
+            $("#notification"+this.id).css("background-color", "#FFFFFF");
+          }
+        });
+        $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+      }
+    });
+  }
+
+// $( "#textinput" ).change(function(){
+//   console.log(this.val());
+//   console.log('.on(change) = ' + $(this).val());
+// });
 
 
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
@@ -149,6 +289,8 @@ function init(){
           }
           else if(key=='chatroom'){
             changeChatroom('init',value);
+          }else if(key == 'notification'){
+            changeNotification('init',response.notification);
           }
         });
       }
@@ -174,6 +316,8 @@ function routine(){
             changeChatroom('routine',response);
           }else if(key=='chat'){
             changeChat('routine',response.chat);
+          }else if(key == 'notification'){
+            changeNotification('routine',response.notification);
           }
         });
       }
@@ -182,7 +326,24 @@ function routine(){
   });
 }
 
-
+function getAllEmployee(){
+  $('#tagPeople').empty();
+  $.ajax({
+    url:'/chat/member/'+chatID,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      $(response).each(function(){
+        $('#tagPeople').append(
+          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
+          '</button>'
+        );
+      });
+      $('.dropup').show();
+    }
+  });
+}
 
 // function schedule(){
 //   // searchChatroom();
@@ -193,6 +354,18 @@ function routine(){
 //   setTimeout(searchChat,1000);
 // }
 // schedule();
+function changeNotification(type,data){
+  if(type == 'init'){
+    console.log('init');
+    console.log(data[0].count);
+    $('[name=notificationNum]').empty();
+    $('[name=notificationNum]').append(data[0].count);
+  }else if(type == 'routine'){
+    console.log('routine');
+    $('[name=notificationNum]').empty();
+    $('[name=notificationNum]').append(data[0].count);
+  }
+}
 function changeClass(type,data,oldClass){
   function addClass(key,value){
     // console.log(value);
@@ -737,8 +910,51 @@ $('[name=inputPicture]').on('change',function(){
     }
   });
 });
+function tagNotification(tagPerson,chatName){
+  $.ajax({
+      url:'/chat/notification/tag',
+      type:'POST',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              id : tagPerson,
+              chatName : chatName
+              // name : groupname
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      } 
+    });
+}
 function sendMsg(){
   Msg=$("#textinput").val();
+  console.log(chatName);
+  var checkTagID = tagPeople.split(" ");
+  var tmpSplit=$('#textinput').val().split(" ");
+  $(checkTagID).each(function(){
+    console.log(this);
+    var tagPerson=this;
+    if(this != ""){
+       $.ajax({
+        url:'/staff/name/'+this,
+        type:'get',
+        dataType:'json',
+        success:function(response){
+          // getTarget(chatID,chatName);
+          $(tmpSplit).each(function(){
+            if("@"+response[0].staff_name == this)
+            {
+              tagNotification(tagPerson,chatName);
+
+            }
+          });
+
+        }
+      });
+    }
+   
+  });
+  tagPeople = "";
   Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
       url:'/chat/message',

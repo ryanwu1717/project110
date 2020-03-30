@@ -132,6 +132,14 @@ $app->group('/user', function () use ($app) {
 });
 
 $app->group('/staff', function () use ($app) {
+	$app->get('/name/{id}', function (Request $request, Response $response, array $args) {		
+	    $staff = new Staff($this->db);
+	    $result = $staff->getStaffName($args['id']);	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;	    
+	});
+
 	$app->get('/department/get', function (Request $request, Response $response, array $args) {		
 	    $staff = new Staff($this->db);
 	    $result = $staff->getDepartment();	    
@@ -536,6 +544,31 @@ $app->group('/chat', function () use ($app) {
 		$app->post('/', function (Request $request, Response $response, array $args) {
 		    $class = new Chat($this->db);
 		    $result = $class->addClass();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+	});
+
+	$app->group('/notification', function () use ($app) {
+		$app->get('/', function(Request $request, Response $response, array $args){
+			$notification = new Chat($this->db);
+			$result = $notification->getNotification();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->patch('/{id}', function(Request $request, Response $response, array $args){
+			$notification = new Chat($this->db);
+			$result = $notification->readNotification($args['id']);
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->post('/tag', function (Request $request, Response $response, array $args) {
+		    $notification = new Chat($this->db);
+		    $result = $notification->tag();   
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;

@@ -84,11 +84,39 @@ use Slim\Http\UploadedFile;
 		}
 	}
 
+	
+// $app->group('/notification',function () use ($app){
+// 	$app->post('/tag', function (Request $request, Response $response, array $args) {
+// 	    $notification = new Notification($this->db);
+// 	    $result = $notification->tag();   
+// 	    $response = $response->withHeader('Content-type', 'application/json' );
+// 		$response = $response->withJson($result);
+// 	    return $response;
+	    
+// 	});
+// });
+// $app->get('/name/{id}}', function (Request $request, Response $response, array $args) {		
+	//     $staff = new Staff($this->db);
+	//     $result = $staff->getDepartment();	    
+	//     $response = $response->withHeader('Content-type', 'application/json' );
+	// 	$response = $response->withJson($result);
+	//     return $response;	    
+	// });
 	Class Staff{
 		var $result;   
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
+		}
+		function getStaffName($id){
+			$sql ='SELECT staff_name
+					FROM staff.staff
+					WHERE staff_id = :staff_id;';	
+			$statement = $this->conn->prepare($sql);
+			$statement->bindParam(':staff_id',$id);
+			$statement->execute();
+			$row = $statement->fetchAll();			
+			return $row;
 		}
 		function getDepartment()
 		{  	
@@ -871,13 +899,80 @@ use Slim\Http\UploadedFile;
 			session_write_close();
 		}
 
+		function readNotification($id){
+			$sql = 'UPDATE staff.notification
+					SET unread=false
+					WHERE id=:id;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':id',$id,PDO::PARAM_STR);
+			$sth->execute();	
+			// $row = $sth->fetchAll();
+			$ack = array(
+				'status'=>'successs',
+			);
+			return $ack;
+		}
+
+		function getNotificationNum(){
+			$sql = 'SELECT COUNT (id)
+					FROM staff.notification
+					WHERE unread = true AND "UID"=:UID ;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
+
+		function getNotification(){
+			$sql = 'SELECT notification.detail, notification.unread, to_char( notification."sendtime",\'MON DD , HH24:MI\' )as "sendtime", notification.type, chatroomInfo."chatName",chatroomInfo."chatID",notification.id
+					FROM staff.notification AS notification
+				LEFT JOIN ( SELECT *
+				FROM staff_chat."chatroomInfo") AS chatroomInfo
+				on chatroomInfo."chatID" = CAST(notification."tagChatRoom" AS INT)
+					WHERE "UID"= :UID
+					order by "sendtime"desc;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
+
+		function tag(){
+			$_POST=json_decode($_POST['data'],true);
+			// var_dump($_POST);
+			try{
+				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,\'你被標註在一則訊息\',now(),\'true\',:chatID,\'tag\');';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_POST['id'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				$sth->execute();
+				// $row = $sth->fetchAll();
+				$ack = array(
+					'status'=>'success'
+
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'message'=>$e
+				);
+			}
+			
+			return $ack;
+
+		}
+
 		function init(){
 			$class = $this->getClass();
 			$chatroom = $this->getChatroom();
+			$notification = $this->getNotificationNum();
 			// unset($chatroom[0]);
 			// $chat = $this->getChat();
 			$ack = array(
 				'status'=>'success',
+				'notification'=>$notification,
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
@@ -900,12 +995,14 @@ use Slim\Http\UploadedFile;
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
 				usleep(1000000);
 				$class = $this->getClass();
+				$notification = $this->getNotificationNum();
 				// unset($class[0]);
 				// $new = $class[0];
 				// $new['id'] = 3;
 				// array_push($class,$new);
 				// $class[0]['id']=14;
 				$result = array();
+				$result['notification'] = $this->checkNotification($data['notification'], $notification);
 				$result['class'] = $this->checkClass($data['class'], $class);
 				$chatroom = $this->getChatroom();
 				// unset($chatroom[0]);
@@ -923,6 +1020,7 @@ use Slim\Http\UploadedFile;
 			
 			$ack=array(
 				'status'=>'success',
+				'notification'=>$notification,
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
@@ -936,6 +1034,17 @@ use Slim\Http\UploadedFile;
 			'new'=>2,
 			'changeName'=>3
 		);
+		function checkNotification($old,$new){
+			// var_dump($old[0][count]);
+			// var_dump($new[0][count]);
+			$out = array();
+			$out['change'] = array();
+			if($old[0][0] != $new[0][0]){
+				$this->change=true;
+				$out['change'] = $new[0][0];
+			}
+			return $out;
+		}
 		function checkClass($a, $b) {
 		    $map = $out = array();
 		    $out['delete'] = $out['new'] = $out['change'] = array();
@@ -2056,5 +2165,6 @@ use Slim\Http\UploadedFile;
 	        imagecopyresampled($image_p,$image,0,0,0,0,$width,$height,$width_orig,$height_orig);
 	 		return $image_p;
 	    }
+	    
 	}
 ?>
