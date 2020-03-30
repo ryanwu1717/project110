@@ -289,6 +289,13 @@ $app->group('/table', function () use ($app) {
 });
 
 $app->group('/chat', function () use ($app) {
+	$app->post('/likeID',function (Request $request, Response $response, array $args){
+		$chat = new Chat($this->db);
+		$result = $chat->addlikeID($request->getParsedBody());
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->get('/init/{timestamp}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->init();
@@ -306,11 +313,6 @@ $app->group('/chat', function () use ($app) {
 		$_SESSION['last'][$args['timestamp']] = $result;
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
-	    return $response;
-	});
-	$app->get('/session', function (Request $request, Response $response, array $args) {
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($_SESSION);
 	    return $response;
 	});
 	$app->get('/list', function (Request $request, Response $response, array $args) {
