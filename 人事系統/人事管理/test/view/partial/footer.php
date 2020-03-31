@@ -96,6 +96,7 @@
 </html>
 <script type="text/javascript">
   
+  
   var url = new URL(window.location.href);
   $('li.nav-item').each(function(){
     $(this).find('a.nav-link').attr('href')==url.pathname?$(this).addClass('active'):$(this).removeClass('active');

@@ -84,11 +84,39 @@ use Slim\Http\UploadedFile;
 		}
 	}
 
+	
+// $app->group('/notification',function () use ($app){
+// 	$app->post('/tag', function (Request $request, Response $response, array $args) {
+// 	    $notification = new Notification($this->db);
+// 	    $result = $notification->tag();   
+// 	    $response = $response->withHeader('Content-type', 'application/json' );
+// 		$response = $response->withJson($result);
+// 	    return $response;
+	    
+// 	});
+// });
+// $app->get('/name/{id}}', function (Request $request, Response $response, array $args) {		
+	//     $staff = new Staff($this->db);
+	//     $result = $staff->getDepartment();	    
+	//     $response = $response->withHeader('Content-type', 'application/json' );
+	// 	$response = $response->withJson($result);
+	//     return $response;	    
+	// });
 	Class Staff{
 		var $result;   
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
+		}
+		function getStaffName($id){
+			$sql ='SELECT staff_name
+					FROM staff.staff
+					WHERE staff_id = :staff_id;';	
+			$statement = $this->conn->prepare($sql);
+			$statement->bindParam(':staff_id',$id);
+			$statement->execute();
+			$row = $statement->fetchAll();			
+			return $row;
 		}
 		function getDepartment()
 		{  	
@@ -872,13 +900,80 @@ use Slim\Http\UploadedFile;
 			session_write_close();
 		}
 
+		function readNotification($id){
+			$sql = 'UPDATE staff.notification
+					SET unread=false
+					WHERE id=:id;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':id',$id,PDO::PARAM_STR);
+			$sth->execute();	
+			// $row = $sth->fetchAll();
+			$ack = array(
+				'status'=>'successs',
+			);
+			return $ack;
+		}
+
+		function getNotificationNum(){
+			$sql = 'SELECT COUNT (id)
+					FROM staff.notification
+					WHERE unread = true AND "UID"=:UID ;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
+
+		function getNotification(){
+			$sql = 'SELECT notification.detail, notification.unread, to_char( notification."sendtime",\'MON DD , HH24:MI\' )as "sendtime", notification.type, chatroomInfo."chatName",chatroomInfo."chatID",notification.id
+					FROM staff.notification AS notification
+				LEFT JOIN ( SELECT *
+				FROM staff_chat."chatroomInfo") AS chatroomInfo
+				on chatroomInfo."chatID" = CAST(notification."tagChatRoom" AS INT)
+					WHERE "UID"= :UID
+					order by "sendtime"desc;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
+
+		function tag(){
+			$_POST=json_decode($_POST['data'],true);
+			// var_dump($_POST);
+			try{
+				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,\'你被標註在一則訊息\',now(),\'true\',:chatID,\'tag\');';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_POST['id'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				$sth->execute();
+				// $row = $sth->fetchAll();
+				$ack = array(
+					'status'=>'success'
+
+				);
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'message'=>$e
+				);
+			}
+			
+			return $ack;
+
+		}
+
 		function init(){
 			$class = $this->getClass();
 			$chatroom = $this->getChatroom();
+			$notification = $this->getNotificationNum();
 			// unset($chatroom[0]);
 			// $chat = $this->getChat();
 			$ack = array(
 				'status'=>'success',
+				'notification'=>$notification,
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
@@ -909,12 +1004,14 @@ use Slim\Http\UploadedFile;
 					usleep(1000000);
 				$this->firstCheck=true;
 				$class = $this->getClass();
+				$notification = $this->getNotificationNum();
 				// unset($class[0]);
 				// $new = $class[0];
 				// $new['id'] = 3;
 				// array_push($class,$new);
 				// $class[0]['id']=14;
 				$result = array();
+				$result['notification'] = $this->checkNotification($data['notification'], $notification);
 				$result['class'] = $this->checkClass($data['class'], $class);
 				$chatroom = $this->getChatroom();
 				// unset($chatroom[0]);
@@ -933,6 +1030,7 @@ use Slim\Http\UploadedFile;
 			
 			$ack=array(
 				'status'=>'success',
+				'notification'=>$notification,
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
@@ -947,6 +1045,17 @@ use Slim\Http\UploadedFile;
 			'new'=>2,
 			'changeName'=>3
 		);
+		function checkNotification($old,$new){
+			// var_dump($old[0][count]);
+			// var_dump($new[0][count]);
+			$out = array();
+			$out['change'] = array();
+			if($old[0][0] != $new[0][0]){
+				$this->change=true;
+				$out['change'] = $new[0][0];
+			}
+			return $out;
+		}
 		function checkClass($a, $b) {
 		    $map = $out = array();
 		    $out['delete'] = $out['new'] = $out['change'] = array();
@@ -1161,9 +1270,9 @@ use Slim\Http\UploadedFile;
 		}
 		function getChat($chatID){
 				$sql = '
-					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name,"likeID"
 					FROM (
-						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name,"likeID"
 						FROM staff_chat."chatContent"
 						LEFT JOIN (
 							SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
@@ -1301,7 +1410,7 @@ use Slim\Http\UploadedFile;
 					}
 					foreach($classType as $eachClass){
 						if($checkClassNum == 1){
-							var_dump(count($classType),count($data['clientClass']));
+							// var_dump(count($classType),count($data['clientClass']));
 							$boolCheckClassType = true;
 							if(!array_key_exists($eachClass['id'], $data['clientClass'])){
 								$change = array(
@@ -1980,7 +2089,110 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
+		function addlikeID($body){
+			$body=json_decode($body['data'],true);
+			$likeID=$body['likeID'];
+			var_dump($body);
+			if(is_null($likeID)){
+				$sql='
+					SELECT "likeID"
+					FROM staff_chat."chatContent"
+					where content=:content AND "UID"=:UID AND "sentTime"=:senttime AND"chatID"=:chatID;
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+				$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+				$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				var_dump($row);
+				if(count($row)==1){	
+					if($row[0]["likeID"]==null){
+					// var_dump($content,$senttime,$UID,$chatID);
+	    			$sql='
+						UPDATE staff_chat."chatContent"
+						SET "likeID"=nextval(\'staff_chat."chatContent_likeID_seq"\'::regclass)
+						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID AND "likeID" is NULL;
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+					$sth->execute();
 
+					// $likeID = $this -> $conn -> lastInsertId();
+
+					// search likeID from "chatContent" and record likeid and uid to "chatLikeCount"
+					$sql='
+						SELECT "UID","likeID"
+						FROM staff_chat."chatContent"
+						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID ;
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+					$sth->execute();
+
+					$row=$sth -> fetchAll();
+					$likeID = $row[0]["likeID"];
+
+					$sql='
+						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
+						VALUES (:likeID, :UID);						
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+					$sth->execute();
+
+					}
+		    	}
+
+			}
+			else{
+				$sql='
+					SELECT *
+					FROM staff_chat."chatLikeCount"
+					WHERE "UID"=:UID AND "likeID"=:likeID
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+				$sth->execute();
+				$row=$sth->fetchAll();
+
+				var_dump($row);
+
+				if(count($row)==1){
+				//dislike
+					if($row[0]["likeID"]!=null){
+					$sql='
+						DELETE FROM staff_chat."chatLikeCount"
+						WHERE "UID"=:UID AND "likeID" =:likeID;
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+					$sth->execute();
+					}
+				}
+				else{
+					$sql='
+						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
+						VALUES (:likeID, :UID);	
+					';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+					$sth->execute();
+				}
+			}
+			
+		}
 		function getList($chatID=null){
 			if(is_null($chatID)){
 				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id and staff_delete=false and \"seniority_workStatus\" =1;";
@@ -2137,5 +2349,6 @@ use Slim\Http\UploadedFile;
 	        imagecopyresampled($image_p,$image,0,0,0,0,$width,$height,$width_orig,$height_orig);
 	 		return $image_p;
 	    }
+	    
 	}
 ?>
