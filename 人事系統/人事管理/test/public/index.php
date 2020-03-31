@@ -295,9 +295,9 @@ $app->group('/chat', function () use ($app) {
 		$chat = new Chat($this->db);
 		$result = $chat->routine($data,$args['chatID']);
 		session_start();
-		$_SESSION['last'][$args['timestamp']] = $result;
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
+		$_SESSION['last'][$args['timestamp']] = $result;
 	    return $response;
 	});
 	$app->get('/list', function (Request $request, Response $response, array $args) {
