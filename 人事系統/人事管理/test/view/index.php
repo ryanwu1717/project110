@@ -350,7 +350,6 @@ function init(){
 }
 init();
 var ajax = null;
-var start = Date.now();
 function routine(){
   if(ajax!=null)
     ajax.abort();
@@ -360,7 +359,6 @@ function routine(){
     dataType:'json',
     success:function(response){
       if(response.status=='success'){
-        console.log(Date.now()-start);
         $.each(response.result,function(key,value){
           if(key=='class'){
             changeClass('routine',value,response.class);
@@ -683,7 +681,7 @@ function updateLastReadTime(){
     data:{chatID:chatID,_METHOD:'PATCH'},
     dataType:'json',
     success:function(response){
-      routine();
+//      routine();
     }
   });
 }
@@ -725,8 +723,10 @@ function getTarget(_chatID,_chatName){
   $('[name=navbarChatroomTitle]').text(chatName);
   $('#tool_dropdown').show();
   // resetLimit();
-  chatID = _chatID;
-  routine();
+  if(chatID != _chatID){
+    chatID = _chatID;
+    routine(); 
+  }
   updateLastReadTime();
   // schedule();
   // getReadcount();
