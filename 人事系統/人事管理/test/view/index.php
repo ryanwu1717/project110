@@ -14,7 +14,7 @@
         </div>
         <div class="srch_bar">
           <div class="stylish-input-group">
-            <input type="text" class="search-bar"  placeholder="Search" >
+            <input type="text" class="search-bar"  id="searchChatroomInput" placeholder="Search">
             <span class="input-group-addon">
             <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
             </span> 
@@ -131,11 +131,30 @@ window.onblur = function () {
   window.isTabActive = false; 
 };
 
+
+$(function(){ // this will be called when the DOM is ready
+  $('#searchChatroomInput').keyup(function(event) {
+    console.log($('#searchChatroomInput').val());
+    $('[name=beSearchRoom]').each(function(){
+      console.log($(this).data('roomname'));
+      // console.log($(this).data('roomname').indexOf($('#searchChatroomInput').val()));
+      if($(this).data('roomname').indexOf($('#searchChatroomInput').val())>-1){
+        $(this).show();
+      }else{
+        $(this).hide();
+      }
+    });
+  });
+});
+
+
+
 var tagboolean = false;
 var tmpTag;
 var nowkey;
 var tagPeople = "";
 $('.dropup').hide();
+
 $('#textinput').keyup(function(event) {
   if(event.key == "@"){
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
@@ -182,7 +201,7 @@ function addTag(tagname,tagID){
   }
   $('.dropup').hide();
   tagPeople = tagPeople+tagID+" ";
-  console.log(tagPeople);
+  // console.log(tagPeople);
 }
 (function ($, undefined) {
     $.fn.getCursorPosition = function() {
@@ -217,7 +236,7 @@ function notificationOnclick(chatID,chatName,id){
 $('[name=bellbtn]').show();
 $(function(){
     $('[name=bellbtn]').unbind().on('click',function(){
-      console.log("in");
+      // console.log("in");
       getNotification();
     });
   });
@@ -411,7 +430,7 @@ function changeReadCount(type,data){
 
 function changeNotification(type,data){
   if(type == 'init'){
-    console.log('init');
+    // console.log('init');
     console.log(data[0].count);
     $('[name=notificationNum]').empty();
     $('[name=notificationNum]').append(data[0].count);
@@ -495,7 +514,7 @@ function changeChatroom(type,data){
     }
     $('#class'+tmpClass).append(
       '<div class="" name="room'+value.chatID+'">'+
-        '<div class="chat_list" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'">'+
+        '<div class="chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
         '<div class="chat_people">'+
           '<div class="chat_img">'+
             '<div class="circleBase type2"></div>'+

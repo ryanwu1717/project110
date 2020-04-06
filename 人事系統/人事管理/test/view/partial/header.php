@@ -153,16 +153,17 @@
             </a>
           </li>
           <!-- Nav Item - Add -->
-          <li class="nav-item">
-            <a class="nav-link" href="<?=@$url?>/add">
-              <i class="fas fa-fw fa-table"></i>
-              <span>新增欄位</span>
-            </a>
-          </li>
+         
           <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/checkinlist">
               <i class="fas fa-fw fa-table"></i>
               <span>打卡資訊</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/deleteChat">
+              <i class="fas fa-fw fa-table"></i>
+              <span>刪除訊息</span>
             </a>
           </li>
           <?php } //management end?>

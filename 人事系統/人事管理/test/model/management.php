@@ -274,6 +274,36 @@
 		}
 	}
 
+	Class ChatManage{
+		var $result;   
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function deleteChat(){
+			$_POST=json_decode($_POST['data'],true);
+			// var_dump($_POST['time']);
+			try{
+				$sql = 'DELETE FROM staff_chat."chatContent"
+						WHERE "sentTime" < :deleteTime';
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':deleteTime',$_POST['time']);
+				$statement->execute();
+				$ack = array(
+					'status' => 'success', 
+					'message' => '成功'
+				);
+
+			}catch(PDOException $e)
+			{
+				$ack = array(
+					'status' => 'failed'
+				);
+			}	
+			return $ack;
+		}
+	}
+
 	Class Add{
 		var $conn;
 		var $result; 
