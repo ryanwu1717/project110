@@ -14,7 +14,7 @@
         </div>
         <div class="srch_bar">
           <div class="stylish-input-group">
-            <input type="text" class="search-bar"  id="searchChatroomInput" placeholder="Search">
+            <input type="text" class="search-bar" id="searchChatroomInput" placeholder="Search">
             <span class="input-group-addon">
             <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
             </span> 
@@ -132,20 +132,7 @@ window.onblur = function () {
 };
 
 
-$(function(){ // this will be called when the DOM is ready
-  $('#searchChatroomInput').keyup(function(event) {
-    console.log($('#searchChatroomInput').val());
-    $('[name=beSearchRoom]').each(function(){
-      console.log($(this).data('roomname'));
-      // console.log($(this).data('roomname').indexOf($('#searchChatroomInput').val()));
-      if($(this).data('roomname').indexOf($('#searchChatroomInput').val())>-1){
-        $(this).show();
-      }else{
-        $(this).hide();
-      }
-    });
-  });
-});
+
 
 
 
@@ -365,10 +352,10 @@ function routine(){
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
           }else if(key=='chat'){
-            changeChat('routine',response.chat);
+            changeChat('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
-            changeChat('routine',response);
+            // changeChat('routine',response);
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
@@ -1718,5 +1705,23 @@ $("#textinput").on('paste', function (e) {
         }
       });
     }
+});
+var searchBar = null;
+$('#searchChatroomInput').on('keyup',function(){
+  if(searchBar!=null){
+    clearTimeout(searchBar);
+  }
+  if($('#searchChatroomInput').val()==''){
+    $('.chat_list').parent().show();
+  }
+  searchBar = setTimeout(function(){
+    $('.chat_list').each(function(){
+      if($(this).find('h5').text().indexOf($('#searchChatroomInput').val())>-1){
+        $(this).parent().show();
+      }else{
+        $(this).parent().hide();
+      }
+    });
+  },500);
 });
 </script>

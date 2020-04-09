@@ -2145,7 +2145,7 @@ use Slim\Http\UploadedFile;
 						VALUES (:likeID, :UID);						
 					';
 					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
 					$sth->execute();
 
@@ -2160,7 +2160,7 @@ use Slim\Http\UploadedFile;
 					WHERE "UID"=:UID AND "likeID"=:likeID
 				';
 				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
 				$sth->execute();
 				$row=$sth->fetchAll();
@@ -2175,7 +2175,7 @@ use Slim\Http\UploadedFile;
 						WHERE "UID"=:UID AND "likeID" =:likeID;
 					';
 					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
 					$sth->execute();
 					}
@@ -2186,7 +2186,7 @@ use Slim\Http\UploadedFile;
 						VALUES (:likeID, :UID);	
 					';
 					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
 					$sth->execute();
 				}
