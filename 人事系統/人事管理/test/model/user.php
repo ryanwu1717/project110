@@ -1026,6 +1026,8 @@ use Slim\Http\UploadedFile;
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
+                $now = new DateTime( 'NOW' );
+
 			}
 			
 			$ack=array(
