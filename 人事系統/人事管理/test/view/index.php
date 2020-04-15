@@ -66,7 +66,7 @@
           <!-- <input id="textinput"type="text" /> -->
           <input style="display:none;" type="file" name="inputFile">
           <input style="display:none;" type="file" name="inputPicture" accept="image/*" >
-          <button class="msg_attach_btn" type="button" data-toggle="modal" data-target="#basicModal" data-type="attach"><i class="fa fa-plus" aria-hidden="true"></i></button>
+          <button class="msg_attach_btn" type="button" onclick="uploadFile(this)"><i class="fa fa-plus" aria-hidden="true"></i></button>
            <!-- name="buttonAttchFile" -->
           <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
