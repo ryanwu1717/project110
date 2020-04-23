@@ -93,25 +93,37 @@
       <div class="col-md-8">
         <div class="card" style="height:65vh">
           <div class="card-body">
-            <div class="card">
-              <div class="card-body">
-                <div class="text-right">
-                  <div class="d-flex flex-row-reverse bd-highlight">
-                    <div class="p-2 bd-highlight bg-secondary text-white rounded-pill">Flex item 1</div>
+            <div class="h-100 d-flex flex-column">
+              <div class="card flex-grow-1 mb-3">
+                <div class="card-body">
+                  <div class="text-right">
+                    <div class="d-flex flex-row-reverse bd-highlight">
+                      <div class="p-2 bd-highlight bg-secondary text-white rounded-pill">Flex item 1</div>
+                    </div>
+                    <small>APR 09 14:13:48</small>
+                    <a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>
+                    <a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
+                    <a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
                   </div>
-                  <small>APR 09 14:13:48</small>
-                  <a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>
-                  <a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
-                  <a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
-                </div>
 
-                <div class="d-flex bd-highlight">
-                  <div class="p-2 bd-highlight bg-dark text-white rounded-pill">Flex item 1</div>
+                  <div class="d-flex bd-highlight">
+                    <div class="p-2 bd-highlight bg-dark text-white rounded-pill">Flex item 1</div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="align-bottom">
-              <textarea></textarea>
+              <div class="align-bottom">
+                <div class="d-flex">
+                  <div class="w-100">
+                    <textarea class="form-control"></textarea>
+                  </div>
+                  <div class="flex-shrink-1  align-self-center ml-1">
+                      <button class="btn btn-secondary btn-block fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
+                  </div>
+                  <div class="flex-shrink-1  align-self-center ml-1">
+                      <button class="btn btn-secondary " type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >+</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
