@@ -997,11 +997,17 @@ use Slim\Http\UploadedFile;
 			return $ack;
 		}
 		function routine($data,$chatID){
+			ignore_user_abort(true);
 			$start = new DateTime( 'NOW' );
 			$now = new DateTime( 'NOW' );
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
 				if($this->firstCheck)
 					usleep(1000000);
+				if(connection_aborted())
+			    {
+			    	$this->conn->close();
+			        exit;
+			    }
 				$this->firstCheck=true;
 				$class = $this->getClass();
 				$notification = $this->getNotificationNum();

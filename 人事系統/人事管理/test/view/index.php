@@ -355,7 +355,6 @@ function routine(){
             changeChat('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
-            // changeChat('routine',response);
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
@@ -585,15 +584,15 @@ function changeChat(type,data){
     }
   }
   $(newChat).each(function(){
-    var mydate = new Date(this.fullsentTime);
-    if(dd != mydate.getDate()){
+    var mydate = this.fullsentTime.split(' ')[0];
+    if(dd != mydate){
       $('[name=chatBox]').append(
         '<div class="alert alert-success text-center" role="alert">'+
           this.fullsentTime.split(' ')[0] +
         '</div>'
       );
     }
-    dd = mydate.getDate();
+    dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
         '<div class="incoming_msg">'+
