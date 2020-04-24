@@ -155,6 +155,12 @@
           <!-- Nav Item - Add -->
          
           <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/oldcheckinlist">
+              <i class="fas fa-fw fa-table"></i>
+              <span>舊打卡資訊</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/checkinlist">
               <i class="fas fa-fw fa-table"></i>
               <span>打卡資訊</span>

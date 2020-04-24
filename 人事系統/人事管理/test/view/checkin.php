@@ -80,7 +80,7 @@ button.switch-month:hover {
 }
 </style>
 <div class="row">
-	<div class="col-md-6">
+	<!-- <div class="col-md-6">
 		<div class="card mb-3">
 		  	<div class="card-body">
 			  	<div class="container">
@@ -98,8 +98,8 @@ button.switch-month:hover {
 				</div>
 		  	</div>
 		</div>
-	</div>
-	<div class="col-md-6">
+	</div> -->
+	<div class="col-md-12">
 		<div class="card mb-3">
 			<div class="card-body">
 				<div class="container">
