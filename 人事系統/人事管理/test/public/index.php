@@ -4,8 +4,15 @@ require_once __DIR__.'/../model/user.php';
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\PhpRenderer;
+$configuration = [
+    'settings' => [
+        'displayErrorDetails' => true,
+    ],
+];
+$c = new \Slim\Container($configuration);
+$app = new \Slim\App($c);
 
-$app = new \Slim\App;
+// $app = new \Slim\App;
 
 $container = $app->getContainer();
 
@@ -85,17 +92,17 @@ $app->group('', function () use ($app) {
 		});
 		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
 			$viewParam = $request->getAttribute('viewParam');	
-			return $this->view->render($response, '/checkin.php', $viewParam);
+			return $this->view->render($response, '/employeeCheckin.php', $viewParam);
 		});
 		$app->get('/issue', function (Request $request, Response $response, array $args) {	
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/issue.php', $viewParam);
 		});
 		
-		$app->get('/test', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');		
-			return $this->view->render($response, '/Joomla/index.php', $viewParam);
-		});
+		// $app->get('/test', function (Request $request, Response $response, array $args) {	
+		// 	$viewParam = $request->getAttribute('viewParam');		
+		// 	return $this->view->render($response, '/Joomla/index.php', $viewParam);
+		// });
 		// $app->get('/table', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
 		// 	return $this->view->render($response, '/tables.php', $viewParam);
@@ -133,17 +140,26 @@ $app->group('/user', function () use ($app) {
 });
 
 $app->group('/staff', function () use ($app) {
-	$app->get('/name/{id}', function (Request $request, Response $response, array $args) {		
+	$app->get('/name/{id}/{type}', function (Request $request, Response $response, array $args) {		
 	    $staff = new Staff($this->db);
-	    $result = $staff->getStaffName($args['id']);	    
+	    $result = $staff->getStaffName($args['id'],$args['type']);	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;	    
 	});
 
-	$app->get('/department/get', function (Request $request, Response $response, array $args) {		
+	$app->get('/name/{id}/{type}/{chatID}', function (Request $request, Response $response, array $args) {		
 	    $staff = new Staff($this->db);
-	    $result = $staff->getDepartment();	    
+	    $result = $staff->getStaffName($args['id'],$args['type'],$args['chatID']);	    
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;	    
+	});
+
+	
+	$app->get('/department/{id}', function (Request $request, Response $response, array $args) {		
+	    $staff = new Staff($this->db);
+	    $result = $staff->getDepartment($args['id']);	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;	    
@@ -330,6 +346,13 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+	$app->get('/department/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getMemberDepartment($args['chatID']);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->get('/member/{chatID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getMember($args['chatID']);
@@ -415,6 +438,7 @@ $app->group('/chat', function () use ($app) {
 	$app->patch('/message', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->updateMessage($request->getParsedBody());
+		// var_dump($result);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -577,10 +601,26 @@ $app->group('/chat', function () use ($app) {
 		    return $response;
 		    
 		});
+		// $app->post('/tagDepartment', function (Request $request, Response $response, array $args) {
+		//     $notification = new Chat($this->db);
+		//     $result = $notification->tag();   
+		//     $response = $response->withHeader('Content-type', 'application/json' );
+		// 	$response = $response->withJson($result);
+		//     return $response;
+		    
+		// });
 	});
 })->add('ViewMiddleware');
 
 $app->group('/work', function () use ($app) {
+	$app->post('/checkin', function (Request $request, Response $response, array $args) {
+	    $work = new Work($this->db);
+	    $result = $work->employeeCheckin();   
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	    
+	});
 	$app->get('/check/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
 	    $result = $staff->check($args['todayDate']);   
@@ -597,7 +637,7 @@ $app->group('/work', function () use ($app) {
 	    return $response;
 	    
 	});
-	$app->post('/checkin', function (Request $request, Response $response, array $args) {
+	$app->post('/oldcheckin', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
 	    $result = $staff->checkinToday();   
 	    $response = $response->withHeader('Content-type', 'application/json' );

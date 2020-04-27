@@ -47,6 +47,9 @@
 		function __construct($db){
 			$this->conn = $db;
 		}
+
+		
+
 		function deleteStaff()
 		{ 
 			try{
@@ -77,6 +80,111 @@
 		function __construct($db){
 			$this->conn = $db;
 		}
+
+		function checkin($date,$time,$location){
+			$sql ="INSERT INTO staff.\"employeeCheckin\"(
+						 \"checkinDate\", \"checkinTime\", \"location\", \"UID\")
+		 					VALUES (:checkinDate, :checkinTime, :location, :UID);";
+			$sth = $this->conn->prepare($sql);
+	   	$sth->bindParam(':checkinDate',$date);
+	   	$sth->bindParam(':checkinTime',$time);
+	   	$sth->bindParam(':location',$location);
+	   	$sth->bindParam(':UID',$_SESSION['id']);
+			$sth->execute();
+			$row = $sth->fetchAll();
+		}
+		function checkout($date,$time,$location){
+			$sql ="INSERT INTO staff.\"employeeCheckout\"(
+						 \"checkoutDate\", \"checkoutTime\", \"location\", \"UID\")
+		 					VALUES (:checkoutDate, :checkoutTime, :location, :UID);";
+			$sth = $this->conn->prepare($sql);
+	   	$sth->bindParam(':checkoutDate',$date);
+	   	$sth->bindParam(':checkoutTime',$time);
+	   	$sth->bindParam(':location',$location);
+	   	$sth->bindParam(':UID',$_SESSION['id']);
+			$sth->execute();
+			$row = $sth->fetchAll();
+		}
+
+		function employeeCheckin(){
+			$_POST=json_decode($_POST['data'],true);
+			try{
+				if($_POST['type']=="上班打卡"){
+					// var $boolCheckin=false;
+					$sql ='SELECT  "checkinTime"
+									FROM staff."employeeCheckin"
+									WHERE "checkinDate"=:checkinDate AND "UID"=:UID
+									order by "checkinTime" desc;';
+					$sth = $this->conn->prepare($sql);
+			   	$sth->bindParam(':checkinDate',$_POST['date']);
+			   	$sth->bindParam(':UID',$_SESSION['id']);
+					$sth->execute();
+					$row = $sth->fetchAll();
+					if(count($row)==0){
+						$this->checkin($_POST['date'],$_POST['time'],$_POST['location']);	
+						$ack = array(
+							'status' => 'success'
+						);
+					}else{
+						if($_POST['time']>date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkinTime"])))){
+								// var_dump(date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkinTime"]))));
+							$this->checkin($_POST['date'],$_POST['time'],$_POST['location']);	
+							$ack = array(
+								'status' => 'success'
+							);
+						}else{
+							$tmpTime = date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkinTime"])));
+							$ack = array(
+								'status' => 'toQuick',
+								'time'=> $tmpTime
+							
+							);
+						}
+					}
+				}else if($_POST['type']=="下班打卡"){
+					$sql ="SELECT  \"checkoutTime\"
+									FROM staff.\"employeeCheckout\"
+									WHERE \"checkoutDate\"=:checkoutDate AND \"UID\"=:UID
+									order by \"checkoutTime\" desc;";
+					$sth = $this->conn->prepare($sql);
+			   	$sth->bindParam(':checkoutDate',$_POST['date']);
+			   	$sth->bindParam(':UID',$_SESSION['id']);
+					$sth->execute();
+					$row = $sth->fetchAll();
+
+					// var_dump($row[0]["nextCheckinTime"]>$_POST['time']);
+
+					if(count($row)==0){
+						$this->checkout($_POST['date'],$_POST['time'],$_POST['location']);	
+						$ack = array(
+							'status' => 'success'
+						);
+					}else{
+						if($_POST['time']>date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkoutTime"])))){
+							// var_dump($_POST['time'],date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkoutTime"]))));
+							$this->checkout($_POST['date'],$_POST['time'],$_POST['location']);	
+							$ack = array(
+								'status' => 'success'
+							);
+						}else{
+							$tmpTime = date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkoutTime"])));
+							$ack = array(
+								'status' => 'toQuick',
+								'time'=> $tmpTime
+							);
+						}
+					}
+				}
+
+			}catch(PDOException $e){
+				$ack = array(
+					'status' => 'failed', 
+					'message'=> $e
+				);
+			}
+			return $ack;	
+		}
+
 		function check($todaydate){
 			try{	 	
 				$staff_id = $_SESSION['id'];

@@ -85,45 +85,90 @@ use Slim\Http\UploadedFile;
 	}
 
 	
-// $app->group('/notification',function () use ($app){
-// 	$app->post('/tag', function (Request $request, Response $response, array $args) {
-// 	    $notification = new Notification($this->db);
-// 	    $result = $notification->tag();   
-// 	    $response = $response->withHeader('Content-type', 'application/json' );
-// 		$response = $response->withJson($result);
-// 	    return $response;
-	    
-// 	});
-// });
-// $app->get('/name/{id}}', function (Request $request, Response $response, array $args) {		
-	//     $staff = new Staff($this->db);
-	//     $result = $staff->getDepartment();	    
-	//     $response = $response->withHeader('Content-type', 'application/json' );
-	// 	$response = $response->withJson($result);
-	//     return $response;	    
-	// });
 	Class Staff{
 		var $result;   
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
 		}
-		function getStaffName($id){
-			$sql ='SELECT staff_name
-					FROM staff.staff
-					WHERE staff_id = :staff_id;';	
-			$statement = $this->conn->prepare($sql);
-			$statement->bindParam(':staff_id',$id);
+		// function getStaffName($id,$type){
+		// 	if($type == 'department'){
+		// 		$sql ='SELECT staff_name,staff_id
+		// 			FROM staff.staff
+		// 			WHERE staff_department = :staff_department;';	
+		// 		$statement = $this->conn->prepare($sql);
+		// 		$statement->bindParam(':staff_department',$id);
+		// 	}else if($type == 'departmentMember'){
+		// 		$sql ='SELECT staff_name,staff_id
+		// 			FROM staff.staff
+		// 			WHERE staff_department = :staff_department;';	
+		// 		$statement = $this->conn->prepare($sql);
+		// 		$statement->bindParam(':staff_department',$id);
+		// 	}else{
+		// 		$sql ='SELECT staff_name
+		// 			FROM staff.staff
+		// 			WHERE staff_id = :staff_id;';	
+		// 		$statement = $this->conn->prepare($sql);
+		// 		$statement->bindParam(':staff_id',$id);
+		// 	}
+			
+		// 	$statement->execute();
+		// 	$row = $statement->fetchAll();			
+		// 	return $row;
+		// }
+
+		function getStaffName($id,$type,$chatID = null){
+			if(is_null($chatID)){
+				if($type == 'department'){
+					$sql ='SELECT staff_name,staff_id
+						FROM staff.staff
+						WHERE staff_department = :staff_department;';	
+					$statement = $this->conn->prepare($sql);
+					$statement->bindParam(':staff_department',$id);
+				}else{
+					$sql ='SELECT staff_name
+						FROM staff.staff
+						WHERE staff_id = :staff_id;';	
+					$statement = $this->conn->prepare($sql);
+					$statement->bindParam(':staff_id',$id);
+				}
+			}else{
+				$sql ='SELECT "staff".staff_id AS id ,"staff".staff_name AS name
+						FROM staff.staff AS staff
+						WHERE staff_department = :id 
+							AND staff.staff_id 
+								IN(SELECT "UID" as staff_id 
+									FROM staff_chat."chatHistory" 
+									left join "staff"."staff" 
+										on staff.staff_id="chatHistory"."UID" 
+									WHERE "chatID"= :chatID and staff_delete=false and "seniority_workStatus" =1
+									);
+						';	
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':id',$id);
+				$statement->bindParam(':chatID',$chatID);
+			}
+			
+			
 			$statement->execute();
 			$row = $statement->fetchAll();			
 			return $row;
 		}
-		function getDepartment()
+		function getDepartment($id)
 		{  	
-			$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
-			$statement = $this->conn->prepare($sql);
-			$statement->execute();
-			$row = $statement->fetchAll();			
+			if($id == 'get'){
+				$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
+				$statement = $this->conn->prepare($sql);
+				$statement->execute();
+				$row = $statement->fetchAll();	
+			}else{
+				$sql ='SELECT department_name from staff_information.department WHERE department_id = :id;';	
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':id',$id);
+				$statement->execute();
+				$row = $statement->fetchAll();	
+			}
+					
 			return $row;
 		}
 
@@ -926,13 +971,13 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getNotification(){
-			$sql = 'SELECT notification.detail, notification.unread, to_char( notification."sendtime",\'MON DD , HH24:MI\' )as "sendtime", notification.type, chatroomInfo."chatName",chatroomInfo."chatID",notification.id
+			$sql = 'SELECT notification.detail, notification.unread, to_char( notification."sendtime",\'MON DD , HH24:MI\' )as "sendtime", notification.sendtime AS "fullsendTime",notification.type, chatroomInfo."chatName",chatroomInfo."chatID",notification.id
 					FROM staff.notification AS notification
 				LEFT JOIN ( SELECT *
 				FROM staff_chat."chatroomInfo") AS chatroomInfo
 				on chatroomInfo."chatID" = CAST(notification."tagChatRoom" AS INT)
 					WHERE "UID"= :UID
-					order by "sendtime"desc;';
+					order by "fullsendTime"desc;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 			$sth->execute();	
@@ -944,10 +989,12 @@ use Slim\Http\UploadedFile;
 			$_POST=json_decode($_POST['data'],true);
 			// var_dump($_POST);
 			try{
-				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,\'你被標註在一則訊息\',now(),\'true\',:chatID,\'tag\');';
+				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,\'你被標註在一則訊息\',:tmpFullTime,\'true\',:chatID,\'tag\');';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':UID',$_POST['id'],PDO::PARAM_STR);
+				$sth->bindParam(':tmpFullTime',$_POST['tmpTime'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				// $sth->bindParam(':msgID',$_POST['msgID'],PDO::PARAM_STR);
 				$sth->execute();
 				// $row = $sth->fetchAll();
 				$ack = array(
@@ -1779,6 +1826,22 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+		function getMemberDepartment($chatID){
+			$sql = 'SELECT "departmentName".department_id AS id ,"departmentName".department_name AS name 
+					FROM staff.staff AS staff
+						LEFT JOIN staff_information.department AS "departmentName"
+							ON "departmentName".department_id=staff.staff_department
+					WHERE staff.staff_id 
+						IN(SELECT "UID" as staff_id FROM staff_chat."chatHistory" left join "staff"."staff" on staff.staff_id="chatHistory"."UID" 
+							WHERE "chatID"= :chatID and staff_delete=false and "seniority_workStatus" =1)
+
+					Group by(id);';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
+		}
 		function getReadCount($body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
@@ -1913,6 +1976,7 @@ use Slim\Http\UploadedFile;
 				// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
 				$sth->execute();
 				$row = $sth->fetchAll();
+				var_dump($row);
 				if(count($row)==$data['count']){
 					usleep(3000000);
 				}else{
@@ -1946,20 +2010,37 @@ use Slim\Http\UploadedFile;
 		}
 
 		function updateMessage($body){
-			$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
-					VALUES ( :Msg , :UID , NOW(), :chatID );';
-			$sth = $this->conn->prepare($sql);
-			$UID =$_SESSION['id'];
-			$chatID=$body['chatID'];
-			$Msg=$body['Msg'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
-			$sth->execute();
+			try{
+				$date = new DateTime('NOW');
+			  	$timezone = new DateTimeZone('Asia/Taipei');
+			  	$date->setTimezone($timezone);
+			  	$tmpFullTime = $date->format('Y-m-d H:i:s.u').'+08';
+			  	// var_dump( $tmpFullTime);
+				$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
+					VALUES ( :Msg , :UID , :fullTime, :chatID );';
+				$sth = $this->conn->prepare($sql);
+				$UID =$_SESSION['id'];
+				$chatID=$body['chatID'];
+				$Msg=$body['Msg'];
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				$sth->bindParam(':fullTime',$tmpFullTime,PDO::PARAM_INT);
+				$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
+				$sth->execute();
+				// $insert_id = $this->conn->lastInsertId();
 
-			$ack = array(
-				'status'=>'success'
-			);
+				$ack = array(
+					'status'=>'success',
+					// 'id'=>$insert_id,
+					'time' => $tmpFullTime
+				);
+			}catch(PDOException $e){
+                $ack = array(
+                    'status' => 'failed', 
+                    'message'=>$e
+                );
+            }
+			
 			return $ack;
 		}
 		function updateComment($body){

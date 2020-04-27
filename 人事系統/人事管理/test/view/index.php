@@ -153,6 +153,7 @@ var tagboolean = false;
 var tmpTag;
 var nowkey;
 var tagPeople = "";
+var tagDepartment = "";
 $('.dropup').hide();
 
 $('#textinput').keyup(function(event) {
@@ -160,11 +161,30 @@ $('#textinput').keyup(function(event) {
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
       getAllEmployee();
     }
+  }else if (event.key == "#"){
+    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+      getDepartment();
+    }
   }
   // console.log("in");
   tmpSplit=$('#textinput').val().split(" ");
   $(tmpSplit).each(function(){
     if(this.indexOf("@") == 0){
+      tagboolean = true;
+      tmpTag= this;
+      nowkey = this.substr(1);
+      var choose = null;
+      choose = setTimeout(function(){
+        $('[name=dropdownitemTag]').each(function(){
+          // console.log(tmpTag.substr(1));
+          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
+            $(this).show();
+          }else{
+            $(this).hide();
+          }
+        });
+      },300);
+    }else if (this.indexOf("#") == 0){
       tagboolean = true;
       tmpTag= this;
       nowkey = this.substr(1);
@@ -186,6 +206,22 @@ $('#textinput').keyup(function(event) {
   }
   tagboolean = false;
 });
+
+function addDepartmentTag(tagname,tagID){
+  var textAreaContent = $("#textinput").val();
+  for (i = $("#textinput").getCursorPosition();i >0;i--)
+  {
+    if($("#textinput").val().charAt(i-1) == "#"){
+        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"#"+tagname+" "+$("#textinput").val().substr(i));
+        break;
+    }else{
+      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
+    }
+  }
+  $('.dropup').hide();
+  tagDepartment = tagDepartment+tagID+" ";
+  console.log(tagname);
+}
 
 function addTag(tagname,tagID){
   var textAreaContent = $("#textinput").val();
@@ -219,9 +255,12 @@ function addTag(tagname,tagID){
         return pos;
     }
 })(jQuery);
-
-function notificationOnclick(chatID,chatName,id){
+var tmpTagMsg= "";
+function notificationOnclick(chatID,chatName,id,attr){
+  tmpTagMsg = $(attr).data('time');
   getTarget(chatID,chatName);
+  // console.log($(attr).data('time'));
+  // console.log($('.ml-1[data-senttime="'+$(attr).data('time')+'"]'));
   $.ajax({
       url:'/chat/notification/'+id,
       type:'post',
@@ -248,12 +287,12 @@ $(function(){
       type:'get',
       dataType:'json',
       success:function(response){
-        console.log(response);
+        // console.log(response);
         $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
         $(response).each(function(){
-          console.log(this.sendtime);
+          // console.log(this.sendtime);
           $('[name=bellDropdown]').append(
-            '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+');"'+
+            '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
               '<div class="mr-3">'+
                 '<div class="icon-circle bg-primary">'+
                   '<i class="fas fa-file-alt text-white"></i>'+
@@ -270,7 +309,7 @@ $(function(){
             '</a>'
           );
           if(this.unread == true){
-            console.log("unread");
+            // console.log("unread");
             $("#notification"+this.id).css("background-color", "#F0F8FF");
           }else{
             $("#notification"+this.id).css("background-color", "#FFFFFF");
@@ -365,19 +404,47 @@ function routine(){
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
           }else if(key=='chat'){
-            changeChat('routine',response.chat);
+            changeChat('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
-            changeChat('routine',response);
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
         });
       }
       $('#loadModal').modal('hide');
+      if(tmpTagMsg!=""){
+        // console.log("in");
+        console.log(tmpTagMsg);
+        // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
+        // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
+// 
+        $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+        tmpTagMsg = "";
+      }
       routine();
     }
   });
+}
+
+function getDepartment(){
+  $('#tagPeople').empty();
+  $.ajax({
+    url:'/chat/department/'+chatID,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      $(response).each(function(){
+        $('#tagPeople').append(
+          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addDepartmentTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
+          '</button>'
+        );
+      });
+    }
+  });
+  $('.dropup').show();
+
 }
 
 
@@ -395,9 +462,9 @@ function getAllEmployee(){
           '</button>'
         );
       });
-      $('.dropup').show();
     }
   });
+  $('.dropup').show();
 }
 
 
@@ -584,6 +651,8 @@ function notifyUnread(){
   notify['Unread'] = setTimeout(notifyUnread,1000);
 }
 function changeChat(type,data){
+  
+  $('[name=msgSendNow]').remove();
   // $('[name=chatBox]').html("");
   if(chatID==-1){
     return;
@@ -609,11 +678,11 @@ function changeChat(type,data){
     dd = mydate.getDate();
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        '<div class="incoming_msg">'+
+        '<div class="incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="">'+this.UID+','+this.staff_name+'</div>'+
           '<div class="received_msg">'+
             '<div class="received_withd_msg">'+
-              '<p class="text-break">'+
+              '<p class="text-break" name="msg'+this.msgID+'">'+
 			this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
 	      '</p>'+
               '<span class="time_date"> '+this.sentTime+'</span>'+
@@ -631,9 +700,9 @@ function changeChat(type,data){
     }
     else{
       $('[name=chatBox]').append(
-        '<div class="outgoing_msg">'+
-          '<div class="sent_msg">'+
-		'<p class="text-break content">'+
+        '<div class="outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
+          '<div class="sent_msg" >'+
+		'<p class="text-break content" name="msg'+this.msgID+'">'+
 			this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
 		'</p>'+
             '<span class="time_date" > '+this.sentTime+'</span>'+
@@ -726,6 +795,10 @@ function getTarget(_chatID,_chatName){
   if(chatID != _chatID){
     chatID = _chatID;
     routine(); 
+  }else{
+    console.log(tmpTagMsg);
+    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+        tmpTagMsg = "";
   }
   updateLastReadTime();
   // schedule();
@@ -953,14 +1026,15 @@ function searchChat(){
         if(window.isTabActive)
           updateLastReadTime();
         $(response).each(function(){
+          console.log(this);
           last['count'] = last['count']+1;
           if(this.diff!='me'){
             $('[name=chatBox]').append(
-              '<div class="incoming_msg">'+
+              '<div class="incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
                 '<div class="">'+this.UID+','+this.staff_name+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+
+                    '<p class="text-break" name="msg'+this.msgID+'"">'+
                       this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
                     '</p>'+
                     '<span class="time_date"> '+this.sentTime+'</span>'+
@@ -976,9 +1050,9 @@ function searchChat(){
           }
           else{
             $('[name=chatBox]').append(
-              '<div class="outgoing_msg">'+
+              '<div class="outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
                 '<div class="sent_msg">'+
-                  '<p class="text-break content">'+
+                  '<p class="text-break content" name="msg'+this.msgID+'">'+
                     this.content+
                   '</p>'+
                   '<span class="time_date" > '+this.sentTime+'</span>'+
@@ -1057,14 +1131,18 @@ $('[name=inputPicture]').on('change',function(){
     }
   });
 });
-function tagNotification(tagPerson,chatName){
-  $.ajax({
+function tagNotification(type,tagPerson,chatName,tmpTime){
+  // console.log(type,tagPerson,chatName,tmpTime);
+  if(type == "person"){
+    $.ajax({
       url:'/chat/notification/tag',
       type:'POST',
       data:{data:JSON.stringify({
+              type:type,
               chatID:chatID,
               id : tagPerson,
-              chatName : chatName
+              chatName : chatName,
+              tmpTime : tmpTime
               // name : groupname
             })},
       dataType:'json',
@@ -1072,36 +1150,117 @@ function tagNotification(tagPerson,chatName){
         console.log(response);
       } 
     });
-}
-function sendMsg(){
-  Msg=$("#textinput").val();
-  console.log(chatName);
-  var checkTagID = tagPeople.split(" ");
-  var tmpSplit=$('#textinput').val().split(" ");
-  $(checkTagID).each(function(){
-    console.log(this);
-    var tagPerson=this;
-    if(this != ""){
-       $.ajax({
-        url:'/staff/name/'+this,
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          // getTarget(chatID,chatName);
-          $(tmpSplit).each(function(){
-            if("@"+response[0].staff_name == this)
-            {
-              tagNotification(tagPerson,chatName);
+  }else if(type == "department"){
+    $.ajax({
+      url:'/staff/name/'+tagPerson+'/departmentMember/'+chatID,
+      type:'GET',
+      dataType:'json',
+      success:function(response){
+       
+        $(response).each(function(){
+          tagNotification("person",this.id,chatName,tmpTime)
+          console.log(this.id);
+        });
+      } 
+    });
 
+    // $.ajax({
+    //   url:'/chat/notification/tag',
+    //   type:'POST',
+    //   data:{data:JSON.stringify({
+    //           type:type,
+    //           chatID:chatID,
+    //           id : tagPerson,
+    //           chatName : chatName,
+    //           tmpTime : tmpTime
+    //           // name : groupname
+    //         })},
+    //   dataType:'json',
+    //   success:function(response){
+    //     console.log(response);
+    //   } 
+    // });
+  }
+  
+}
+
+function beforeTag(tmpSplit,tmpFullTime){
+  
+  // console.log(tmpSplit);
+  if(tagDepartment != ""){
+    var checkTagDepartmentID = tagDepartment.split(" ");
+    $(checkTagDepartmentID).each(function(){
+      // console.log(this);
+      var tagItem=this;
+      
+        if(this != ""){
+          $.ajax({
+            url:'/staff/department/'+this,
+            type:'get',
+            dataType:'json',
+            success:function(response){
+            // getTarget(chatID,chatName);
+              $(tmpSplit).each(function(){
+                console.log(this);
+                if("#"+response[0].department_name == this)
+                {
+                  console.log("success");
+                  tagNotification("department",tagItem,chatName,tmpFullTime);
+                }
+              });
             }
           });
-
         }
-      });
-    }
-   
-  });
+    });
+  }else if(tagPeople != ""){
+    var checkTagID = tagPeople.split(" ");
+    $(checkTagID).each(function(){
+      
+      var tagPerson=this;
+      
+      if(this != ""){
+        $.ajax({
+          url:'/staff/name/'+this+'/tag',
+          type:'get',
+          dataType:'json',
+          success:function(response){
+          // getTarget(chatID,chatName);
+            $(tmpSplit).each(function(){
+              if("@"+response[0].staff_name == this)
+              {
+                // console.log("in");
+                tagNotification("person",tagPerson,chatName,tmpFullTime);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
   tagPeople = "";
+}
+
+function sendMsg(){
+  // var tmpMsg;
+  // console.log(tagDepartment,tagPeople);
+  
+  Msg=$("#textinput").val();
+  console.log("append");
+  $('[name=chatBox]').append(
+    '<div class="outgoing_msg" data-sentTime="" name="msgSendNow">'+
+      '<div class="sent_msg" >'+
+        '<p class="text-break content" name="msg">'+
+          Msg+
+        '</p>'+
+      '</div>'+
+    '</div>'
+  );
+  if(!scrollable){
+    $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
+  }
+  var tmpFullTime;
+  var tmpSplit=$('#textinput').val().split(" ");
   Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
       url:'/chat/message',
@@ -1111,8 +1270,26 @@ function sendMsg(){
       dataType:'json',
       success:function(response){
         // getTarget(chatID,chatName);
+        tmpFullTime = response.time;
+        // $('[name=chatBox]').append(
+        //   '<div class="outgoing_msg" data-sentTime="" name="'+tmpFullTime+'">'+
+        //     '<div class="sent_msg" >'+
+        //       '<p class="text-break content" name="msg">'+
+        //         Msg+
+        //       '</p>'+
+        //     '</div>'+
+        //   '</div>'
+        // );
+        // console.log(tmpFullTime);
+        beforeTag(tmpSplit,tmpFullTime);
     }
   });
+  // console.log(tmpFullTime);
+
+  
+  
+  
+  
 }
 function sendComment(msgsender,msgtime,data){
   Msg=$("#commentinput").val();
@@ -1466,7 +1643,7 @@ function getCommentContent(data,readlist){
           if(readlist[i].lasttime > this.sentTime)count++;
         }
         $('[name=comment]').append(
-            '<div class="incoming_msg">'+
+            '<div class="incoming_msg" "data-sentTime="'+this.fullsentTime+'">'+
                 '<div class="">'+this.sender+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
