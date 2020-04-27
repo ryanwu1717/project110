@@ -90,6 +90,10 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/index.php', $viewParam);
 		});
+		$app->get('/test', function (Request $request, Response $response, array $args) {	
+			$viewParam = $request->getAttribute('viewParam');	
+			return $this->view->render($response, '/test.php', $viewParam);
+		});
 		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/employeeCheckin.php', $viewParam);
@@ -98,11 +102,9 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/issue.php', $viewParam);
 		});
+
 		
-		// $app->get('/test', function (Request $request, Response $response, array $args) {	
-		// 	$viewParam = $request->getAttribute('viewParam');		
-		// 	return $this->view->render($response, '/Joomla/index.php', $viewParam);
-		// });
+
 		// $app->get('/table', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
 		// 	return $this->view->render($response, '/tables.php', $viewParam);
@@ -141,6 +143,7 @@ $app->group('/user', function () use ($app) {
 
 $app->group('/staff', function () use ($app) {
 	$app->get('/name/{id}/{type}', function (Request $request, Response $response, array $args) {		
+
 	    $staff = new Staff($this->db);
 	    $result = $staff->getStaffName($args['id'],$args['type']);	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -151,14 +154,17 @@ $app->group('/staff', function () use ($app) {
 	$app->get('/name/{id}/{type}/{chatID}', function (Request $request, Response $response, array $args) {		
 	    $staff = new Staff($this->db);
 	    $result = $staff->getStaffName($args['id'],$args['type'],$args['chatID']);	    
+
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;	    
 	});
 
+
 	
 	$app->get('/department/{id}', function (Request $request, Response $response, array $args) {		
 	    $staff = new Staff($this->db);
+
 	    $result = $staff->getDepartment($args['id']);	    
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
@@ -326,6 +332,9 @@ $app->group('/chat', function () use ($app) {
 		$data = $_SESSION['last'][$args['timestamp']];
 		$chat = new Chat($this->db);
 		$result = $chat->routine($data,$args['chatID']);
+		if(empty($result)){
+			return $response;
+		}
 		session_start();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
