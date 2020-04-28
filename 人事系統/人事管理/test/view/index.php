@@ -263,51 +263,51 @@ function notificationOnclick(chatID,chatName,id,attr){
 
 $('[name=bellbtn]').show();
 $(function(){
-    $('[name=bellbtn]').unbind().on('click',function(){
-      // console.log("in");
-      getNotification();
-    });
+  $('[name=bellbtn]').unbind().on('click',function(){
+    // console.log("in");
+    getNotification();
   });
+});
   
-  function getNotification(){
-    $('[name=bellDropdown]').empty();
-    $.ajax({
-      url:'/chat/notification/',
-      type:'get',
-      dataType:'json',
-      success:function(response){
-        // console.log(response);
-        $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
-        $(response).each(function(){
-          // console.log(this.sendtime);
-          $('[name=bellDropdown]').append(
-            '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
-              '<div class="mr-3">'+
-                '<div class="icon-circle bg-primary">'+
-                  '<i class="fas fa-file-alt text-white"></i>'+
-                '</div>'+
+function getNotification(){
+  $('[name=bellDropdown]').empty();
+  $.ajax({
+    url:'/chat/notification/',
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
+      $(response).each(function(){
+        // console.log(this.sendtime);
+        $('[name=bellDropdown]').append(
+          '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+            '<div class="mr-3">'+
+              '<div class="icon-circle bg-primary">'+
+                '<i class="fas fa-file-alt text-white"></i>'+
               '</div>'+
-              '<div>'+
-                '<div class="small text-gray-500">'+
-                  this.sendtime+
-                '</div>'+
-                '<span class="font-weight-bold">'+
-                  this.detail+
-                '</span>'+
+            '</div>'+
+            '<div>'+
+              '<div class="small text-gray-500">'+
+                this.sendtime+
               '</div>'+
-            '</a>'
-          );
-          if(this.unread == true){
-            // console.log("unread");
-            $("#notification"+this.id).css("background-color", "#F0F8FF");
-          }else{
-            $("#notification"+this.id).css("background-color", "#FFFFFF");
-          }
-        });
-        $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
-      }
-    });
-  }
+              '<span class="font-weight-bold">'+
+                this.detail+
+              '</span>'+
+            '</div>'+
+          '</a>'
+        );
+        if(this.unread == true){
+          // console.log("unread");
+          $("#notification"+this.id).css("background-color", "#F0F8FF");
+        }else{
+          $("#notification"+this.id).css("background-color", "#FFFFFF");
+        }
+      });
+      $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+    }
+  });
+}
 
 // $( "#textinput" ).change(function(){
 //   console.log(this.val());
@@ -408,14 +408,20 @@ function routine(){
         // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
         // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
 // 
-        $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
-        tmpTagMsg = "";
+        
+        scrollToTag()
       }
       routine();
     }
   });
 }
-
+function scrollToTag(){
+  if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
+    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+  else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
+    $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+  tmpTagMsg = "";
+}
 function getDepartment(){
   $('#tagPeople').empty();
   $.ajax({
@@ -786,9 +792,7 @@ function getTarget(_chatID,_chatName){
     chatID = _chatID;
     routine(); 
   }else{
-    console.log(tmpTagMsg);
-    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
-        tmpTagMsg = "";
+    scrollToTag();
   }
   updateLastReadTime();
   // schedule();
