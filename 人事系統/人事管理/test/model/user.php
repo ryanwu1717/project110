@@ -975,7 +975,7 @@ use Slim\Http\UploadedFile;
 					FROM staff.notification AS notification
 				LEFT JOIN ( SELECT *
 				FROM staff_chat."chatroomInfo") AS chatroomInfo
-				on chatroomInfo."chatID" = CAST(notification."tagChatRoom" AS INT)
+				on chatroomInfo."chatID" = notification."chatID"
 					WHERE "UID"= :UID
 					order by "fullsendTime"desc;';
 			$sth = $this->conn->prepare($sql);
@@ -989,7 +989,7 @@ use Slim\Http\UploadedFile;
 			$_POST=json_decode($_POST['data'],true);
 			// var_dump($_POST);
 			try{
-				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,\'你被標註在一則訊息\',:tmpFullTime,\'true\',:chatID,\'tag\');';
+				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "chatID","type")VALUES (:UID,\'你被標註在一則訊息\',:tmpFullTime,\'true\',:chatID,\'tag\');';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':UID',$_POST['id'],PDO::PARAM_STR);
 				$sth->bindParam(':tmpFullTime',$_POST['tmpTime'],PDO::PARAM_STR);
@@ -1049,12 +1049,16 @@ use Slim\Http\UploadedFile;
 			$now = new DateTime( 'NOW' );
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
 				if($this->firstCheck)
-					usleep(1000000);
-				if(connection_aborted())
-			    {
-			    	$this->conn->close();
-			        exit;
-			    }
+					usleep(5000000);
+				
+
+				if(connection_status() != 0) {      // Client aborted/disconnected abruptly
+					ob_flush();                         // Clean output buffer
+					flush();                            // Clean PHP's output buffer
+			  		exit();
+				}
+
+
 				$this->firstCheck=true;
 				$class = $this->getClass();
 				$notification = $this->getNotificationNum();
@@ -1560,6 +1564,7 @@ use Slim\Http\UploadedFile;
 			return $row;
 		}
 
+
 		function getChatContent($chatID,$body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
@@ -1636,6 +1641,7 @@ use Slim\Http\UploadedFile;
 			array_push($result,array('chatID'=>$chatID));
 			return $result;
 		}
+
 
 
 		function updateMessage($body){
