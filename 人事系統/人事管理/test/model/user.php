@@ -1559,7 +1559,7 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
-<<<<<<< HEAD
+
 		function getChatContent($chatID,$body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
@@ -1636,8 +1636,7 @@ use Slim\Http\UploadedFile;
 			array_push($result,array('chatID'=>$chatID));
 			return $result;
 		}
-=======
->>>>>>> 249b72ab28455b4d55c916adbd37b63e297c6dcb
+
 
 		function updateMessage($body){
 			try{

@@ -143,7 +143,13 @@ var tagPeople = "";
 var tagDepartment = "";
 $('.dropup').hide();
 
+// $('#textinput').on('compositionupdate', function(e) {
+//     console.log(e);
+//     console.log(e.target.value);
+// });
+
 $('#textinput').keyup(function(event) {
+  // console.log(event.key);
   if(event.key == "@"){
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
       getAllEmployee();
@@ -153,10 +159,30 @@ $('#textinput').keyup(function(event) {
       getDepartment();
     }
   }
+  $('#textinput').on('compositionupdate', function(e) {
+
+    // console.log(e);
+    console.log(e.target.value);
+    console.log(e.target.value.indexOf("＠"));
+    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+      if(e.target.value.indexOf("＠") >= 0){
+        getAllEmployee();
+      }else if(e.target.value.indexOf("＃") >= 0){
+        getDepartment();
+      }
+    }
+    // if(e.target.value.indexOf("＠") >= 0){
+    //   // console.log($("#textinput").getCursorPosition());
+    //   // $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
+    //   // $("#textinput").replace("＠" ,"@");
+
+      
+    // }
+  });
   // console.log("in");
   tmpSplit=$('#textinput').val().split(" ");
   $(tmpSplit).each(function(){
-    if(this.indexOf("@") == 0){
+    if(this.indexOf("@") == 0  || this.indexOf("＠") == 0 ){
       tagboolean = true;
       tmpTag= this;
       nowkey = this.substr(1);
@@ -171,7 +197,7 @@ $('#textinput').keyup(function(event) {
           }
         });
       },300);
-    }else if (this.indexOf("#") == 0){
+    }else if (this.indexOf("#") == 0 || this.indexOf("＃") == 0 ){
       tagboolean = true;
       tmpTag= this;
       nowkey = this.substr(1);
@@ -198,7 +224,7 @@ function addDepartmentTag(tagname,tagID){
   var textAreaContent = $("#textinput").val();
   for (i = $("#textinput").getCursorPosition();i >0;i--)
   {
-    if($("#textinput").val().charAt(i-1) == "#"){
+    if($("#textinput").val().charAt(i-1) == "#" || $("#textinput").val().charAt(i-1) == "＃"){
         $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"#"+tagname+" "+$("#textinput").val().substr(i));
         break;
     }else{
@@ -215,7 +241,7 @@ function addTag(tagname,tagID){
   // console.log(textAreaContent);
   for (i = $("#textinput").getCursorPosition();i >0;i--)
   {
-    if($("#textinput").val().charAt(i-1) == "@"){
+    if($("#textinput").val().charAt(i-1) == "@" || $("#textinput").val().charAt(i-1) == "＠"){
         $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
         break;
     }else{
@@ -316,7 +342,7 @@ $(function(){
 
 
 if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
-var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
+  var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-500>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
@@ -1202,7 +1228,8 @@ function beforeTag(tmpSplit,tmpFullTime){
           });
         }
     });
-  }else if(tagPeople != ""){
+  }
+  if(tagPeople != ""){
     var checkTagID = tagPeople.split(" ");
     $(checkTagID).each(function(){
       

@@ -353,7 +353,7 @@
                 <i class="fas fa-bell fa-fw"></i>
                 <span class="badge badge-danger badge-counter" name="notificationNum">3+</span>
               </a>
-              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown" name="bellDropdown">
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown" name="bellDropdown" style="width: 110px;height: 300px;overflow: scroll;">
                 <h6 class="dropdown-header">
                   通知中心
                 </h6>
