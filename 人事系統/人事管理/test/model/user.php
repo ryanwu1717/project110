@@ -1565,6 +1565,85 @@ use Slim\Http\UploadedFile;
 		}
 
 
+		function getChatContent($chatID,$body){
+			$data = json_decode($body['data'],true);
+			$UID =$_SESSION['id'];
+			for ($i = 0, $timeout = 15; $i < $timeout; $i++ ) {
+
+				$sql = '
+					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
+					FROM (
+						SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name
+						FROM staff_chat."chatContent"
+						LEFT JOIN (
+							SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
+							FROM (
+									SELECT content, "sentTime", "UID" as "sentFrom","chatID"
+									FROM staff_chat."chatContent"
+									WHERE "chatID"= :chatID
+								)as "display",(
+									SELECT "chatID", "time", "UID"
+									FROM staff_chat."chatHistory"
+									Where "chatID"=:chatID
+								) as "chatHistory" 
+							Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
+							Group by "content","sentTime","sentFrom" 
+						) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
+						LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
+						Where "chatID"=:chatID
+						order by "chatContent"."sentTime" desc 
+						-- limit :limit 
+					) as "tmpChatContent"
+					order by "tmpChatContent"."sentTime" asc
+				';
+	            // $sql = 'SELECT content, to_char( "sentTime",\'MM-DD HH24:MI:SS\' )as "sentTime", "UID",(CASE "UID" WHEN :UID THEN \'me\' ELSE \'other\' END)
+	            //         as "diff",staff_name 
+	            //         FROM staff_chat."chatContent" 
+	            //         left join "staff"."staff" on staff.staff_id="chatContent"."UID" 
+	            //         WHERE "chatID"= :chatID 
+	            //         order by "sentTime" asc;';
+
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+				// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
+				$sth->execute();
+				$row = $sth->fetchAll();
+				var_dump($row);
+				if(count($row)==$data['count']){
+					usleep(3000000);
+				}else{
+					$result = array();
+					for($j=$data['count'];$j<count($row);$j++){
+						array_push($result,$row[$j]);
+					}
+					array_push($result,array('chatID'=>$chatID));
+					// $body = array('chatID'=>$chatID);
+					// $this->updateLastReadTime($body);
+					return $result;
+				}
+			}
+
+			// $result=($row==$data);
+			// array_push($row, array('diff'=>$result));
+
+			// $sth = $this->conn->prepare($sql);
+			// $UID =$_SESSION['id'];
+			// $sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			// $sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
+			// $sth->execute();
+
+			// $row = $sth->fetchAll();
+			// $body = array('chatID'=>$chatID);
+			// $this->updateLastReadTime($body);
+			$result = array();
+			array_push($result,array('chatID'=>$chatID));
+			return $result;
+		}
+
+
+
 		function updateMessage($body){
 			try{
 				$date = DateTime::createFromFormat('0.u00 U', microtime());
