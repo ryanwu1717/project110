@@ -329,9 +329,8 @@ $app->group('/chat', function () use ($app) {
 	    return $response;
 	});
 	$app->get('/routine/{timestamp}/{chatID}', function (Request $request, Response $response, array $args) {
-		$data = $_SESSION['last'][$args['timestamp']];
 		$chat = new Chat($this->db);
-		$result = $chat->routine($data,$args['chatID']);
+		$result = $chat->routine($args['timestamp'],$args['chatID']);
 		if(empty($result)){
 			return $response;
 		}

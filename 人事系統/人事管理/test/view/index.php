@@ -261,7 +261,7 @@ function notificationOnclick(chatID,chatName,id,attr){
   });
 }
 
-$('[name=bellbtn]').show();
+$('[name=bellbtn]').parent().show();
 $(function(){
   $('[name=bellbtn]').unbind().on('click',function(){
     // console.log("in");
@@ -1231,7 +1231,7 @@ function beforeTag(tmpSplit,tmpFullTime){
       }
     });
   }
-
+  tagDepartment="";
   tagPeople = "";
 }
 
