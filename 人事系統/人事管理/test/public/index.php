@@ -81,6 +81,8 @@ class ViewMiddleware
         return $response;
     }
 }
+
+
 $app->group('', function () use ($app) {
 	$app->group('', function () use ($app) {
 		$app->get('/', function (Request $request, Response $response, array $args) {		
@@ -118,6 +120,13 @@ $app->group('', function () use ($app) {
 		session_destroy();
 		session_start();
 		return $this->view->render($response, '/login.php', []);
+	});
+});
+
+$app->group('/checkSession/{timestamp}', function () use ($app) {
+	$app->get('', function (Request $request, Response $response, array $args) {
+		session_start();		
+		echo($_SESSION['last'][$args['timestamp']]);
 	});
 });
 
