@@ -2,15 +2,15 @@
  include('partial/header.php')
 ?>
 <!-- Custom styles for this template -->
-<link href="/css/ictrc-chatroom.css" rel="stylesheet">
+<!-- <link href="/css/ictrc-chatroom.css" rel="stylesheet"> -->
 
 <h3 class=" text-center">訊息</h3>
 <div class="card">
   <div class="card-body">
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-lg-4">
         <div class="card" style="height:65vh">
-          <div class="card-body overflow-auto">
+          <div class="card-header">
             <div class="row">
               <div class="col-6">
                 <h4>議題列表</h4>
@@ -26,175 +26,62 @@
               <div class="input-group-prepend">
                 <span class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></span>
               </div>
-              <input type="text" class="form-control">
+              <input type="text" id="searchChatroomInput" class="form-control">
             </div>
-            <div class="accordion" id="accordionOne">
-              <div class="card">
-                <div class="card-header" id="headingOne">
-                  <h2 class="mb-0">
-                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                      Collapsible Group Item #1
-                    </button>
-                  </h2>
-                </div>
-                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionOne">
-                  <div class="card-body">
-
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="accordion" id="accordionTwo">
-              <div class="card">
-                <div class="card-header" id="headingTwo">
-                  <h2 class="mb-0">
-                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                      Collapsible Group Item #1
-                    </button>
-                  </h2>
-                </div>
-                <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionTwo">
-                  <div class="card-body">
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="accordion" id="accordionThree">
-              <div class="card">
-                <div class="card-header" id="headingThree">
-                  <h2 class="mb-0">
-                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-                      Collapsible Group Item #1
-                    </button>
-                  </h2>
-                </div>
-                <div id="collapseThree" class="collapse show" aria-labelledby="headingThree" data-parent="#accordionThree">
-                  <div class="card-body">
-                    <div class="card" style="height:10vh">
-                      <div class="card-body">
-                        <div class="d-flex">
-                          <div class="p-2 flex-shrink-1 ">123</div>
-                          <div class="p-2 flex-grow-1  text-body">
-                            ppp
-                          </div>
-                          <div class="p-2 text-body">
-                            <small>2020-04-23</small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          </div>
+          <div class="card-body overflow-auto" name="inbox_chat">
           </div>
         </div>
       </div>
-      <div class="col-md-8">
+      <div class="col-lg-8">
         <div class="card" style="height:65vh">
-          <div class="card-body">
+          <div class="card-header">
+              <nav class="navbar navbar-expand navbar-light bg-light d-flex justify-content-between">
+                <a class="navbar-brand" name="navbarChatroomTitle"></a>
+                <div class="btn-group" >
+                  <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" id="tool_dropdown" style="display:none;">
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-right">
+                    <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="insertClass">加入議題類別</button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
+                  </div>
+                </div>
+              </nav>
+          </div>
+          <div class="card-body overflow-auto">
             <div class="h-100 d-flex flex-column">
               <div class="card flex-grow-1 mb-3">
-                <div class="card-body">
-                  <div class="text-right">
-                    <div class="d-flex flex-row-reverse bd-highlight">
-                      <div class="p-2 bd-highlight bg-secondary text-white rounded-pill">Flex item 1</div>
-                    </div>
-                    <small>APR 09 14:13:48</small>
-                    <a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>
-                    <a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
-                    <a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
-                  </div>
-
-                  <div class="d-flex bd-highlight">
-                    <div class="p-2 bd-highlight bg-dark text-white rounded-pill">Flex item 1</div>
-                  </div>
-                </div>
-              </div>
-              <div class="align-bottom">
-                <div class="d-flex">
-                  <div class="w-100">
-                    <textarea class="form-control"></textarea>
-                  </div>
-                  <div class="flex-shrink-1  align-self-center ml-1">
-                      <button class="btn btn-secondary btn-block fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
-                  </div>
-                  <div class="flex-shrink-1  align-self-center ml-1">
-                      <button class="btn btn-secondary " type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >+</button>
-                  </div>
+                <div class="card-body msg_history" name="chatBox">
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="messaging">
-  <div class="inbox_msg">
-    <div class="inbox_people">
-      <div class="headind_srch">
-        <div class="recent_heading">
-          <h4>議題列表</h4>
-        </div>
-        <div class="srch_bar">
-          <div class="stylish-input-group">
-            <input type="text" class="search-bar" id="searchChatroomInput" placeholder="Search">
-            <span class="input-group-addon">
-            <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
-            </span> 
-          </div>
-        </div>
-        <div class="tool_bar btn-group">
-          <div class="btn-group">
-            <button class="btn btn-secondary fa fa-folder" type="button" data-toggle="modal" data-target="#basicModal" data-type="addClass" ></button>
-            <button class="btn btn-secondary " type="button" data-toggle="modal" data-target="#basicModal" data-type="create" >+</button>
-          </div>
-        </div>
-      </div>
-      <div class="inbox_chat" name=inbox_chat>
-        <!-- ajax 動態更新擴增 -->
-      </div>
-    </div>
-    <div class="mesgs">
-      <div  style="z-index:99;">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-between" style="background-color: #e3f2fd;">
-          <a class="navbar-brand" name="navbarChatroomTitle"></a>
-          <div class="btn-group" >
-            <button type="button" class="btn btn-light dropdown-toggle text-dark bg-light" data-toggle="dropdown" data-display="static" aria-haspopup="true" aria-expanded="false" id="tool_dropdown" style="display:none;">
-            </button>
-            <div class="dropdown-menu dropdown-menu-right">
-              <button class="dropdown-item" type="button-light" data-toggle="modal" data-target="#basicModal" data-type="member">成員列表</button>
-              <div class="dropdown-divider"></div>
-              <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="insertClass">加入議題類別</button>
-              <div class="dropdown-divider"></div>
-              <button class="dropdown-item" type="button" data-toggle="modal" data-target="#basicModal" data-type="delete">離開議題</button>
+          <div class="card-footer">
+            <div class="align-bottom">
+              <div class="dropup">
+               <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" id="tagPeople">
+                  <a class="dropdown-item" href="#">Action</a>
+                  <a class="dropdown-item" href="#">Another action</a>
+                  <a class="dropdown-item" href="#">Something else here</a>
+                </div>
+              </div>
+              <div class="d-flex">
+                <div class="w-100">
+                  <textarea class="form-control" style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
+                </div>
+                <input style="display:none;" type="file" name="inputFile">
+                <div class="flex-shrink-1  align-self-center ml-1">
+                    <button class="btn btn-secondary btn-block far fa-paper-plane" name="ButtonMsgSend" type="button"></button>
+                </div>
+                <div class="flex-shrink-1  align-self-center ml-1">
+                    <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
+                </div>
+              </div>
             </div>
           </div>
-        </nav>
-      </div>
-      <div class="msg_history" name=chatBox>
-      </div>
-      <a class="scroll-to-down rounded">
-        <i class="fas fa-angle-down"></i>
-      </a>
-      <div class="type_msg">
-        <div class="dropup">
-         <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" id="tagPeople">
-            <a class="dropdown-item" href="#">Action</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something else here</a>
-          </div>
-        </div>
-        <div class="input_msg_write">
-          <textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
-          <!-- <input id="textinput"type="text" /> -->
-          <input style="display:none;" type="file" name="inputFile">
-          <input style="display:none;" type="file" name="inputPicture" accept="image/*" >
-          <button class="msg_attach_btn" type="button" onclick="uploadFile(this)"><i class="fa fa-plus" aria-hidden="true"></i></button>
-           <!-- name="buttonAttchFile" -->
-          <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -560,14 +447,25 @@ function changeClass(type,data,oldClass){
       '<div class="card" name = "class'+value.id+'">'+
         '<div class="card-header" id="headingOne">'+
           '<h2 class="mb-0">'+
-          '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+value.id+'" aria-expanded="true" aria-controls="class'+value.id+'">'+
-            value.name+
-          '</button>'+
+            '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+value.id+'" aria-expanded="true" aria-controls="class'+value.id+'">'+
+              value.name +
+            '</button>'+
           '</h2>'+
         '</div>'+
         '<div id= "class'+value.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
         '</div>'+
       '</div>'
+      // '<div class="card" name = "class'+value.id+'">'+
+      //   '<div class="card-header" id="headingOne">'+
+      //     '<h2 class="mb-0">'+
+      //     '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+value.id+'" aria-expanded="true" aria-controls="class'+value.id+'">'+
+      //       value.name+
+      //     '</button>'+
+      //     '</h2>'+
+      //   '</div>'+
+      //   '<div id= "class'+value.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
+      //   '</div>'+
+      // '</div>'
     );
   }
   function deleteClass(key,value){
@@ -623,20 +521,36 @@ function changeChatroom(type,data){
       haveUnread ='<span class="badge badge-primary" style="display:none;">'+value.CountUnread+'</span> ';
     }
     $('#class'+tmpClass).append(
-      '<div class="" name="room'+value.chatID+'">'+
-        '<div class="chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
-        '<div class="chat_people">'+
-          '<div class="chat_img">'+
-            '<div class="circleBase type2"></div>'+
-          '</div>'+
-          '<div class="chat_ib">'+
-            '<h5>'+chatName+
-              haveUnread +
-              '<span class="chat_date">'+ (value.LastTime==null?' ':value.LastTime) +'</span>'+
-            '</h5>'+
+      '<div class="card" style="height:10vh" name="room'+value.chatID+'">'+
+        '<div class="card-body chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
+          '<div class="d-flex">'+
+            '<div class="p-2 flex-shrink-1 ">123</div>'+
+            '<div class="p-2 flex-grow-1  text-body">'+
+              chatName+
+            '</div>'+
+            '<div class="p-2 text-body">'+
+              '<small>'+ 
+                (value.LastTime==null?' ':value.LastTime) +
+              '</small>'+
+            '</div>'+
           '</div>'+
         '</div>'+
       '</div>'
+
+      // '<div class="" name="room'+value.chatID+'">'+
+      //   '<div class="chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
+      //   '<div class="chat_people">'+
+      //     '<div class="chat_img">'+
+      //       '<div class="circleBase type2"></div>'+
+      //     '</div>'+
+      //     '<div class="chat_ib">'+
+      //       '<h5>'+chatName+
+      //         haveUnread +
+      //         '<span class="chat_date">'+ (value.LastTime==null?' ':value.LastTime) +'</span>'+
+      //       '</h5>'+
+      //     '</div>'+
+      //   '</div>'+
+      // '</div>'
     );
   }
   if(type=='init'){
@@ -721,46 +635,67 @@ function changeChat(type,data){
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        '<div class="incoming_msg">'+
-          '<div class="">'+
-            this.UID+','+this.staff_name+
-          '</div>'+
-          '<div class="received_msg">'+
-            '<div class="received_withd_msg">'+
-              '<p class="text-break">'+
-          			this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
-      	      '</p>'+
-              '<span class="time_date"> '+
-                this.sentTime+
-              '</span>'+
-              '<span class="read ml-1">'+
-                '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-              '</span>'+
-              '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#"></span></a>'+
-              '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
+        '<div class="text-left">'+
+          '<div class="d-flex bd-highlight">'+
+            '<div class="p-2 bd-highlight bg-dark text-white rounded-pill">'+
+            this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
+          '<small>APR 09 14:13:48</small>'+
+          '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>'+
+          '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
         '</div>'
+        // '<div class="incoming_msg">'+
+        //   '<div class="">'+
+        //     this.UID+','+this.staff_name+
+        //   '</div>'+
+        //   '<div class="received_msg">'+
+        //     '<div class="received_withd_msg">'+
+        //       '<p class="text-break">'+
+        //   			this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+      	 //      '</p>'+
+        //       '<span class="time_date"> '+
+        //         this.sentTime+
+        //       '</span>'+
+        //       '<span class="read ml-1">'+
+        //         '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
+        //       '</span>'+
+        //       '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#"></span></a>'+
+        //       '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
+        //     '</div>'+
+        //   '</div>'+
+        // '</div>'
       );
     }
     else{
       $('[name=chatBox]').append(
-        '<div class="outgoing_msg">'+
-          '<div class="sent_msg">'+
-        		'<p class="text-break content">'+
-        			this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
-        		'</p>'+
-            '<span class="time_date" > '+
-              this.sentTime+
-            '</span>'+
-            '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+
-              this.Read+
-            '</a>'+
-            '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-            '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
+        '<div class="text-right">'+
+          '<div class="d-flex flex-row-reverse bd-highlight">'+
+            '<div class="p-2 bd-highlight bg-secondary text-white rounded-pill">Flex item 1</div>'+
           '</div>'+
+          '<small>APR 09 14:13:48</small>'+
+          '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>'+
+          '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
         '</div>'
       );
+      //   '<div class="outgoing_msg">'+
+      //     '<div class="sent_msg">'+
+      //   		'<p class="text-break content">'+
+      //   			this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+      //   		'</p>'+
+      //       '<span class="time_date" > '+
+      //         this.sentTime+
+      //       '</span>'+
+      //       '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+
+      //         this.Read+
+      //       '</a>'+
+      //       '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+      //       '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
+      //     '</div>'+
+      //   '</div>'
+      // );
     }
   });
   if(!scrollable)
