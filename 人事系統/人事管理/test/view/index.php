@@ -156,38 +156,39 @@ $('.dropup').hide();
 //     console.log(e.target.value);
 // });
 
+
 $('#textinput').keyup(function(event) {
   // console.log(event.key);
-  if(event.key == "@"){
+  if(event.key == "@"||(event.keyCode == 229&&$("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="@")){
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
       getAllEmployee();
     }
-  }else if (event.key == "#"){
+  }else if (event.key == "#"||(event.keyCode == 229&&$("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="#")){
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
       getDepartment();
     }
   }
-  $('#textinput').on('compositionupdate', function(e) {
+  // $('#textinput').on('compositionupdate', function(e) {
 
-    // console.log(e);
-    console.log(e.target.value);
-    console.log(e.target.value.indexOf("＠"));
-    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
-      if(e.target.value.indexOf("＠") >= 0){
-        getAllEmployee();
-      }else if(e.target.value.indexOf("＃") >= 0){
-        getDepartment();
-      }
-    }
-    // if(e.target.value.indexOf("＠") >= 0){
-    //   // console.log($("#textinput").getCursorPosition());
-    //   // $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
-    //   // $("#textinput").replace("＠" ,"@");
+  //   // console.log(e);
+  //   console.log(e.target.value);
+  //   console.log(e.target.value.indexOf("＠"));
+  //   if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+  //     if(e.target.value.indexOf("＠") >= 0){
+  //       getAllEmployee();
+  //     }else if(e.target.value.indexOf("＃") >= 0){
+  //       getDepartment();
+  //     }
+  //   }
+  //   // if(e.target.value.indexOf("＠") >= 0){
+  //   //   // console.log($("#textinput").getCursorPosition());
+  //   //   // $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
+  //   //   // $("#textinput").replace("＠" ,"@");
 
       
-    // }
-  });
-  // console.log("in");
+  //   // }
+  // });
+  // // console.log("in");
   tmpSplit=$('#textinput').val().split(" ");
   $(tmpSplit).each(function(){
     if(this.indexOf("@") == 0  || this.indexOf("＠") == 0 ){
@@ -295,7 +296,7 @@ function notificationOnclick(chatID,chatName,id,attr){
   });
 }
 
-$('[name=bellbtn]').show();
+$('[name=bellbtn]').parent().show();
 $(function(){
     $('[name=bellbtn]').unbind().on('click',function(){
       // console.log("in");
@@ -1304,7 +1305,7 @@ function beforeTag(tmpSplit,tmpFullTime){
       }
     });
   }
-
+  tagDepartment="";
   tagPeople = "";
 }
 

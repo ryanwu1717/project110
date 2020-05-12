@@ -348,12 +348,12 @@
               <i class="fa fa-bell" aria-hidden="true"></i>
               
             </button> -->
-            <li class="nav-item dropdown no-arrow mx-1 " style="display:none;" name="bellbtn">
-              <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <li class="nav-item dropdown no-arrow mx-1 " style="display:none;">
+              <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="bellbtn">
                 <i class="fas fa-bell fa-fw"></i>
                 <span class="badge badge-danger badge-counter" name="notificationNum">3+</span>
               </a>
-              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown" name="bellDropdown" style="width: 110px;height: 300px;overflow: scroll;">
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in overflow-auto" aria-labelledby="alertsDropdown" name="bellDropdown" style="height:50vh">
                 <h6 class="dropdown-header">
                   通知中心
                 </h6>

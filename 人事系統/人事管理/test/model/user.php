@@ -1043,18 +1043,21 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
-		function routine($data,$chatID){
-			ignore_user_abort(true);
+		function routine($timestamp,$chatID){
+			$sleepRoutine = 1000000;
+			$data = $_SESSION['last'][$timestamp];
 			$start = new DateTime( 'NOW' );
 			$now = new DateTime( 'NOW' );
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
-				if($this->firstCheck)
-					usleep(1000000);
-				if(connection_aborted())
-			    {
-			    	$this->conn->close();
-			        exit;
-			    }
+
+				if($this->firstCheck){
+					usleep($sleepRoutine);
+					$sleepRoutine+=1000000;
+					if($sleepRoutine>5000000){
+						$sleepRoutine=5000000;
+					}
+					$data = $_SESSION['last'][$timestamp];
+				}
 				$this->firstCheck=true;
 				$class = $this->getClass();
 				$notification = $this->getNotificationNum();
@@ -1673,7 +1676,7 @@ use Slim\Http\UploadedFile;
 
 		function updateMessage($body){
 			try{
-				$date = new DateTime('NOW');
+				$date = DateTime::createFromFormat('0.u00 U', microtime());
 			  	$timezone = new DateTimeZone('Asia/Taipei');
 			  	$date->setTimezone($timezone);
 			  	$tmpFullTime = $date->format('Y-m-d H:i:s.u').'+08';
