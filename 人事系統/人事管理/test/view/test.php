@@ -1,9 +1,32 @@
 <?php 
  include('partial/header.php')
 ?>
-<!-- Custom styles for this template -->
-<!-- <link href="/css/ictrc-chatroom.css" rel="stylesheet"> -->
+<style type="text/css">
+.scroll-to-down {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  text-align: center;
+  color: #fff;
+  background: rgba(90, 92, 105, 0.5);
+  line-height: 46px;
+}
 
+.scroll-to-down:focus, .scroll-to-down:hover {
+  color: white;
+}
+
+.scroll-to-down:hover {
+  background: #5a5c69;
+}
+
+.scroll-to-down i {
+  font-weight: 800;
+}
+</style>
 <h3 class=" text-center">訊息</h3>
 <div class="card">
   <div class="card-body">
@@ -51,10 +74,10 @@
                 </div>
               </nav>
           </div>
-          <div class="card-body overflow-auto">
+          <div class="card-body overflow-auto msg_history">
             <div class="h-100 d-flex flex-column">
               <div class="card flex-grow-1 mb-3">
-                <div class="card-body msg_history" name="chatBox">
+                <div class="card-body" name="chatBox">
                 </div>
               </div>
             </div>
@@ -69,12 +92,15 @@
                 </div>
               </div>
               <div class="d-flex">
+                <a class="scroll-to-down rounded">
+                  <i class="fas fa-angle-down"></i>
+                </a>
                 <div class="w-100">
                   <textarea class="form-control" style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
                 </div>
                 <input style="display:none;" type="file" name="inputFile">
                 <div class="flex-shrink-1  align-self-center ml-1">
-                    <button class="btn btn-secondary btn-block far fa-paper-plane" name="ButtonMsgSend" type="button"></button>
+                    <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" name="ButtonMsgSend" type="button"></button>
                 </div>
                 <div class="flex-shrink-1  align-self-center ml-1">
                     <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
@@ -153,18 +179,65 @@ var tagboolean = false;
 var tmpTag;
 var nowkey;
 var tagPeople = "";
+var tagDepartment = "";
 $('.dropup').hide();
 
+// $('#textinput').on('compositionupdate', function(e) {
+//     console.log(e);
+//     console.log(e.target.value);
+// });
+
+
 $('#textinput').keyup(function(event) {
-  if(event.key == "@"){
+  // console.log(event.key);
+  if(event.key == "@"||(event.keyCode == 229&&$("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="@")){
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
       getAllEmployee();
     }
+  }else if (event.key == "#"||(event.keyCode == 229&&$("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="#")){
+    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+      getDepartment();
+    }
   }
-  // console.log("in");
+  // $('#textinput').on('compositionupdate', function(e) {
+
+  //   // console.log(e);
+  //   console.log(e.target.value);
+  //   console.log(e.target.value.indexOf("＠"));
+  //   if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+  //     if(e.target.value.indexOf("＠") >= 0){
+  //       getAllEmployee();
+  //     }else if(e.target.value.indexOf("＃") >= 0){
+  //       getDepartment();
+  //     }
+  //   }
+  //   // if(e.target.value.indexOf("＠") >= 0){
+  //   //   // console.log($("#textinput").getCursorPosition());
+  //   //   // $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
+  //   //   // $("#textinput").replace("＠" ,"@");
+
+      
+  //   // }
+  // });
+  // // console.log("in");
   tmpSplit=$('#textinput').val().split(" ");
   $(tmpSplit).each(function(){
-    if(this.indexOf("@") == 0){
+    if(this.indexOf("@") == 0  || this.indexOf("＠") == 0 ){
+      tagboolean = true;
+      tmpTag= this;
+      nowkey = this.substr(1);
+      var choose = null;
+      choose = setTimeout(function(){
+        $('[name=dropdownitemTag]').each(function(){
+          // console.log(tmpTag.substr(1));
+          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
+            $(this).show();
+          }else{
+            $(this).hide();
+          }
+        });
+      },300);
+    }else if (this.indexOf("#") == 0 || this.indexOf("＃") == 0 ){
       tagboolean = true;
       tmpTag= this;
       nowkey = this.substr(1);
@@ -187,12 +260,28 @@ $('#textinput').keyup(function(event) {
   tagboolean = false;
 });
 
+function addDepartmentTag(tagname,tagID){
+  var textAreaContent = $("#textinput").val();
+  for (i = $("#textinput").getCursorPosition();i >0;i--)
+  {
+    if($("#textinput").val().charAt(i-1) == "#" || $("#textinput").val().charAt(i-1) == "＃"){
+        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"#"+tagname+" "+$("#textinput").val().substr(i));
+        break;
+    }else{
+      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
+    }
+  }
+  $('.dropup').hide();
+  tagDepartment = tagDepartment+tagID+" ";
+  console.log(tagname);
+}
+
 function addTag(tagname,tagID){
   var textAreaContent = $("#textinput").val();
   // console.log(textAreaContent);
   for (i = $("#textinput").getCursorPosition();i >0;i--)
   {
-    if($("#textinput").val().charAt(i-1) == "@"){
+    if($("#textinput").val().charAt(i-1) == "@" || $("#textinput").val().charAt(i-1) == "＠"){
         $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
         break;
     }else{
@@ -219,9 +308,14 @@ function addTag(tagname,tagID){
         return pos;
     }
 })(jQuery);
+var tmpTagMsg= "";
+function notificationOnclick(chatID,chatName,id,attr){
 
-function notificationOnclick(chatID,chatName,id){
+  tmpTagMsg = $(attr).data('time');
   getTarget(chatID,chatName);
+  // console.log($(attr).data('time'));
+
+  // console.log($('.ml-1[data-senttime="'+$(attr).data('time')+'"]'));
   $.ajax({
       url:'/chat/notification/'+id,
       type:'post',
@@ -233,53 +327,53 @@ function notificationOnclick(chatID,chatName,id){
   });
 }
 
-$('[name=bellbtn]').show();
+$('[name=bellbtn]').parent().show();
 $(function(){
-    $('[name=bellbtn]').unbind().on('click',function(){
-      // console.log("in");
-      getNotification();
-    });
+  $('[name=bellbtn]').unbind().on('click',function(){
+    // console.log("in");
+    getNotification();
   });
+});
   
-  function getNotification(){
-    $('[name=bellDropdown]').empty();
-    $.ajax({
-      url:'/chat/notification/',
-      type:'get',
-      dataType:'json',
-      success:function(response){
-        console.log(response);
-        $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
-        $(response).each(function(){
-          console.log(this.sendtime);
-          $('[name=bellDropdown]').append(
-            '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+');"'+
-              '<div class="mr-3">'+
-                '<div class="icon-circle bg-primary">'+
-                  '<i class="fas fa-file-alt text-white"></i>'+
-                '</div>'+
+function getNotification(){
+  $('[name=bellDropdown]').empty();
+  $.ajax({
+    url:'/chat/notification/',
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
+      $(response).each(function(){
+        // console.log(this.sendtime);
+        $('[name=bellDropdown]').append(
+          '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+            '<div class="mr-3">'+
+              '<div class="icon-circle bg-primary">'+
+                '<i class="fas fa-file-alt text-white"></i>'+
               '</div>'+
-              '<div>'+
-                '<div class="small text-gray-500">'+
-                  this.sendtime+
-                '</div>'+
-                '<span class="font-weight-bold">'+
-                  this.detail+
-                '</span>'+
+            '</div>'+
+            '<div>'+
+              '<div class="small text-gray-500">'+
+                this.sendtime+
               '</div>'+
-            '</a>'
-          );
-          if(this.unread == true){
-            console.log("unread");
-            $("#notification"+this.id).css("background-color", "#F0F8FF");
-          }else{
-            $("#notification"+this.id).css("background-color", "#FFFFFF");
-          }
-        });
-        $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
-      }
-    });
-  }
+              '<span class="font-weight-bold">'+
+                this.detail+
+              '</span>'+
+            '</div>'+
+          '</a>'
+        );
+        if(this.unread == true){
+          // console.log("unread");
+          $("#notification"+this.id).css("background-color", "#F0F8FF");
+        }else{
+          $("#notification"+this.id).css("background-color", "#FFFFFF");
+        }
+      });
+      $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+    }
+  });
+}
 
 // $( "#textinput" ).change(function(){
 //   console.log(this.val());
@@ -288,7 +382,7 @@ $(function(){
 
 
 if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
-var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
+  var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-500>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
@@ -374,9 +468,44 @@ function routine(){
         });
       }
       $('#loadModal').modal('hide');
+      if(tmpTagMsg!=""){
+        // console.log("in");
+        console.log(tmpTagMsg);
+        // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
+        // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
+// 
+        
+        scrollToTag()
+      }
       routine();
     }
   });
+}
+function scrollToTag(){
+  if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
+    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+  else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
+    $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+  tmpTagMsg = "";
+}
+function getDepartment(){
+  $('#tagPeople').empty();
+  $.ajax({
+    url:'/chat/department/'+chatID,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      $(response).each(function(){
+        $('#tagPeople').append(
+          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addDepartmentTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
+          '</button>'
+        );
+      });
+    }
+  });
+  $('.dropup').show();
+
 }
 
 
@@ -394,9 +523,9 @@ function getAllEmployee(){
           '</button>'
         );
       });
-      $('.dropup').show();
     }
   });
+  $('.dropup').show();
 }
 
 
@@ -455,17 +584,6 @@ function changeClass(type,data,oldClass){
         '<div id= "class'+value.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
         '</div>'+
       '</div>'
-      // '<div class="card" name = "class'+value.id+'">'+
-      //   '<div class="card-header" id="headingOne">'+
-      //     '<h2 class="mb-0">'+
-      //     '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+value.id+'" aria-expanded="true" aria-controls="class'+value.id+'">'+
-      //       value.name+
-      //     '</button>'+
-      //     '</h2>'+
-      //   '</div>'+
-      //   '<div id= "class'+value.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
-      //   '</div>'+
-      // '</div>'
     );
   }
   function deleteClass(key,value){
@@ -525,7 +643,7 @@ function changeChatroom(type,data){
         '<div class="card-body chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
           '<div class="d-flex">'+
             '<div class="p-2 flex-shrink-1 ">123</div>'+
-            '<div class="p-2 flex-grow-1  text-body">'+
+            '<div class="p-2 flex-grow-1  text-body chatName">'+
               chatName+
             '</div>'+
             '<div class="p-2 text-body">'+
@@ -536,21 +654,6 @@ function changeChatroom(type,data){
           '</div>'+
         '</div>'+
       '</div>'
-
-      // '<div class="" name="room'+value.chatID+'">'+
-      //   '<div class="chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
-      //   '<div class="chat_people">'+
-      //     '<div class="chat_img">'+
-      //       '<div class="circleBase type2"></div>'+
-      //     '</div>'+
-      //     '<div class="chat_ib">'+
-      //       '<h5>'+chatName+
-      //         haveUnread +
-      //         '<span class="chat_date">'+ (value.LastTime==null?' ':value.LastTime) +'</span>'+
-      //       '</h5>'+
-      //     '</div>'+
-      //   '</div>'+
-      // '</div>'
     );
   }
   if(type=='init'){
@@ -610,6 +713,8 @@ function notifyUnread(){
   notify['Unread'] = setTimeout(notifyUnread,1000);
 }
 function changeChat(type,data){
+  
+  $('[name=msgSendNow]').remove();
   // $('[name=chatBox]').html("");
   if(chatID==-1){
     return;
@@ -641,61 +746,29 @@ function changeChat(type,data){
             this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
-          '<small>APR 09 14:13:48</small>'+
-          '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>'+
+          '<small>'+this.sentTime+'</small>'+
+          '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
           '<a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
         '</div>'
-        // '<div class="incoming_msg">'+
-        //   '<div class="">'+
-        //     this.UID+','+this.staff_name+
-        //   '</div>'+
-        //   '<div class="received_msg">'+
-        //     '<div class="received_withd_msg">'+
-        //       '<p class="text-break">'+
-        //   			this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
-      	 //      '</p>'+
-        //       '<span class="time_date"> '+
-        //         this.sentTime+
-        //       '</span>'+
-        //       '<span class="read ml-1">'+
-        //         '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-        //       '</span>'+
-        //       '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#"></span></a>'+
-        //       '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
-        //     '</div>'+
-        //   '</div>'+
-        // '</div>'
       );
     }
     else{
       $('[name=chatBox]').append(
-        '<div class="text-right">'+
+        '<div class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
-            '<div class="p-2 bd-highlight bg-secondary text-white rounded-pill">Flex item 1</div>'+
+            '<div class="p-2 bd-highlight bg-secondary text-white rounded-pill">'+
+              this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+            '</div>'+
           '</div>'+
-          '<small>APR 09 14:13:48</small>'+
-          '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal"><i class="fa fa-eye" aria-hidden="true"></i>1</a>'+
-          '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
+          '<small>'+this.sentTime+'</small>'+
+          '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
+          '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
+            this.LikeCount+
+          '</a>'+
         '</div>'
       );
-      //   '<div class="outgoing_msg">'+
-      //     '<div class="sent_msg">'+
-      //   		'<p class="text-break content">'+
-      //   			this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
-      //   		'</p>'+
-      //       '<span class="time_date" > '+
-      //         this.sentTime+
-      //       '</span>'+
-      //       '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+
-      //         this.Read+
-      //       '</a>'+
-      //       '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-      //       '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
-      //     '</div>'+
-      //   '</div>'
-      // );
     }
   });
   if(!scrollable)
@@ -777,6 +850,8 @@ function getTarget(_chatID,_chatName){
   if(chatID != _chatID){
     chatID = _chatID;
     routine(); 
+  }else{
+    scrollToTag();
   }
   updateLastReadTime();
   // schedule();
@@ -797,257 +872,6 @@ last['count'] = 0;
 last['countchat'] = 0;
 last['clientClass'] ={};
 last['chatClientInfo'] = {};
-function searchChatroom(){
-  if(queue['chatroom']!=null)
-    queue['chatroom'].abort();
-  queue['chatroom'] = $.ajax({
-    url:'/chat/chatroom',
-    type:'get',
-    data:{data:JSON.stringify(last)},
-    dataType:'json',
-    success:function(response){
-      last['clientClass'] ={};
-      last['chatClientInfo'] = new Object();
-      // console.log(response);
-      $popNum = response.pop();
-      $change = response.pop();
-      $allClass = response.pop();
-      if($popNum.num == 'none'){
-        return;
-      }
-      last['countchat']=$popNum.num;
-      // console.log($popNum.num);
-      // $('[name=inbox_chat]').html("");
-      $('[name=inbox_chat]').append(
-        '<div class="accordion" id="accordionExample" name="accordionExample">'+
-        '</div>'
-      );
-
-      $($allClass.allclass).each(function(){
-        last['clientClass'][this.id] = {"name":this.name};
-      });
-
-      $(response).each(function(){
-        $(this.chatInfo).each(function(){
-          // console.log(this.chatID);
-          var newdata = {};
-          newdata[this.chatID] = {"chatID":this.chatID,"classId": this.classId, "lastTime" : this.LastTime1};
-          $.extend(true, last['chatClientInfo'], newdata);
-        });
-      });
-
-      if($change.changetype['changetype'] == 'changeclass'){
-
-        if($change.changetype['type'] == "delete"){
-           // console.log($change.changetype['changething']);
-            $.each($change.changetype['changething'],function(key,id){
-              // console.log(this.name);
-              $('[name=class'+this.name+']').remove();
-            });
-        }else if($change.changetype['type'] == "add"){
-          console.log($change.changetype['changething'].name);
-          $('[name=inbox_chat]').append(
-            '<div class="card" name = "class'+$change.changetype["changething"].name+'">'+
-              '<div class="card-header" id="headingOne">'+
-                '<h2 class="mb-0">'+
-                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#'+$change.changetype["changething"].name+'" aria-expanded="true" aria-controls="'+$change.changetype["changething"].name+'">'+
-                  $change.changetype["changething"].name+
-                '</button>'+
-                '</h2>'+
-              '</div>'+
-              '<div id= "'+$change.changetype["changething"].name+'"  name= "'+$change.changetype["changething"].name+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
-              '</div>'+
-            '</div>'
-          );
-        }else if($change.type == "modify"){
-
-        }
-
-      }else if ($change.changetype['changetype']  == 'changechatroom'){
-        if($change.type == "delete"){
-          $.each($change.changetype['changething'],function(key,id){
-            console.log(this);
-            $('[name=room'+this+']').remove();
-
-          });
-
-        }else if($change.type == "add"){
-
-        }else if($change.type == "changeClass"){
-
-        }
-      }else if ($change.changetype['changetype']  == 'changeLastTime'){
-        haveUnread ='<span class="badge badge-primary" style="display:none;">有'+$change.changetype['changeChatroom'].CountUnread+'則新訊息</span> ';
-        var tmpClassName = $change.changetype['changeChatroom'].className;
-        if(tmpClassName == null)
-        {
-          tmpClassName = "未分類議題";
-        }
-        console.log(tmpClassName);
-        var chatName ='';
-        if ($change.changetype['changeChatroom'].chatToWhom==null){
-          chatName=$change.changetype['changeChatroom'].chatName;
-        }
-        else{
-          chatName=$change.changetype['changeChatroom'].staff_name;
-        }
-        // $('[name=room'+$change.changetype['changeChatroom'].chatID+']').remove();
-        $('[name="'+tmpClassName+'"]').prepend(
-          '<div class="card-body" name="room'+$change.changetype['changeChatroom'].chatID+'">'+
-            '<div class="chat_list" onclick="getTarget('+$change.changetype['changeChatroom'].chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+$change.changetype['changeChatroom'].chatID+'">'+
-            '<div class="chat_people">'+
-              '<div class="chat_img">'+
-                '<div class="circleBase type2"></div>'+
-              '</div>'+
-              '<div class="chat_ib">'+
-                '<h5>'+chatName+
-                  '<span class="chat_date">'+ ($change.changetype['changeChatroom'].LastTime==null?' ':$change.changetype['changeChatroom'].LastTime) +'</span>'+
-                '</h5>'+
-                '<p class="text-truncate chatContent">'+ ($change.changetype['changeChatroom'].content==null?' ':($change.changetype['changeChatroom'].content.indexOf('<a ')>-1?'收到一個檔案':$change.changetype['changeChatroom'].content)) +'</p>'+
-                haveUnread +
-              '</div>'+
-            '</div>'+
-          '</div>'
-        );
-
-      }else if ($change.changetype == 'none'){
-
-      }else if ($change.changetype == 'firstime'){  
-        $($allClass.allclass).each(function(){
-          // console.log(this);
-       
-          $('[name=inbox_chat]').append(
-            '<div class="card" name = "class'+this.id+'">'+
-              '<div class="card-header" id="headingOne">'+
-                '<h2 class="mb-0">'+
-                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+this.id+'" aria-expanded="true" aria-controls="class'+this.id+'">'+
-                  this.name+
-                '</button>'+
-                '</h2>'+
-              '</div>'+
-              '<div id= "class'+this.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
-              '</div>'+
-            '</div>'
-          );
-        });
-        $(response).each(function(){
-          var tmpClass = this.classID;
-
-          $(this.chatInfo).each(function(){
-            var chatName ='';
-            if (this.chatToWhom==null){
-              chatName=this.chatName;
-            }
-            else{
-              chatName=this.staff_name;
-            }
-            var haveUnread ='';
-            if(window.isTabActive){
-              $('title').text(titleOrg);
-            }
-            if(this.CountUnread!='0'&&this.CountUnread!=null){
-              haveUnread='<span class="badge badge-primary">有'+this.CountUnread+'則新訊息</span> ';
-              if(!window.isTabActive){
-                if($('title').text().indexOf('您有訊息!!')>-1)
-                  $('title').text(titleOrg);
-                else
-                  $('title').text('[您有訊息!!]'+titleOrg);
-              }
-            }
-            else{
-              haveUnread ='<span class="badge badge-primary" style="display:none;">有'+this.CountUnread+'則新訊息</span> ';
-            }
-            $('#class'+tmpClass).append(
-              '<div class="" name="room'+this.chatID+'">'+
-                '<div class="chat_list" onclick="getTarget('+this.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+this.chatID+'">'+
-                '<div class="chat_people">'+
-                  '<div class="chat_img">'+
-                    '<div class="circleBase type2"></div>'+
-                  '</div>'+
-                  '<div class="chat_ib">'+
-                    '<h5>'+chatName+
-                      '<span class="chat_date">'+ (this.LastTime==null?' ':this.LastTime) +'</span>'+
-                    '</h5>'+
-                    '<p class="text-truncate chatContent">'+ (this.content==null?' ':(this.content.indexOf('<a ')>-1?'收到一個檔案':this.content)) +'</p>'+
-                    haveUnread +
-                  '</div>'+
-                '</div>'+
-              '</div>'
-            );
-          });
-        });
-
-      }
-      console.log("out");
-      if(!scrollable)
-        $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-      setTimeout(searchChatroom,3000);
-    }
-  });
-
-}
-function searchChat(){
-  if(chatID!=-1 && chatID!==undefined){
-    if(queue['chat'] != null)
-      queue['chat'].abort();
-    queue['chat'] = $.ajax({
-      url:'/chat/content/'+chatID,
-      data:{data:JSON.stringify(last)},
-      type:'get',
-      dataType:'json',
-      success:function(response){
-        // $('[name=chatBox]').html("");
-        if(response[response.length-1].chatID != chatID){
-          return false;
-        }
-        response.pop();
-        if(window.isTabActive)
-          updateLastReadTime();
-        $(response).each(function(){
-          last['count'] = last['count']+1;
-          if(this.diff!='me'){
-            $('[name=chatBox]').append(
-              '<div class="incoming_msg">'+
-                '<div class="">'+this.UID+','+this.staff_name+'</div>'+
-                '<div class="received_msg">'+
-                  '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+
-                      this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"')+
-                    '</p>'+
-                    '<span class="time_date"> '+this.sentTime+'</span>'+
-                    '<span class="read ml-1">'+
-                      '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-                    '</span>'+
-                    '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i><span class="badge badge-secondary ml-1" href="#">6</span></a>'+
-                    '<a class="badge badge-danger ml-1" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>6</a>'+
-                  '</div>'+
-                '</div>'+
-              '</div>'
-            );
-          }
-          else{
-            $('[name=chatBox]').append(
-              '<div class="outgoing_msg">'+
-                '<div class="sent_msg">'+
-                  '<p class="text-break content">'+
-                    this.content+
-                  '</p>'+
-                  '<span class="time_date" > '+this.sentTime+'</span>'+
-                  '<a href="#" class="ml-1" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-                  '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-                  '<a class="badge badge-light ml-1" href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>'+
-                '</div>'+
-              '</div>'
-            );
-          }
-        });
-        if(!scrollable)
-          $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
-        setTimeout(searchChat,3000);
-      }
-    });
-  }
-}
 var Msg ="";
 $('.msg_send_btn').on('click',function(){
   if(!$.trim($("#textarea").val()) && $("#textinput").val()!="" && chatID!=-1){
@@ -1108,14 +932,18 @@ $('[name=inputPicture]').on('change',function(){
     }
   });
 });
-function tagNotification(tagPerson,chatName){
-  $.ajax({
+function tagNotification(type,tagPerson,chatName,tmpTime){
+  // console.log(type,tagPerson,chatName,tmpTime);
+  if(type == "person"){
+    $.ajax({
       url:'/chat/notification/tag',
       type:'POST',
       data:{data:JSON.stringify({
+              type:type,
               chatID:chatID,
               id : tagPerson,
-              chatName : chatName
+              chatName : chatName,
+              tmpTime : tmpTime
               // name : groupname
             })},
       dataType:'json',
@@ -1123,36 +951,119 @@ function tagNotification(tagPerson,chatName){
         console.log(response);
       } 
     });
-}
-function sendMsg(){
-  Msg=$("#textinput").val();
-  console.log(chatName);
-  var checkTagID = tagPeople.split(" ");
-  var tmpSplit=$('#textinput').val().split(" ");
-  $(checkTagID).each(function(){
-    console.log(this);
-    var tagPerson=this;
-    if(this != ""){
-       $.ajax({
-        url:'/staff/name/'+this,
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          // getTarget(chatID,chatName);
-          $(tmpSplit).each(function(){
-            if("@"+response[0].staff_name == this)
-            {
-              tagNotification(tagPerson,chatName);
+  }else if(type == "department"){
+    $.ajax({
+      url:'/staff/name/'+tagPerson+'/departmentMember/'+chatID,
+      type:'GET',
+      dataType:'json',
+      success:function(response){
+       
+        $(response).each(function(){
+          tagNotification("person",this.id,chatName,tmpTime)
+          console.log(this.id);
+        });
+      } 
+    });
 
+    // $.ajax({
+    //   url:'/chat/notification/tag',
+    //   type:'POST',
+    //   data:{data:JSON.stringify({
+    //           type:type,
+    //           chatID:chatID,
+    //           id : tagPerson,
+    //           chatName : chatName,
+    //           tmpTime : tmpTime
+    //           // name : groupname
+    //         })},
+    //   dataType:'json',
+    //   success:function(response){
+    //     console.log(response);
+    //   } 
+    // });
+  }
+  
+}
+
+function beforeTag(tmpSplit,tmpFullTime){
+  
+  // console.log(tmpSplit);
+  if(tagDepartment != ""){
+    var checkTagDepartmentID = tagDepartment.split(" ");
+    $(checkTagDepartmentID).each(function(){
+      // console.log(this);
+      var tagItem=this;
+      
+        if(this != ""){
+          $.ajax({
+            url:'/staff/department/'+this,
+            type:'get',
+            dataType:'json',
+            success:function(response){
+            // getTarget(chatID,chatName);
+              $(tmpSplit).each(function(){
+                console.log(this);
+                if("#"+response[0].department_name == this)
+                {
+                  console.log("success");
+                  tagNotification("department",tagItem,chatName,tmpFullTime);
+                }
+              });
             }
           });
-
         }
-      });
-    }
-   
-  });
+    });
+  }
+  if(tagPeople != ""){
+    var checkTagID = tagPeople.split(" ");
+    $(checkTagID).each(function(){
+      
+      var tagPerson=this;
+      
+      if(this != ""){
+        $.ajax({
+          url:'/staff/name/'+this+'/tag',
+          type:'get',
+          dataType:'json',
+          success:function(response){
+          // getTarget(chatID,chatName);
+            $(tmpSplit).each(function(){
+              if("@"+response[0].staff_name == this)
+              {
+                // console.log("in");
+                tagNotification("person",tagPerson,chatName,tmpFullTime);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+  tagDepartment="";
   tagPeople = "";
+}
+
+function sendMsg(){
+  // var tmpMsg;
+  // console.log(tagDepartment,tagPeople);
+  
+  Msg=$("#textinput").val();
+  console.log("append");
+  $('[name=chatBox]').append(
+    '<div class="text-right outgoing_msg" name="msgSendNow" data-sentTime="">'+
+      '<div class="d-flex flex-row-reverse bd-highlight">'+
+        '<div class="p-2 bd-highlight bg-secondary text-white rounded-pill">'+
+          Msg +
+        '</div>'+
+      '</div>'+
+      '<small>送出中</small>'+
+    '</div>'
+  );
+  if(!scrollable){
+    $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
+  }
+  var tmpFullTime;
+  var tmpSplit=$('#textinput').val().split(" ");
   Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
       url:'/chat/message',
@@ -1162,8 +1073,18 @@ function sendMsg(){
       dataType:'json',
       success:function(response){
         // getTarget(chatID,chatName);
+        tmpFullTime = response.time;
+
+        // console.log(tmpFullTime);
+        beforeTag(tmpSplit,tmpFullTime);
     }
   });
+  // console.log(tmpFullTime);
+
+  
+  
+  
+  
 }
 function sendComment(msgsender,msgtime,data){
   Msg=$("#commentinput").val();
@@ -1517,7 +1438,7 @@ function getCommentContent(data,readlist){
           if(readlist[i].lasttime > this.sentTime)count++;
         }
         $('[name=comment]').append(
-            '<div class="incoming_msg">'+
+            '<div class="incoming_msg" "data-sentTime="'+this.fullsentTime+'">'+
                 '<div class="">'+this.sender+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
@@ -1780,7 +1701,7 @@ $('#searchChatroomInput').on('keyup',function(){
   }
   searchBar = setTimeout(function(){
     $('.chat_list').each(function(){
-      if($(this).find('h5').text().indexOf($('#searchChatroomInput').val())>-1){
+      if($(this).find('.chatName').text().indexOf($('#searchChatroomInput').val())>-1){
         $(this).parent().show();
       }else{
         $(this).parent().hide();
