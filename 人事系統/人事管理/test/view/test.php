@@ -438,7 +438,7 @@ function init(){
           }
         });
       }
-      // routine();
+      routine();
     }
   });
 }
@@ -575,16 +575,23 @@ function changeClass(type,data,oldClass){
     $('[name=inbox_chat]').append(
       '<div class="card" name = "class'+value.id+'">'+
         '<div class="card-header" id="headingOne">'+
-          '<h2 class="mb-0">'+
+          '<div class="row" >'+
+            '<h2 class="mb-0">'+
             '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#class'+value.id+'" aria-expanded="true" aria-controls="class'+value.id+'">'+
-              value.name +
+              value.name+
             '</button>'+
-          '</h2>'+
+              '<h5><span class="badge badge-primary"  data-num="0" id = "countAllUnread'+value.id+'">'+value.sum+'</span></h5>'+
+            '</h2>'+
+          '</div>'+
         '</div>'+
         '<div id= "class'+value.id+'" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">'+
         '</div>'+
       '</div>'
     );
+    if(value.sum == 0){
+      $('#countAllUnread'+value.id).hide();
+    }
+
   }
   function deleteClass(key,value){
     $('[name=class'+value.id+']').find('.chat_list').each(function(){
@@ -605,6 +612,10 @@ function changeClass(type,data,oldClass){
       $('[name=class'+this.id+']').find('button').text(this.name);
     });
     // $(oldClass).each(addClass);
+    $.each(data.changeNum,function(){
+      $('#countAllUnread'+this.id).html(this.sum);
+    });
+
     $.each(oldClass,function(){
       $('[name=inbox_chat]').append( $('[name=class'+this.id+']'));
     });
@@ -628,6 +639,7 @@ function changeChatroom(type,data){
       chatName=this.chatName;
     }
     var haveUnread ='';
+    
     
     clearTimeout(notify['Unread']);
     $('title').text(titleOrg);
