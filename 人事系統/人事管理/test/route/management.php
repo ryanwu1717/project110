@@ -84,10 +84,6 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/deleteChat.php', $viewParam);
 			});
-			$app->get('/add', function (Request $request, Response $response, array $args) {	
-				$viewParam = $request->getAttribute('viewParam');		
-				return $this->view->render($response, '/add.php', $viewParam);
-			});
 			$app->get('/oldcheckinlist', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/seeCheckin.php', $viewParam);
