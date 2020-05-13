@@ -661,7 +661,6 @@ function changeChatroom(type,data){
 
     });
     $.each(data.result.chatroom.delete,function(){
-      console();
       $('.chat_list[data-name="'+this.chatID+'"]').data('unread');
       $('[name=room'+this.chatID+']').remove();
 
