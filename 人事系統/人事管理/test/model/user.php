@@ -1254,9 +1254,10 @@ use Slim\Http\UploadedFile;
 			$staff_id = $_SESSION['id'];		
 			if(is_null($classID)){
 				$sql ='
-					SELECT (case WHEN  "lastTable".id IS NULL  then 0 ELSE "lastTable".id 
-						END) AS id,(case WHEN  "lastTable".name IS NULL  then \'未命名議題\' ELSE "lastTable".name 
-						END)AS name,SUM("lastTable"."tmpUnread")
+					SELECT 
+						(case WHEN  "lastTable".id IS NULL  then 0 ELSE "lastTable".id END) AS id,
+						(case WHEN  "lastTable".name IS NULL  then \'未命名議題\' ELSE "lastTable".name END)AS name,
+						SUM("lastTable"."tmpUnread")
 					FROM(
 						SELECT "tmpClassify"."classID", SUM("tmpClassify"."CountUnread")as "tmpUnread" ,"allclass".id ,"allclass".name
 						FROM (

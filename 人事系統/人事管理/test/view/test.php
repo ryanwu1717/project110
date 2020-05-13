@@ -438,7 +438,7 @@ function init(){
           }
         });
       }
-      routine();
+      // routine();
     }
   });
 }
@@ -598,7 +598,8 @@ function changeClass(type,data,oldClass){
       '</div>'
     );
     $(data).each(addClass);
-    addClass(null,{id:0,name:"未分類議題"});
+    $('[name=inbox_chat]').append($('[name=class0]'));
+    // addClass(null,{id:0,name:"未分類議題"});
   }else if(type=='routine'){
     $.each(data.change,function(){
       $('[name=class'+this.id+']').find('button').text(this.name);
@@ -645,6 +646,7 @@ function changeChatroom(type,data){
             '<div class="p-2 flex-shrink-1 ">123</div>'+
             '<div class="p-2 flex-grow-1  text-body chatName">'+
               chatName+
+              haveUnread +
             '</div>'+
             '<div class="p-2 text-body">'+
               '<small>'+ 
@@ -694,12 +696,9 @@ function changeChatroom(type,data){
         else{
           haveUnread ='<span class="badge badge-primary" style="display:none;">'+this.CountUnread+'</span> ';
         }
-        room.find('h5').html(
+        room.find('.chatName').html(
           chatName+
-          haveUnread +
-          '<span class="chat_date">'+ 
-            (this.LastTime==null?' ':this.LastTime) +
-          '</span>'
+          haveUnread
         );
       }
     });
@@ -854,6 +853,7 @@ function getTarget(_chatID,_chatName){
     scrollToTag();
   }
   updateLastReadTime();
+  $(document).scrollTop(document.body.scrollHeight);
   // schedule();
   // getReadcount();
   
@@ -1056,7 +1056,6 @@ function sendMsg(){
           Msg +
         '</div>'+
       '</div>'+
-      '<small>送出中</small>'+
     '</div>'
   );
   if(!scrollable){
