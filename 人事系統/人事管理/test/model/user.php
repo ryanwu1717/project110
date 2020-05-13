@@ -987,11 +987,20 @@ use Slim\Http\UploadedFile;
 
 		function tag(){
 			$_POST=json_decode($_POST['data'],true);
+
+			$sql ="SELECT staff_name FROM staff.staff WHERE staff_id = :staff_id;";
+			$sth = $this->conn->prepare($sql);
+		   	$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchColumn(0);
+			var_dump($row);
+			$tmpName = '你被 '.$row.' 標註在一則訊息';
 			// var_dump($_POST);
 			try{
-				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,\'你被標註在一則訊息\',:tmpFullTime,\'true\',:chatID,\'tag\');';
+				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,:message,:tmpFullTime,\'true\',:chatID,\'tag\');';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':UID',$_POST['id'],PDO::PARAM_STR);
+				$sth->bindParam(':message',$tmpName,PDO::PARAM_STR);
 				$sth->bindParam(':tmpFullTime',$_POST['tmpTime'],PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
 				// $sth->bindParam(':msgID',$_POST['msgID'],PDO::PARAM_STR);
