@@ -639,7 +639,7 @@ function changeChatroom(type,data){
       chatName=this.chatName;
     }
     var haveUnread ='';
-    
+
     
     clearTimeout(notify['Unread']);
     $('title').text(titleOrg);
@@ -752,6 +752,7 @@ function changeChat(type,data){
     if(this.diff!='me'){
       $('[name=chatBox]').append(
         '<div class="text-left">'+
+          '<div >'+this.UID+','+this.staff_name+'</div>'+
           '<div class="d-flex bd-highlight">'+
             '<div class="p-2 bd-highlight bg-dark text-white rounded-pill">'+
             this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
