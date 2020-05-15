@@ -613,7 +613,13 @@ function changeClass(type,data,oldClass){
     });
     // $(oldClass).each(addClass);
     $.each(data.changeNum,function(){
+      console.log(this.id);
       $('#countAllUnread'+this.id).html(this.sum);
+      if(this.sum==0){
+        $('#countAllUnread'+this.id).hide();
+      }else{
+        $('#countAllUnread'+this.id).show();
+      }
     });
 
     $.each(oldClass,function(){

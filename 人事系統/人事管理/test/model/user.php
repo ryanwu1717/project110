@@ -1263,35 +1263,41 @@ use Slim\Http\UploadedFile;
 			$staff_id = $_SESSION['id'];		
 			if(is_null($classID)){
 				$sql ='
-					SELECT  id, name ,0 as sum
-					FROM staff_chat."chatClass"
-					WHERE "UID" = :id
-					union(
-						SELECT  (case WHEN  "allclass".id IS NULL  then 0 ELSE "allclass".id
-							END) AS id,(case WHEN  "allclass".name IS NULL  then \'未命名議題\' ELSE "allclass".name 
-							END)AS name,SUM("tmpClassify"."CountUnread")
-						FROM (
-							SELECT "countUnread"."chatID","countUnread"."UID",COUNT("countUnread"."c")as "CountUnread","cClassify"."classID"
-							FROM(
-								SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
-								FROM staff_chat."chatHistory"
-								join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
-								where "chatHistory"."UID"=:id and "chatContent"."UID" != :id
-							) as "countUnread"
-							LEFT JOIN (
-								SELECT "chatClassify"."classID" as "classID", "chatClassify"."chatID", "chatClassify"."UID"
-								FROM staff_chat."chatClassify"
-								where "chatClassify"."UID"=:id
-							)as "cClassify" on "cClassify"."chatID" = "countUnread"."chatID"
-							group by "countUnread"."chatID","countUnread"."UID","cClassify"."classID"
-						)as "tmpClassify"
-						LEFT JOIN(
-							SELECT  name,id
-							FROM staff_chat."chatClass"
-							WHERE "UID" = :id
-						)as "allclass" on "allclass".id = "tmpClassify"."classID"
-						GROUP BY "allclass".id,"allclass".name
-					)ORDER BY  name
+					SELECT  id, name ,sum("sum") as sum
+					FROM(
+						SELECT  id, name ,0 as sum
+						FROM staff_chat."chatClass"
+						WHERE "UID" = :id
+						union(
+							SELECT  
+								(case WHEN  "allclass".id IS NULL  then 0 ELSE "allclass".id END) AS id,
+								(case WHEN  "allclass".name IS NULL  then \'未命名議題\' ELSE "allclass".name END)AS name,
+								SUM("tmpClassify"."CountUnread")
+							FROM (
+								SELECT "countUnread"."chatID","countUnread"."UID",COUNT("countUnread"."c")as "CountUnread","cClassify"."classID"
+								FROM(
+									SELECT "chatHistory"."chatID",  "chatHistory"."UID",(case when "time"<"sentTime" then \'1\' else null end) as "c"
+									FROM staff_chat."chatHistory"
+									join staff_chat."chatContent" on "chatHistory"."chatID"="chatContent"."chatID"
+									where "chatHistory"."UID"=:id and "chatContent"."UID" != :id
+								) as "countUnread"
+								LEFT JOIN (
+									SELECT "chatClassify"."classID" as "classID", "chatClassify"."chatID", "chatClassify"."UID"
+									FROM staff_chat."chatClassify"
+									where "chatClassify"."UID"=:id
+								)as "cClassify" on "cClassify"."chatID" = "countUnread"."chatID"
+								group by "countUnread"."chatID","countUnread"."UID","cClassify"."classID"
+							)as "tmpClassify"
+							LEFT JOIN(
+								SELECT  name,id
+								FROM staff_chat."chatClass"
+								WHERE "UID" = :id
+							)as "allclass" on "allclass".id = "tmpClassify"."classID"
+							GROUP BY "allclass".id,"allclass".name
+						)ORDER BY  name
+					)AS A 
+					GROUP BY id,name
+					ORDER BY  name
 				';
 				$statement = $this->conn->prepare($sql);
 			}else{
