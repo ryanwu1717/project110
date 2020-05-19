@@ -482,10 +482,11 @@ function routine(){
   });
 }
 function scrollToTag(){
+  //console.log($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length);
   if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
-    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
-    $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+    $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
 function getDepartment(){
@@ -757,7 +758,7 @@ function changeChat(type,data){
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        '<div class="text-left">'+
+        '<div class="text-right incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div >'+this.UID+','+this.staff_name+'</div>'+
           '<div class="d-flex bd-highlight">'+
             '<div class="p-2 bd-highlight bg-dark text-white rounded-pill">'+
