@@ -595,6 +595,30 @@ $app->group('/chat', function () use ($app) {
 		});
 	});
 
+	$app->group('/star', function () use ($app) {
+		$app->get('', function(Request $request, Response $response, array $args){
+			$star = new Chat($this->db);
+			$result = $star->getStar();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->post('', function(Request $request, Response $response, array $args){
+			$star = new Chat($this->db);
+			$result = $star->addStar();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->delete('', function(Request $request, Response $response, array $args){
+			$star = new Chat($this->db);
+			$result = $star->deleteStar();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+	});
+
 	$app->group('/notification', function () use ($app) {
 		$app->get('/', function(Request $request, Response $response, array $args){
 			$notification = new Chat($this->db);

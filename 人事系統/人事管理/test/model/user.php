@@ -945,6 +945,76 @@ use Slim\Http\UploadedFile;
 			session_write_close();
 		}
 
+		function getStar($type = null){
+			if(is_null($type)){
+				$sql = 'SELECT star.id, star."UID", star."chatID", star."sentTime" AS "fullsendTime", star."detail",to_char( star."sentTime",\'MON DD , HH24:MI\' )as "sentTime",chatroomInfo."chatName"
+					FROM staff.star as star
+					LEFT JOIN ( SELECT *
+								FROM staff_chat."chatroomInfo") AS chatroomInfo on chatroomInfo."chatID" = star."chatID"
+					WHERE "UID"= :UID
+					order by "fullsendTime"desc;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			}else if($type == 'num'){
+				$sql = 'SELECT count(id)
+						FROM staff.star
+						WHERE "UID" = :UID;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			}else{
+				$sql = 'SELECT "sentTime",id
+						FROM staff.star
+						WHERE "UID" = :UID AND "chatID" = :chatID;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$type,PDO::PARAM_STR);
+			}
+			
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			// $ack = array(
+			// 	'status'=>'success',
+			// );
+			return $row;
+		}
+
+		function deleteStar(){
+			$_POST=json_decode($_POST['data'],true);
+
+			$sql = 'DELETE FROM staff.star
+					WHERE "UID" =:UID  AND "chatID"=:chatID AND "sentTime"=:sentTime;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_STR);
+			$sth->execute();	
+			// $row = $sth->fetchAll();
+			$ack = array(
+				'status'=>'success',
+			);
+			return $ack;
+		}
+
+		function addStar(){
+			$_POST=json_decode($_POST['data'],true);
+
+			$sql = 'INSERT INTO staff.star(
+					"UID", "chatID", "sentTime", detail)
+					VALUES (:UID, :chatID, :sentTime, :detail)';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_STR);
+			$sth->bindParam(':detail',$_POST['content'],PDO::PARAM_STR);
+			$sth->execute();	
+			// $row = $sth->fetchAll();
+			$ack = array(
+				'status'=>'successs',
+			);
+			return $ack;
+		}
+
+
 		function readNotification($id){
 			$sql = 'UPDATE staff.notification
 					SET unread=false
@@ -1025,11 +1095,18 @@ use Slim\Http\UploadedFile;
 			$class = $this->getClass();
 			$chatroom = $this->getChatroom();
 			$notification = $this->getNotificationNum();
+			$starNum = $this->getStar('num');
+			$star=array(
+				'num'=>$starNum,
+				'info'=>'',
+				'chatID'=>'-1'
+			);
 			// unset($chatroom[0]);
 			// $chat = $this->getChat();
 			$ack = array(
 				'status'=>'success',
 				'notification'=>$notification,
+				'star'=>$star,
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
@@ -1070,6 +1147,13 @@ use Slim\Http\UploadedFile;
 				$this->firstCheck=true;
 				$class = $this->getClass();
 				$notification = $this->getNotificationNum();
+				$starNum = $this->getStar('num');
+				$star = $this->getStar($chatID);
+				$newstar=array(
+					'num'=>$starNum,
+					'info'=>$star,
+					'chatID'=>$chatID
+				);
 				// unset($class[0]);
 				// $new = $class[0];
 				// $new['id'] = 3;
@@ -1077,6 +1161,7 @@ use Slim\Http\UploadedFile;
 				// $class[0]['id']=14;
 				$result = array();
 				$result['notification'] = $this->checkNotification($data['notification'], $notification);
+				$result['star'] = $this->checkStar($data['star'], $newstar,$chatID);
 				$result['class'] = $this->checkClass($data['class'], $class);
 				$chatroom = $this->getChatroom();
 				// unset($chatroom[0]);
@@ -1088,6 +1173,7 @@ use Slim\Http\UploadedFile;
 				// var_dump($chat);
 				$result['chatroom'] = $this->checkChatroom($data['chatroom'], $chatroom);
 				$chat = $this->getChat($chatID);
+
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
@@ -1098,6 +1184,7 @@ use Slim\Http\UploadedFile;
 			$ack=array(
 				'status'=>'success',
 				'notification'=>$notification,
+				'star'=>$newstar,
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
@@ -1236,6 +1323,54 @@ use Slim\Http\UploadedFile;
 			}
 		    foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
 		    return $out;
+		}
+		function checkStar($old,$new,$chatID){
+			// var_dump($old[0][count]);
+			// var_dump($new[0][count]);
+			$map = $out = array();
+			
+			// var_dump($old);
+			// var_dump($new);
+			// var_dump($old['chatID']);
+			// var_dump($chatID);
+			$out['delete'] = $out['new'] = $out['change'] = array();
+			if($old['num'][0]['count'] != $new['num'][0]['count']){
+				$this->change=true;
+				$out['change']['num'] = $new['num'][0]['count'];
+			}
+
+			if($chatID == $old['chatID']){
+				// var_dump($old['chatID']);
+				foreach($old['info'] as $val) {
+					$map[$val['id']]['type'] = 1; 
+					$map[$val['id']]['data'] = $val;
+				}
+				
+				foreach($new['info'] as $val) {
+		    		if(isset($map[$val['id']])) {
+		    		
+			    		$map[$val['id']]['type'] = 0;
+			    		$map[$val['id']]['data'] = $val;
+			    	}else {
+	    				$map[$val['id']]['type'] = 2;
+		    			$map[$val['id']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+		    		
+	    		}
+	    		// var_dump($map);
+		    	// $this->change=true;
+				foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data'];
+
+
+			}else{
+				// var_dump('inin');
+				$out['new'] = $new['info'];
+    			$this->change=true;
+			}
+
+			
+			return $out;
 		}
 		function checkChat($data, $chat,$chatID){
 			$new = array();
@@ -1376,9 +1511,9 @@ use Slim\Http\UploadedFile;
 		}
 		function getChat($chatID){
 			$sql = '
-				SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name,"likeID","count" as "LikeCount","liked"
+				SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name,"likeID","count" as "LikeCount","liked","tmpChatContent"."starID"
 				FROM (
-					SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name,"CountLike"."likeID",case when "CountLike"."count" is null then 0 else "CountLike"."count" end,"CountLike"."liked"
+					SELECT "chatContent"."content","chatContent"."sentTime","chatContent"."UID",(CASE "chatContent"."UID" WHEN :UID THEN \'me\' ELSE \'other\' END) as "diff",COALESCE("readCount",0) as "Read",staff_name,"CountLike"."likeID",case when "CountLike"."count" is null then 0 else "CountLike"."count" end,"CountLike"."liked",star."starID"
 					FROM staff_chat."chatContent"
 					LEFT JOIN (
 						SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"
@@ -1394,6 +1529,11 @@ use Slim\Http\UploadedFile;
 						Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
 						Group by "content","sentTime","sentFrom" 
 					) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
+					LEFT JOIN(
+						SELECT id as "starID","sentTime"
+						FROM staff.star
+						WHERE "UID"= :UID and "chatID" = :chatID
+					)as star on star."sentTime" = "chatContent"."sentTime"
 					LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
 						LEFT JOIN(
 							SELECT COUNT(*),"likeID",(CASE WHEN EXISTS (SELECT 1 FROM staff_chat."chatLikeCount" AS L WHERE L."UID" = :UID AND G."likeID" = L."likeID") THEN true ELSE false END) AS "liked"

@@ -170,8 +170,113 @@ window.onblur = function () {
   window.isTabActive = false; 
 };
 
+$('[name=btnStarNotification]').parent().show();
+$(function(){
+  $('[name=btnStarNotification]').unbind().on('click',function(){
+    // console.log("in");
+    getStarNotification();
+  });
+});
+
+function getStarNotification(){
+  $('[name=starDropdown]').empty();
+  $.ajax({
+    url:'/chat/star',
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      $('[name=starDropdown]').append('<h6 class="dropdown-header">待辦事項</h6>');
+      $(response).each(function(){
+        // console.log(this.sendtime);
+        $('[name=starDropdown]').append(
+          '<a class="dropdown-item d-flex align-items-center" id="star'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="starNotificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+            '<div class="mr-3">'+
+              '<div class="icon-circle bg-warning">'+
+                '<i class="fas fa-exclamation-triangle text-white"></i>'+
+              '</div>'+
+            '</div>'+
+            '<div>'+
+              '<div class="small text-gray-500">'+
+                this.sentTime+
+              '</div>'+
+              '<span class="font-weight-bold">'+
+                this.detail+
+              '</span>'+
+            '</div>'+
+          '</a>'
+        );
+        // if(this.unread == true){
+        //   // console.log("unread");
+        //   $("#notification"+this.id).css("background-color", "#F0F8FF");
+        // }else{
+        //   $("#notification"+this.id).css("background-color", "#FFFFFF");
+        // }
+      });
+      // $('[name=starDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+    }
+  });
+}
+
+function starNotificationOnclick(chatID,chatName,id,attr){
+
+  tmpTagMsg = $(attr).data('time');
+  getTarget(chatID,chatName);
+}
 
 
+function starOnclick(cliclTime,chatID,content,button){
+  console.log($(button).find("i").css("color"));
+  if($(button).find("i").css("color") == 'rgb(170, 170, 170)'){
+    $(button).find("i").css("color","#FFBB00");
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      }
+    });
+  }else{
+    $(button).find("i").css("color","#AAAAAA");
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            }),_METHOD:'DELETE'},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      }
+    });
+  }
+  
+  console.log(chatID);
+  console.log(content);
+  // $.ajax({
+  //     url:'/chat/star',
+  //     type:'post',
+  //     data:{data:JSON.stringify({
+  //             chatID:chatID,
+  //             time : cliclTime,
+  //             content : content
+  //           })},
+  //     dataType:'json',
+  //     success:function(response){
+  //       console.log(response);
+  //   }
+  // });
+
+
+}
 
 
 
@@ -186,6 +291,7 @@ $('.dropup').hide();
 //     console.log(e);
 //     console.log(e.target.value);
 // });
+
 
 
 $('#textinput').keyup(function(event) {
@@ -309,6 +415,7 @@ function addTag(tagname,tagID){
     }
 })(jQuery);
 var tmpTagMsg= "";
+
 function notificationOnclick(chatID,chatName,id,attr){
 
   tmpTagMsg = $(attr).data('time');
@@ -435,6 +542,8 @@ function init(){
             changeChatroom('init',value);
           }else if(key == 'notification'){
             changeNotification('init',response.notification);
+          }else if(key == 'star'){
+            changeStar('init',response.star);
           }
         });
       }
@@ -454,27 +563,28 @@ function routine(){
     success:function(response){
       if(response.status=='success'){
         $.each(response.result,function(key,value){
+          // console.log(key);
           if(key=='class'){
             changeClass('routine',value,response.class);
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
           }else if(key=='chat'){
             changeChat('routine',response);
+            changeStar('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
+          }else if(key == 'star'){
+            // changeStar('routine',value);
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
         });
       }
       $('#loadModal').modal('hide');
+      console.log(tmpTagMsg);
       if(tmpTagMsg!=""){
         // console.log("in");
-        console.log(tmpTagMsg);
-        // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
-        // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
-// 
-        
+        // console.log(tmpTagMsg);
         scrollToTag()
       }
       routine();
@@ -482,10 +592,11 @@ function routine(){
   });
 }
 function scrollToTag(){
+  console.log($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length);
   if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
-    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+    $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
-    $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop);
+    $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
 function getDepartment(){
@@ -553,6 +664,43 @@ function changeReadCount(type,data){
 //   setTimeout(searchChat,1000);
 // }
 // schedule();
+
+function changeStar(type,data){
+  if(type == 'init'){
+    $.each(data.num,function(){
+      // console.log(this.count);
+      $('[name=starNotificationNum]').empty();
+      $('[name=starNotificationNum]').append(this.count);
+    });
+  }else if(type == 'routine'){
+    console.log(data.result.star);
+    // if(data.result.star.change != ''){
+    //   $('[name=starNotificationNum]').empty();
+    //   $('[name=starNotificationNum]').append(data.change);
+    // }
+    $.each(data.result.star.change,function(){
+      console.log(this);
+      $('[name=starNotificationNum]').empty();
+      $('[name=starNotificationNum]').append(this);
+    });
+    $.each(data.result.star.new,function(){
+      // console.log(this.sentTime);
+      // console.log($('[name="starBtn"]'));
+      // console.log($('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]'));
+
+      // $('button[name=starBtn]').find("i").css("color","#FFBB00");
+      $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#FFBB00");
+    });
+    $.each(data.result.star.delete,function(){
+      // console.log(this.sentTime);
+      // console.log("delete");
+
+      $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#AAAAAA");
+    });
+        
+    
+  }
+}
 
 function changeNotification(type,data){
   if(type == 'init'){
@@ -757,17 +905,21 @@ function changeChat(type,data){
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        '<div class="text-left">'+
+          '<div class="text-left incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div >'+this.UID+','+this.staff_name+'</div>'+
           '<div class="d-flex bd-highlight">'+
-            '<div class="p-2 bd-highlight bg-dark text-white rounded-pill">'+
+            '<div class="p-2 bd-highlight bg-dark text-white rounded">'+
             this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
+          '<button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+            '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
+          '</button>'+
           '<small>'+this.sentTime+'</small>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
           '<a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
+          // <i class="fas fa-star"></i>
         '</div>'
       );
     }
@@ -775,16 +927,19 @@ function changeChat(type,data){
       $('[name=chatBox]').append(
         '<div class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
-            '<div class="p-2 bd-highlight bg-secondary text-white rounded-pill">'+
+            '<div class="p-2 bd-highlight bg-secondary text-white rounded">'+
               this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
-          '<small>'+this.sentTime+'</small>'+
+          '<button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+            '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
+          '</button>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
           '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
             this.LikeCount+
           '</a>'+
+          
         '</div>'
       );
     }
