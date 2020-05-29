@@ -26,17 +26,6 @@
 .scroll-to-down i {
   font-weight: 800;
 }
-.circleBase {
-    border-radius: 50%;
-    behavior: url(PIE.htc); /* remove if you don't care about IE8 */
-}
-
-.type2 {
-    width: 25px;
-    height: 25px;
-    background: #ccc;
-    border: 3px solid #000;
-}
 </style>
 <h3 class=" text-center">訊息</h3>
 <div class="card">
@@ -125,6 +114,7 @@
   </div>
 </div>
 </div>
+
 <!-- Basic Modal-->
 <div class="modal fade" id="basicModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
@@ -136,6 +126,24 @@
         </button>
       </div>
       <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Basic Modal-->
+<div class="modal fade" id="loadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">通知</h5>
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">讀取中.....請稍候</div>
       <div class="modal-footer">
         <button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>
       </div>
@@ -155,18 +163,333 @@ $(function(){
 var notify = [];
 window.onfocus = function () { 
   window.isTabActive = true; 
-  $('title').text(titleOrg);
   updateLastReadTime();
 }; 
 
 window.onblur = function () { 
   window.isTabActive = false; 
-}; 
-//focus end
+};
+
+$('[name=btnStarNotification]').parent().show();
+$(function(){
+  $('[name=btnStarNotification]').unbind().on('click',function(){
+    // console.log("in");
+    getStarNotification();
+  });
+});
+
+function getStarNotification(){
+  $('[name=starDropdown]').empty();
+  $.ajax({
+    url:'/chat/star',
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      $('[name=starDropdown]').append('<h6 class="dropdown-header">待辦事項</h6>');
+      $(response).each(function(){
+        // console.log(this.sendtime);
+        $('[name=starDropdown]').append(
+          '<a class="dropdown-item d-flex align-items-center" id="star'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="starNotificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+            '<div class="mr-3">'+
+              '<div class="icon-circle bg-warning">'+
+                '<i class="fas fa-exclamation-triangle text-white"></i>'+
+              '</div>'+
+            '</div>'+
+            '<div>'+
+              '<div class="small text-gray-500">'+
+                this.sentTime+
+              '</div>'+
+              '<span class="font-weight-bold">'+
+                this.detail+
+              '</span>'+
+            '</div>'+
+          '</a>'
+        );
+        // if(this.unread == true){
+        //   // console.log("unread");
+        //   $("#notification"+this.id).css("background-color", "#F0F8FF");
+        // }else{
+        //   $("#notification"+this.id).css("background-color", "#FFFFFF");
+        // }
+      });
+      // $('[name=starDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+    }
+  });
+}
+
+function starNotificationOnclick(chatID,chatName,id,attr){
+
+  tmpTagMsg = $(attr).data('time');
+  getTarget(chatID,chatName);
+}
 
 
-  if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
-var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
+function starOnclick(cliclTime,chatID,content,button){
+  console.log($(button).find("i").css("color"));
+  if($(button).find("i").css("color") == 'rgb(170, 170, 170)'){
+    $(button).find("i").css("color","#FFBB00");
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      }
+    });
+  }else{
+    $(button).find("i").css("color","#AAAAAA");
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            }),_METHOD:'DELETE'},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      }
+    });
+  }
+  
+  console.log(chatID);
+  console.log(content);
+  // $.ajax({
+  //     url:'/chat/star',
+  //     type:'post',
+  //     data:{data:JSON.stringify({
+  //             chatID:chatID,
+  //             time : cliclTime,
+  //             content : content
+  //           })},
+  //     dataType:'json',
+  //     success:function(response){
+  //       console.log(response);
+  //   }
+  // });
+
+
+}
+
+
+
+var tagboolean = false;
+var tmpTag;
+var nowkey;
+var tagPeople = "";
+var tagDepartment = "";
+$('.dropup').hide();
+
+// $('#textinput').on('compositionupdate', function(e) {
+//     console.log(e);
+//     console.log(e.target.value);
+// });
+
+
+
+$('#textinput').keyup(function(event) {
+  // console.log(event.key);
+  if(event.key == "@"||(event.keyCode == 229&&$("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="@")){
+    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+      getAllEmployee();
+    }
+  }else if (event.key == "#"||(event.keyCode == 229&&$("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="#")){
+    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+      getDepartment();
+    }
+  }
+  // $('#textinput').on('compositionupdate', function(e) {
+
+  //   // console.log(e);
+  //   console.log(e.target.value);
+  //   console.log(e.target.value.indexOf("＠"));
+  //   if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
+  //     if(e.target.value.indexOf("＠") >= 0){
+  //       getAllEmployee();
+  //     }else if(e.target.value.indexOf("＃") >= 0){
+  //       getDepartment();
+  //     }
+  //   }
+  //   // if(e.target.value.indexOf("＠") >= 0){
+  //   //   // console.log($("#textinput").getCursorPosition());
+  //   //   // $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
+  //   //   // $("#textinput").replace("＠" ,"@");
+
+      
+  //   // }
+  // });
+  // // console.log("in");
+  tmpSplit=$('#textinput').val().split(" ");
+  $(tmpSplit).each(function(){
+    if(this.indexOf("@") == 0  || this.indexOf("＠") == 0 ){
+      tagboolean = true;
+      tmpTag= this;
+      nowkey = this.substr(1);
+      var choose = null;
+      choose = setTimeout(function(){
+        $('[name=dropdownitemTag]').each(function(){
+          // console.log(tmpTag.substr(1));
+          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
+            $(this).show();
+          }else{
+            $(this).hide();
+          }
+        });
+      },300);
+    }else if (this.indexOf("#") == 0 || this.indexOf("＃") == 0 ){
+      tagboolean = true;
+      tmpTag= this;
+      nowkey = this.substr(1);
+      var choose = null;
+      choose = setTimeout(function(){
+        $('[name=dropdownitemTag]').each(function(){
+          // console.log(tmpTag.substr(1));
+          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
+            $(this).show();
+          }else{
+            $(this).hide();
+          }
+        });
+      },300);
+    }
+  });
+  if(tagboolean == false){
+      $('.dropup').hide();
+  }
+  tagboolean = false;
+});
+
+function addDepartmentTag(tagname,tagID){
+  var textAreaContent = $("#textinput").val();
+  for (i = $("#textinput").getCursorPosition();i >0;i--)
+  {
+    if($("#textinput").val().charAt(i-1) == "#" || $("#textinput").val().charAt(i-1) == "＃"){
+        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"#"+tagname+" "+$("#textinput").val().substr(i));
+        break;
+    }else{
+      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
+    }
+  }
+  $('.dropup').hide();
+  tagDepartment = tagDepartment+tagID+" ";
+  console.log(tagname);
+}
+
+function addTag(tagname,tagID){
+  var textAreaContent = $("#textinput").val();
+  // console.log(textAreaContent);
+  for (i = $("#textinput").getCursorPosition();i >0;i--)
+  {
+    if($("#textinput").val().charAt(i-1) == "@" || $("#textinput").val().charAt(i-1) == "＠"){
+        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
+        break;
+    }else{
+      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
+    }
+  }
+  $('.dropup').hide();
+  tagPeople = tagPeople+tagID+" ";
+  // console.log(tagPeople);
+}
+(function ($, undefined) {
+    $.fn.getCursorPosition = function() {
+        var el = $(this).get(0);
+        var pos = 0;
+        if('selectionStart' in el) {
+            pos = el.selectionStart;
+        } else if('selection' in document) {
+            el.focus();
+            var Sel = document.selection.createRange();
+            var SelLength = document.selection.createRange().text.length;
+            Sel.moveStart('character', -el.value.length);
+            pos = Sel.text.length - SelLength;
+        }
+        return pos;
+    }
+})(jQuery);
+var tmpTagMsg= "";
+
+function notificationOnclick(chatID,chatName,id,attr){
+
+  tmpTagMsg = $(attr).data('time');
+  getTarget(chatID,chatName);
+  // console.log($(attr).data('time'));
+
+  // console.log($('.ml-1[data-senttime="'+$(attr).data('time')+'"]'));
+  $.ajax({
+      url:'/chat/notification/'+id,
+      type:'post',
+      data:{_METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        // getTarget(chatID,chatName);
+    }
+  });
+}
+
+$('[name=bellbtn]').parent().show();
+$(function(){
+  $('[name=bellbtn]').unbind().on('click',function(){
+    // console.log("in");
+    getNotification();
+  });
+});
+  
+function getNotification(){
+  $('[name=bellDropdown]').empty();
+  $.ajax({
+    url:'/chat/notification/',
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
+      $(response).each(function(){
+        // console.log(this.sendtime);
+        $('[name=bellDropdown]').append(
+          '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+            '<div class="mr-3">'+
+              '<div class="icon-circle bg-primary">'+
+                '<i class="fas fa-file-alt text-white"></i>'+
+              '</div>'+
+            '</div>'+
+            '<div>'+
+              '<div class="small text-gray-500">'+
+                this.sendtime+
+              '</div>'+
+              '<span class="font-weight-bold">'+
+                this.detail+
+              '</span>'+
+            '</div>'+
+          '</a>'
+        );
+        if(this.unread == true){
+          // console.log("unread");
+          $("#notification"+this.id).css("background-color", "#F0F8FF");
+        }else{
+          $("#notification"+this.id).css("background-color", "#FFFFFF");
+        }
+      });
+      $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+    }
+  });
+}
+
+// $( "#textinput" ).change(function(){
+//   console.log(this.val());
+//   console.log('.on(change) = ' + $(this).val());
+// });
+
+
+if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
+  var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
     if($(this)[0].scrollHeight-500>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
@@ -188,6 +511,19 @@ queue['chatroom'] = null;
 queue['commentreadtime'] = null;
 var scrollable = false;
 
+queue['search-bar'] = null;
+$('.search-bar').unbind().on('keyup',function(){
+  clearTimeout(queue['search-bar']);
+  queue['search-bar'] = setTimeout(function(){
+    $('.listItem').each(function(){
+      if($(this).find('.listName').val().indexOf($('.searchInput').val())>-1){
+        $(this).show();
+      }else{
+        $(this).hide();
+      }
+    });
+  },300);
+});
 
 var todatDate = null;
 function init(){
@@ -206,6 +542,8 @@ function init(){
             changeChatroom('init',value);
           }else if(key == 'notification'){
             changeNotification('init',response.notification);
+          }else if(key == 'star'){
+            changeStar('init',response.star);
           }
         });
       }
@@ -225,34 +563,36 @@ function routine(){
     success:function(response){
       if(response.status=='success'){
         $.each(response.result,function(key,value){
+          // console.log(key);
           if(key=='class'){
             changeClass('routine',value,response.class);
           }else if(key=='chatroom'){
             changeChatroom('routine',response);
           }else if(key=='chat'){
             changeChat('routine',response);
+            changeStar('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
+          }else if(key == 'star'){
+            // changeStar('routine',value);
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
         });
       }
+      $('#loadModal').modal('hide');
+      console.log(tmpTagMsg);
       if(tmpTagMsg!=""){
         // console.log("in");
-        //console.log(tmpTagMsg);
-        // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
-        // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
-// 
-        
+        // console.log(tmpTagMsg);
         scrollToTag()
       }
       routine();
     }
   });
 }
-
 function scrollToTag(){
+
   //console.log($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length);
   if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
     $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').height());
@@ -260,6 +600,47 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
+function getDepartment(){
+  $('#tagPeople').empty();
+  $.ajax({
+    url:'/chat/department/'+chatID,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      $(response).each(function(){
+        $('#tagPeople').append(
+          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addDepartmentTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
+          '</button>'
+        );
+      });
+    }
+  });
+  $('.dropup').show();
+
+}
+
+
+function getAllEmployee(){
+  $('#tagPeople').empty();
+  $.ajax({
+    url:'/chat/member/'+chatID,
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      $(response).each(function(){
+        $('#tagPeople').append(
+          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
+          '</button>'
+        );
+      });
+    }
+  });
+  $('.dropup').show();
+}
+
+
 function changeReadCount(type,data){
   if(data.result.readCount.new.length!=0 || data.result.readCount.change.length!=0 ||data.result.readCount.delete.length!=0 ){
     var readcountElement = data.readCount.shift();
@@ -275,19 +656,6 @@ function changeReadCount(type,data){
     });
   }
 }
-
-function changeNotification(type,data){
-  if(type == 'init'){
-    // console.log('init');
-    //console.log(data[0].count);
-    $('[name=notificationNum]').empty();
-    $('[name=notificationNum]').append(data[0].count);
-  }else if(type == 'routine'){
-    //console.log('routine');
-    $('[name=notificationNum]').empty();
-    $('[name=notificationNum]').append(data[0].count);
-  }
-}
 // function schedule(){
 //   // searchChatroom();
 //   // searchChat();
@@ -297,7 +665,59 @@ function changeNotification(type,data){
 //   setTimeout(searchChat,1000);
 // }
 // schedule();
+
+function changeStar(type,data){
+  if(type == 'init'){
+    $.each(data.num,function(){
+      // console.log(this.count);
+      $('[name=starNotificationNum]').empty();
+      $('[name=starNotificationNum]').append(this.count);
+    });
+  }else if(type == 'routine'){
+    console.log(data.result.star);
+    // if(data.result.star.change != ''){
+    //   $('[name=starNotificationNum]').empty();
+    //   $('[name=starNotificationNum]').append(data.change);
+    // }
+    $.each(data.result.star.change,function(){
+      console.log(this);
+      $('[name=starNotificationNum]').empty();
+      $('[name=starNotificationNum]').append(this);
+    });
+    $.each(data.result.star.new,function(){
+      // console.log(this.sentTime);
+      // console.log($('[name="starBtn"]'));
+      // console.log($('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]'));
+
+      // $('button[name=starBtn]').find("i").css("color","#FFBB00");
+      $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#FFBB00");
+    });
+    $.each(data.result.star.delete,function(){
+      // console.log(this.sentTime);
+      // console.log("delete");
+
+      $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#AAAAAA");
+    });
+        
+    
+  }
+}
+
+function changeNotification(type,data){
+  if(type == 'init'){
+    // console.log('init');
+    console.log(data[0].count);
+    $('[name=notificationNum]').empty();
+    $('[name=notificationNum]').append(data[0].count);
+  }else if(type == 'routine'){
+    console.log('routine');
+    $('[name=notificationNum]').empty();
+    $('[name=notificationNum]').append(data[0].count);
+  }
+}
+
 var dd = '';
+
 function changeClass(type,data,oldClass){
   function addClass(key,value){
     // console.log(value);
@@ -320,6 +740,7 @@ function changeClass(type,data,oldClass){
     if(value.sum == 0){
       $('#countAllUnread'+value.id).hide();
     }
+
   }
   function deleteClass(key,value){
     $('[name=class'+value.id+']').find('.chat_list').each(function(){
@@ -349,6 +770,7 @@ function changeClass(type,data,oldClass){
         $('#countAllUnread'+this.id).show();
       }
     });
+
     $.each(oldClass,function(){
       $('[name=inbox_chat]').append( $('[name=class'+this.id+']'));
     });
@@ -372,6 +794,8 @@ function changeChatroom(type,data){
       chatName=this.chatName;
     }
     var haveUnread ='';
+
+    
     clearTimeout(notify['Unread']);
     $('title').text(titleOrg);
     if(value.CountUnread!='0'&&value.CountUnread!=null){
@@ -386,9 +810,7 @@ function changeChatroom(type,data){
       '<div class="card" style="height:10vh" name="room'+value.chatID+'">'+
         '<div class="card-body chat_list" name="beSearchRoom" onclick="getTarget('+value.chatID+',\''+encodeURIComponent(chatName)+'\');" data-name="'+value.chatID+'" data-roomName="'+chatName+'">'+
           '<div class="d-flex">'+
-            '<div class="p-2 flex-shrink-1 ">'+
-              '<div class="circleBase type2"></div>'+
-            '</div>'+
+            '<div class="p-2 flex-shrink-1 ">123</div>'+
             '<div class="p-2 flex-grow-1  text-body chatName">'+
               chatName+
               haveUnread +
@@ -457,9 +879,9 @@ function notifyUnread(){
   notify['Unread'] = setTimeout(notifyUnread,1000);
 }
 function changeChat(type,data){
-  // $('[name=chatBox]').html("");
+  
   $('[name=msgSendNow]').remove();
-
+  // $('[name=chatBox]').html("");
   if(chatID==-1){
     return;
   }
@@ -484,17 +906,22 @@ function changeChat(type,data){
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        '<div class="text-left incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
-          '<div class="">'+this.UID+','+this.staff_name+'</div>'+
+
+        '<div class="text-right incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
+          '<div >'+this.UID+','+this.staff_name+'</div>'+
           '<div class="d-flex bd-highlight">'+
             '<div class="p-2 bd-highlight bg-dark text-white rounded">'+
-            this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+            this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#646464;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
+          '<button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+            '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
+          '</button>'+
           '<small>'+this.sentTime+'</small>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-          '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
+          '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
+          // <i class="fas fa-star"></i>
         '</div>'
       );
     }
@@ -506,12 +933,15 @@ function changeChat(type,data){
               this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
-          '<small>'+this.sentTime+'</small>'+
+          '<button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+            '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
+          '</button>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-          '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
+          '<a class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
             this.LikeCount+
           '</a>'+
+          
         '</div>'
       );
     }
@@ -519,6 +949,28 @@ function changeChat(type,data){
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
 }
+
+function addLike(content,senttime,UID,likeID){
+  $.ajax({
+    url:'/chat/likeID',
+    type:'post',
+    data:{data:JSON.stringify({content:content,
+          senttime:senttime,
+          UID:UID,
+          chatID:chatID,
+          likeID:likeID})},
+    dataType:'json'
+  });
+// $.ajax({
+// url:'/chat/addLike',
+// type:'get',
+// data:{content:content,
+//       senttime:senttime,
+//       UID:UID},
+// dataType:'json'
+// })
+}
+
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
     queue['lastReadTime'].abort();
@@ -528,53 +980,7 @@ function updateLastReadTime(){
     data:{chatID:chatID,_METHOD:'PATCH'},
     dataType:'json',
     success:function(response){
-      //routine();
-    }
-  });
-}
-
-$('[name=bellbtn]').parent().show();
-$(function(){
-  $('[name=bellbtn]').click(getNotification);
-});
-  
-function getNotification(){
-  console.log("inget");
-  $('[name=bellDropdown]').empty();
-  $.ajax({
-    url:'/chat/notification/',
-    type:'get',
-    dataType:'json',
-    success:function(response){
-      // console.log(response);
-      $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
-      $(response).each(function(){
-        // console.log(this.sendtime);
-        $('[name=bellDropdown]').append(
-          '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
-            '<div class="mr-3">'+
-              '<div class="icon-circle bg-primary">'+
-                '<i class="fas fa-file-alt text-white"></i>'+
-              '</div>'+
-            '</div>'+
-            '<div>'+
-              '<div class="small text-gray-500">'+
-                this.sendtime+
-              '</div>'+
-              '<span class="font-weight-bold">'+
-                this.detail+
-              '</span>'+
-            '</div>'+
-          '</a>'
-        );
-        if(this.unread == true){
-          // console.log("unread");
-          $("#notification"+this.id).css("background-color", "#F0F8FF");
-        }else{
-          $("#notification"+this.id).css("background-color", "#FFFFFF");
-        }
-      });
-      $('[name=bellDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+//      routine();
     }
   });
 }
@@ -605,6 +1011,7 @@ function getTarget(_chatID,_chatName){
   // scrollable = false;
   // last['count'] = 0;
   // $('[name=chatBox]').html("");
+  start = Date.now();
   if(chatID!=_chatID)
     $('[name=chatBox]').html(
       '<div class="spinner-border text-primary" role="status">'+
@@ -626,9 +1033,21 @@ function getTarget(_chatID,_chatName){
   // schedule();
   // getReadcount();
   
-  // routine();
 }
 
+function expendLimit(){
+  last['limit']+=5;
+}
+
+function resetLimit(){
+  last['limit']=20;
+}
+var last = new Object();
+last['limit'] = 20;
+last['count'] = 0;
+last['countchat'] = 0;
+last['clientClass'] ={};
+last['chatClientInfo'] = {};
 var Msg ="";
 $('.msg_send_btn').on('click',function(){
   if(!$.trim($("#textarea").val()) && $("#textinput").val()!="" && chatID!=-1){
@@ -643,181 +1062,11 @@ $("#textinput").keypress(function(e){
     $('.msg_send_btn').click();
   }
 });
-$("#textinput").on('input',function(e){
-  if(($("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="＠")||($("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="@")){
-    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
-      getAllEmployee();
-    }
-  }else if (($("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="＃")||($("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="#")){
-    if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
-      getDepartment();
-    }
-  }
-  // console.log("in");
-  tmpSplit=$('#textinput').val().split(" ");
-  $(tmpSplit).each(function(){
-    if(this.indexOf("@") == 0  || this.indexOf("＠") == 0 ){
-      tagboolean = true;
-      tmpTag= this;
-      nowkey = this.substr(1);
-      var choose = null;
-      choose = setTimeout(function(){
-        $('[name=dropdownitemTag]').each(function(){
-          // console.log(tmpTag.substr(1));
-          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
-            $(this).show();
-          }else{
-            $(this).hide();
-          }
-        });
-      },300);
-    }else if (this.indexOf("#") == 0 || this.indexOf("＃") == 0 ){
-      tagboolean = true;
-      tmpTag= this;
-      nowkey = this.substr(1);
-      var choose = null;
-      choose = setTimeout(function(){
-        $('[name=dropdownitemTag]').each(function(){
-          // console.log(tmpTag.substr(1));
-          if($(this).data('name').indexOf(tmpTag.substr(1))>-1){
-            $(this).show();
-          }else{
-            $(this).hide();
-          }
-        });
-      },300);
-    }
-  });
-  if(tagboolean == false){
-      $('.dropup').hide();
-  }
-  tagboolean = false;
+$("#textinput").keyup(function(e){
   var code=e.which;
   if((code&&e.shiftKey) &&code==13){
   }
 });
-
-var tagboolean = false;
-var tmpTag;
-var nowkey;
-var tagPeople = "";
-var tagDepartment = "";
-$('.dropup').hide();
-(function ($, undefined) {
-    $.fn.getCursorPosition = function() {
-        var el = $(this).get(0);
-        var pos = 0;
-        if('selectionStart' in el) {
-            pos = el.selectionStart;
-        } else if('selection' in document) {
-            el.focus();
-            var Sel = document.selection.createRange();
-            var SelLength = document.selection.createRange().text.length;
-            Sel.moveStart('character', -el.value.length);
-            pos = Sel.text.length - SelLength;
-        }
-        return pos;
-    }
-})(jQuery);
-var tmpTagMsg= "";
-function notificationOnclick(chatID,chatName,id,attr){
-
-  if($("#notification"+id).css("background-color")=="rgb(240, 248, 255)"){
-    $('[name=notificationNum]').text(parseInt($('[name=notificationNum]').text())-1);
-  }
-  tmpTagMsg = $(attr).data('time');
-  getTarget(chatID,chatName);
-  // console.log($(attr).data('time'));
-
-  // console.log($('.ml-1[data-senttime="'+$(attr).data('time')+'"]'));
-  $.ajax({
-      url:'/chat/notification/'+id,
-      type:'post',
-      data:{_METHOD:'PATCH'},
-      dataType:'json',
-      success:function(response){
-        // getTarget(chatID,chatName);
-    }
-  });
-}
-function addTag(tagname,tagID){
-  var textAreaContent = $("#textinput").val();
-  // console.log(textAreaContent);
-  for (i = $("#textinput").getCursorPosition();i >0;i--)
-  {
-    if($("#textinput").val().charAt(i-1) == "@" || $("#textinput").val().charAt(i-1) == "＠"){
-        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"@"+tagname+" "+$("#textinput").val().substr(i));
-        break;
-    }else{
-      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
-    }
-  }
-  $('.dropup').hide();
-  if(tagPeople.indexOf(tagID)==-1)
-    tagPeople = tagPeople+tagID+" ";
-  // console.log(tagPeople);
-}
-function addDepartmentTag(tagname,tagID){
-  var textAreaContent = $("#textinput").val();
-  for (i = $("#textinput").getCursorPosition();i >0;i--)
-  {
-    if($("#textinput").val().charAt(i-1) == "#" || $("#textinput").val().charAt(i-1) == "＃"){
-        $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+"#"+tagname+" "+$("#textinput").val().substr(i));
-        break;
-    }else{
-      $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
-    }
-  }
-  $('.dropup').hide();
-  if(tagDepartment.indexOf(tagID)==-1)
-    tagDepartment = tagDepartment+tagID+" ";
-  //console.log(tagname);
-}
-function getAllEmployee(){
-  $('#tagPeople').empty();
-  $.ajax({
-    url:'/chat/member/'+chatID,
-    type:'get',
-    dataType:'json',
-    success:function(response){
-      //console.log(response);
-      $(response).each(function(){
-        if(tagPeople.indexOf(this.id)>-1&&$("#textinput").val().indexOf('@'+this.name)>-1){
-          return;
-        }
-        tagPeople = tagPeople.replace(this.id+' ','');
-        $('#tagPeople').append(
-          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
-          '</button>'
-        );
-      });
-    }
-  });
-  $('.dropup').show();
-}
-function getDepartment(){
-  $('#tagPeople').empty();
-  $.ajax({
-    url:'/chat/department/'+chatID,
-    type:'get',
-    dataType:'json',
-    success:function(response){
-      //console.log(response);
-      $(response).each(function(){
-        if(tagDepartment.indexOf(this.id)>-1&&$("#textinput").val().indexOf('#'+this.name)>-1){
-          return;
-        }
-        tagDepartment = tagDepartment.replace(this.id+' ','');
-        $('#tagPeople').append(
-          '<button class="dropdown-item" name="dropdownitemTag" data-id='+this.id+ ' data-name= '+this.name+' href="#" onclick="addDepartmentTag(\''+this.name+'\',\''+this.id+'\');">'+this.name+"   "+this.id+
-          '</button>'
-        );
-      });
-    }
-  });
-  $('.dropup').show();
-
-}
 function uploadFile(button){
   $('#basicModal').modal('hide');
   $('[name=inputFile]').val('');
@@ -875,7 +1124,7 @@ function tagNotification(type,tagPerson,chatName,tmpTime){
             })},
       dataType:'json',
       success:function(response){
-        //console.log(response);
+        console.log(response);
       } 
     });
   }else if(type == "department"){
@@ -887,7 +1136,7 @@ function tagNotification(type,tagPerson,chatName,tmpTime){
        
         $(response).each(function(){
           tagNotification("person",this.id,chatName,tmpTime)
-          //console.log(this.id);
+          console.log(this.id);
         });
       } 
     });
@@ -911,6 +1160,7 @@ function tagNotification(type,tagPerson,chatName,tmpTime){
   }
   
 }
+
 function beforeTag(tmpSplit,tmpFullTime){
   
   // console.log(tmpSplit);
@@ -928,10 +1178,10 @@ function beforeTag(tmpSplit,tmpFullTime){
             success:function(response){
             // getTarget(chatID,chatName);
               $(tmpSplit).each(function(){
-                //console.log(this);
+                console.log(this);
                 if("#"+response[0].department_name == this)
                 {
-                  //console.log("success");
+                  console.log("success");
                   tagNotification("department",tagItem,chatName,tmpFullTime);
                 }
               });
@@ -968,8 +1218,13 @@ function beforeTag(tmpSplit,tmpFullTime){
   tagDepartment="";
   tagPeople = "";
 }
+
 function sendMsg(){
+  // var tmpMsg;
+  // console.log(tagDepartment,tagPeople);
+  
   Msg=$("#textinput").val();
+  console.log("append");
   $('[name=chatBox]').append(
     '<div class="text-right outgoing_msg" name="msgSendNow" data-sentTime="">'+
       '<div class="d-flex flex-row-reverse bd-highlight">'+
@@ -979,7 +1234,6 @@ function sendMsg(){
       '</div>'+
     '</div>'
   );
-
   if(!scrollable){
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   }
@@ -1000,8 +1254,14 @@ function sendMsg(){
         beforeTag(tmpSplit,tmpFullTime);
     }
   });
+  // console.log(tmpFullTime);
+
+  
+  
+  
+  
 }
-function sendCemmene(msgsender,msgtime,data){
+function sendComment(msgsender,msgtime,data){
   Msg=$("#commentinput").val();
   Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
@@ -1070,7 +1330,7 @@ function getFile(relatedData){
 }
 function insertIssue(){
    $('#basicModal .modal-title').text('選擇分類');
-   //console.log(chatID);
+   console.log(chatID);
    $('#basicModal .modal-body').html('<h6 class="card-subtitle mb-2 text-muted listBox">');
    $.ajax({
     url:'/chat/class/',
@@ -1172,14 +1432,14 @@ function addIssue(){
       });
       $('[name=buttonDeleteClass]').on('click',function(e){
         var classId = $(this).data('id');
-        //console.log(classId);
+        console.log(classId);
         $.ajax({
           url:'/chat/class/'+classId+'/',
           type:'POST',
           data:{_METHOD:'delete'},
           dataType:'json',
           success:function(response){
-            //console.log(response);
+            console.log(response);
           } 
         });
         addIssue();
@@ -1196,7 +1456,7 @@ function addIssue(){
             })},
       dataType:'json',
       success:function(response){
-        //console.log(response);
+        console.log(response);
       } 
     });
      $('#basicModal').modal('hide');
@@ -1345,7 +1605,7 @@ function getCommentContent(data,readlist){
     data:{data:JSON.stringify(data)},
     dataType:'json',
     success:function(response){
-      //console.log(response)
+      console.log(response)
       $('[name=comment]').html("");
       $(response).each(function(){
         var count = 0;
@@ -1353,7 +1613,7 @@ function getCommentContent(data,readlist){
           if(readlist[i].lasttime > this.sentTime)count++;
         }
         $('[name=comment]').append(
-            '<div class="incoming_msg">'+
+            '<div class="incoming_msg" "data-sentTime="'+this.fullsentTime+'">'+
                 '<div class="">'+this.sender+'</div>'+
                 '<div class="received_msg">'+
                   '<div class="received_withd_msg">'+
@@ -1585,7 +1845,6 @@ function Chatroom(type){
     }
   });
 }
-
 $("#textinput").on('paste', function (e) {
     var clipboardData = e.originalEvent.clipboardData;
     var items = clipboardData.items;
@@ -1617,7 +1876,7 @@ $('#searchChatroomInput').on('keyup',function(){
   }
   searchBar = setTimeout(function(){
     $('.chat_list').each(function(){
-      if($(this).find('h5').text().indexOf($('#searchChatroomInput').val())>-1){
+      if($(this).find('.chatName').text().indexOf($('#searchChatroomInput').val())>-1){
         $(this).parent().show();
       }else{
         $(this).parent().hide();

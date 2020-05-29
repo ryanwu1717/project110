@@ -155,6 +155,12 @@
           <!-- Nav Item - Add -->
          
           <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/oldcheckinlist">
+              <i class="fas fa-fw fa-table"></i>
+              <span>舊打卡資訊</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/checkinlist">
               <i class="fas fa-fw fa-table"></i>
               <span>打卡資訊</span>
@@ -342,12 +348,59 @@
               <i class="fa fa-bell" aria-hidden="true"></i>
               
             </button> -->
-            <li class="nav-item dropdown no-arrow mx-1 " style="display:none;" name="bellbtn">
-              <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+            <li class="nav-item dropdown no-arrow mx-1 " style="display:none;">
+              <a class="nav-link dropdown-toggle" href="#" id="starDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="btnStarNotification">
+                <i class="fas fa-star fa-fw"></i>
+                <span class="badge badge-danger badge-counter" name="starNotificationNum">3+</span>
+              </a>
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in overflow-auto" aria-labelledby="starDropdown" name="starDropdown" style="height:50vh">
+                <h6 class="dropdown-header">
+                  通知中心
+                </h6>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-primary">
+                      <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">December 12, 2019</div>
+                    <span class="font-weight-bold">A new monthly report is ready to download!</span>
+                  </div>
+                </a>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-success">
+                      <i class="fas fa-donate text-white"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">December 7, 2019</div>
+                    $290.29 has been deposited into your account!
+                  </div>
+                </a>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-warning">
+                      <i class="fas fa-exclamation-triangle text-white"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">December 2, 2019</div>
+                    Spending Alert: We've noticed unusually high spending for your account.
+                  </div>
+                </a>
+                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+              </div>
+            </li>
+
+            <li class="nav-item dropdown no-arrow mx-1 " style="display:none;">
+              <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="bellbtn">
                 <i class="fas fa-bell fa-fw"></i>
                 <span class="badge badge-danger badge-counter" name="notificationNum">3+</span>
               </a>
-              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown" name="bellDropdown">
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in overflow-auto" aria-labelledby="alertsDropdown" name="bellDropdown" style="height:50vh">
                 <h6 class="dropdown-header">
                   通知中心
                 </h6>
