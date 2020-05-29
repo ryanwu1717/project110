@@ -22,7 +22,7 @@ $container['db'] = function ($container) {
 	$dsn = "pgsql:host=".$dbhost.";port=".$dbport.";dbname=".$dbname;
 	try
 	{
-	    
+
 	    $conn = new \PDO($dsn,$dbuser,$dbpasswd);
 	    $conn->exec("SET CHARACTER SET utf8");
 	    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -76,36 +76,36 @@ class ViewMiddleware
 }
 $app->group('', function () use ($app) {
 	$app->group('', function () use ($app) {
-		$app->get('/', function (Request $request, Response $response, array $args) {		
+		$app->get('/', function (Request $request, Response $response, array $args) {
 			return $response->withRedirect('/home', 301);
 		});
-		$app->get('/home', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');	
+		$app->get('/home', function (Request $request, Response $response, array $args) {
+			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/index.php', $viewParam);
 		});
-		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');	
+		$app->get('/checkin', function (Request $request, Response $response, array $args) {
+			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/checkin.php', $viewParam);
 		});
-		$app->get('/issue', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');	
+		$app->get('/issue', function (Request $request, Response $response, array $args) {
+			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/issue.php', $viewParam);
 		});
-		
-		$app->get('/test', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');		
+
+		$app->get('/test', function (Request $request, Response $response, array $args) {
+			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/Joomla/index.php', $viewParam);
 		});
-		// $app->get('/table', function (Request $request, Response $response, array $args) {	
-		// 	$viewParam = $request->getAttribute('viewParam');		
+		// $app->get('/table', function (Request $request, Response $response, array $args) {
+		// 	$viewParam = $request->getAttribute('viewParam');
 		// 	return $this->view->render($response, '/tables.php', $viewParam);
 		// });
-		// $app->get('/modify', function (Request $request, Response $response, array $args) {	
-		// 	$viewParam = $request->getAttribute('viewParam');		
+		// $app->get('/modify', function (Request $request, Response $response, array $args) {
+		// 	$viewParam = $request->getAttribute('viewParam');
 		// 	return $this->view->render($response, '/register.php', $viewParam);
 		// });
 	})->add('ViewMiddleware');
-	$app->get('/login', function (Request $request, Response $response, array $args) {	
+	$app->get('/login', function (Request $request, Response $response, array $args) {
 		session_destroy();
 		session_start();
 		return $this->view->render($response, '/login.php', []);
@@ -113,17 +113,17 @@ $app->group('', function () use ($app) {
 });
 
 $app->group('/user', function () use ($app) {
-	$app->post('/login', function (Request $request, Response $response, array $args) {		
+	$app->post('/login', function (Request $request, Response $response, array $args) {
 	    $user = new User($this->db);
 	    $result = $user->login();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 		return $response;
 	});
-	$app->get('/logout', function (Request $request, Response $response, array $args) {		
+	$app->get('/logout', function (Request $request, Response $response, array $args) {
 		return $response;
  	});
-	$app->patch('/password', function (Request $request, Response $response, array $args) {		
+	$app->patch('/password', function (Request $request, Response $response, array $args) {
 	    $user = new User($this->db);
 	    $result = $user->changePassword();
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -133,49 +133,49 @@ $app->group('/user', function () use ($app) {
 });
 
 $app->group('/staff', function () use ($app) {
-	$app->get('/name/{id}', function (Request $request, Response $response, array $args) {		
+	$app->get('/name/{id}', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $result = $staff->getStaffName($args['id']);	    
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;	    
-	});
-
-	$app->get('/department/get', function (Request $request, Response $response, array $args) {		
-	    $staff = new Staff($this->db);
-	    $result = $staff->getDepartment();	    
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;	    
-	});
-
-	$app->get('/position/get', function (Request $request, Response $response, array $args) {		
-	    $staff = new Staff($this->db);
-	    $result = $staff->getPosition();	    
+	    $result = $staff->getStaffName($args['id']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
 	});
 
-	$app->get('/gender/get', function (Request $request, Response $response, array $args) {		
+	$app->get('/department/get', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $result = $staff->getGender();	    
+	    $result = $staff->getDepartment();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
-	    return $response;	    
+	    return $response;
+	});
+
+	$app->get('/position/get', function (Request $request, Response $response, array $args) {
+	    $staff = new Staff($this->db);
+	    $result = $staff->getPosition();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+
+	});
+
+	$app->get('/gender/get', function (Request $request, Response $response, array $args) {
+	    $staff = new Staff($this->db);
+	    $result = $staff->getGender();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
 	});
 
 	$app->get('/marriage/get', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $result = $staff->getMarriage();	    
+	    $result = $staff->getMarriage();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
 
-	$app->get('/insuredcompany/get', function (Request $request, Response $response, array $args) {		
+	$app->get('/insuredcompany/get', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
 	    $result = $staff->getInsuredcompany();
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -189,7 +189,7 @@ $app->group('/staff', function () use ($app) {
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
 
 	$app->get('/staffType/get', function (Request $request, Response $response, array $args) {
@@ -198,7 +198,7 @@ $app->group('/staff', function () use ($app) {
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
 
 	$app->get('/educationCondition/get', function (Request $request, Response $response, array $args) {
@@ -207,7 +207,7 @@ $app->group('/staff', function () use ($app) {
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
 
 	$app->get('/staffNum/get', function (Request $request, Response $response, array $args) {
@@ -219,7 +219,7 @@ $app->group('/staff', function () use ($app) {
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 		//echo $response['num'];
-	    return $response;  
+	    return $response;
 	});
 
 	$app->post('/checkRegister/post', function (Request $request, Response $response, array $args) {
@@ -228,64 +228,64 @@ $app->group('/staff', function () use ($app) {
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 		// echo $response;
-	    return $response;   
+	    return $response;
 	});
 
 	$app->post('/register/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $ack = $staff->register();  
+	    $ack = $staff->register();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
-	    return $response;   
+	    return $response;
 
 	});
 
 	$app->post('/modify/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $ack = $staff->modify();  
+	    $ack = $staff->modify();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
-	    return $response;   
+	    return $response;
 	});
 	$app->post('/tmpmodify/post', function (Request $request, Response $response, array $args) {
 	    $staff = new Staff($this->db);
-	    $ack = $staff->tmpmodify();  
+	    $ack = $staff->tmpmodify();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
-	    return $response;   
+	    return $response;
 	});
 });
 $app->group('/table', function () use ($app) {
 	$app->get('/getTable', function (Request $request, Response $response, array $args) {
-		
+
 	    $table = new Table($this->db);
 	    $ack = $table->getTable();
-	    
+
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 	    return $response;
-	    
+
 	});
 	$app->get('/allInfo/{staff_id}', function (Request $request, Response $response, array $args) {
-		
+
 	    $staff = new Table($this->db);
-	    $ack = $staff->allInfo($args['staff_id']);   
+	    $ack = $staff->allInfo($args['staff_id']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 
-	    
+
 	    return $response;
-	    
+
 	});
 
 	$app->get('/profile/{staff_id}', function (Request $request, Response $response, array $args) {
-		
+
 	    $staff = new Table($this->db);
-	    $result = $staff->getProfile($args['staff_id']);  
+	    $result = $staff->getProfile($args['staff_id']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
 
-	    return $response; 
+	    return $response;
 	});
 });
 
@@ -514,43 +514,43 @@ $app->group('/chat', function () use ($app) {
 	$app->group('/class', function () use ($app) {
 		$app->get('/', function (Request $request, Response $response, array $args) {
 		    $class = new Chat($this->db);
-		    $result = $class->getClass();   
+		    $result = $class->getClass();
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
-		    
+
 		});
 		$app->get('/{classId}/', function (Request $request, Response $response, array $args) {
 		    $class = new Chat($this->db);
-		    $result = $class->getClass($args['classId']);   
+		    $result = $class->getClass($args['classId']);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
-		    
+
 		});
 		$app->delete('/{classId}/', function (Request $request, Response $response, array $args) {
 		    $class = new Chat($this->db);
-		    $result = $class->deleteClass($args['classId']);   
+		    $result = $class->deleteClass($args['classId']);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
-		    
+
 		});
 		$app->patch('/{classId}/{chatID}/', function (Request $request, Response $response, array $args) {
 		    $class = new Chat($this->db);
-		    $result = $class->insertClass($args['classId'],$args['chatID']);   
+		    $result = $class->insertClass($args['classId'],$args['chatID']);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
-		    
+
 		});
 		$app->post('/', function (Request $request, Response $response, array $args) {
 		    $class = new Chat($this->db);
-		    $result = $class->addClass();   
+		    $result = $class->addClass();
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
-		    
+
 		});
 	});
 
@@ -571,11 +571,11 @@ $app->group('/chat', function () use ($app) {
 		});
 		$app->post('/tag', function (Request $request, Response $response, array $args) {
 		    $notification = new Chat($this->db);
-		    $result = $notification->tag();   
+		    $result = $notification->tag();
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
-		    
+
 		});
 	});
 })->add('ViewMiddleware');
@@ -583,29 +583,29 @@ $app->group('/chat', function () use ($app) {
 $app->group('/work', function () use ($app) {
 	$app->get('/check/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
-	    $result = $staff->check($args['todayDate']);   
+	    $result = $staff->check($args['todayDate']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
 	$app->get('/checkAll/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
-	    $result = $staff->checkALL($args['todayDate']);   
+	    $result = $staff->checkALL($args['todayDate']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
 	$app->post('/checkin', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);
-	    $result = $staff->checkinToday();   
+	    $result = $staff->checkinToday();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
-	    
+
 	});
-	
+
 });
 
 $app->run();

@@ -1,16 +1,16 @@
 <?php
 use Slim\Http\UploadedFile;
 	Class User{
-		var $result;   
+		var $result;
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
 		}
 		function login()
-		{ 
+		{
 			$_POST=json_decode($_POST['data'],true);
 		   	$loginStaffId = $_POST['loginStaffId'];
-			$loginPassword = $_POST['loginPassword'];		 	
+			$loginPassword = $_POST['loginPassword'];
 			$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false and \"seniority_workStatus\" =1;";
 			$sth = $this->conn->prepare($sql);
 		   	$sth->bindParam(':staff_id',$loginStaffId);
@@ -20,7 +20,7 @@ use Slim\Http\UploadedFile;
 			if(count($row)==1){
 				$_SESSION['id']=$loginStaffId;
 				$ack = array(
-					'status' => 'success', 
+					'status' => 'success',
 				);
 			}else{
 				$ack = array(
@@ -28,9 +28,9 @@ use Slim\Http\UploadedFile;
 				);
 			}
 			return $ack;
-		} 
+		}
 
-		function getName(){ 
+		function getName(){
 			$staff_id = $_SESSION['id'];
 			$sql ="SELECT staff_name FROM staff.staff WHERE staff_id = :staff_id;";
 			$sth = $this->conn->prepare($sql);
@@ -38,7 +38,7 @@ use Slim\Http\UploadedFile;
 			$sth->execute();
 			$row = $sth->fetchAll();
 			return $row;
-		} 
+		}
 		function changePassword(){
 			$_POST=json_decode($_POST['data'],true);
 			if($_POST['inputPasswordNew']!=$_POST['inputPasswordNewCheck']){
@@ -46,7 +46,7 @@ use Slim\Http\UploadedFile;
 					'status' => 'failed',
 					'input' => 'inputPasswordNewCheck',
 					'message' => '密碼不一致'
-				);	
+				);
 			}else{
 				$staff = new Staff($this->conn);
 				if($staff -> check("密碼",$_POST['inputPasswordNew'])!='success'){
@@ -54,7 +54,7 @@ use Slim\Http\UploadedFile;
 						'status' => 'failed',
 						'input' => 'inputPasswordNew',
 						'message' => '密碼格式不符'
-					);	
+					);
 				}else{
 					$sql ="SELECT * FROM staff.staff WHERE staff_id = :staff_id and staff_password = :staff_password and staff_delete=false;";
 					$sth = $this->conn->prepare($sql);
@@ -67,7 +67,7 @@ use Slim\Http\UploadedFile;
 							'status' => 'failed',
 							'input' => 'inputPasswordOrg',
 							'message' => '原密碼錯誤'
-						);	
+						);
 					}else{
 						$sql ="UPDATE staff.staff SET staff_password = :staff_password WHERE staff_id = :staff_id;";
 						$sth = $this->conn->prepare($sql);
@@ -76,7 +76,7 @@ use Slim\Http\UploadedFile;
 						$sth->execute();
 						$ack = array(
 							'status' => 'success'
-						);		
+						);
 					}
 				}
 			}
@@ -84,26 +84,26 @@ use Slim\Http\UploadedFile;
 		}
 	}
 
-	
+
 // $app->group('/notification',function () use ($app){
 // 	$app->post('/tag', function (Request $request, Response $response, array $args) {
 // 	    $notification = new Notification($this->db);
-// 	    $result = $notification->tag();   
+// 	    $result = $notification->tag();
 // 	    $response = $response->withHeader('Content-type', 'application/json' );
 // 		$response = $response->withJson($result);
 // 	    return $response;
-	    
+
 // 	});
 // });
-// $app->get('/name/{id}}', function (Request $request, Response $response, array $args) {		
+// $app->get('/name/{id}}', function (Request $request, Response $response, array $args) {
 	//     $staff = new Staff($this->db);
-	//     $result = $staff->getDepartment();	    
+	//     $result = $staff->getDepartment();
 	//     $response = $response->withHeader('Content-type', 'application/json' );
 	// 	$response = $response->withJson($result);
-	//     return $response;	    
+	//     return $response;
 	// });
 	Class Staff{
-		var $result;   
+		var $result;
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
@@ -111,91 +111,91 @@ use Slim\Http\UploadedFile;
 		function getStaffName($id){
 			$sql ='SELECT staff_name
 					FROM staff.staff
-					WHERE staff_id = :staff_id;';	
+					WHERE staff_id = :staff_id;';
 			$statement = $this->conn->prepare($sql);
 			$statement->bindParam(':staff_id',$id);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
 		}
 		function getDepartment()
-		{  	
-			$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
+		{
+			$sql ='SELECT * from staff_information.department ORDER BY department_id;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
 		}
 
 		function getPosition()
-		{ 			 	
-			$sql ='SELECT * from staff_information.position ORDER BY position_id;';	
+		{
+			$sql ='SELECT * from staff_information.position ORDER BY position_id;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getGender()
-		{ 
-			$sql ='SELECT * from staff_information.gender;';	
+		{
+			$sql ='SELECT * from staff_information.gender;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getMarriage()
-		{ 
-			$sql ='SELECT * from staff_information.marriage;';	
+		{
+			$sql ='SELECT * from staff_information.marriage;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getInsuredcompany()
-		{ 	 	
-			$sql ='SELECT * from staff_salary.insuredcompany;';	
+		{
+			$sql ='SELECT * from staff_salary.insuredcompany;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getWorkStatus()
-		{  	
-			$sql ='SELECT * from staff_salary."workStatus";';	
+		{
+			$sql ='SELECT * from staff_salary."workStatus";';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getStaffType()
-		{ 	 	
-			$sql ='SELECT * from staff_salary."staffType";';	
+		{
+			$sql ='SELECT * from staff_salary."staffType";';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getEducationCondition()
-		{ 	
-			$sql ='SELECT * from staff_education.condition;';	
+		{
+			$sql ='SELECT * from staff_education.condition;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
-		} 
+		}
 
 		function getStaffNum()
 		{
-			$sql ='SELECT COUNT (*) as num FROM staff.staff;';	
+			$sql ='SELECT COUNT (*) as num FROM staff.staff;';
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
-			$row = $statement->fetchColumn(0);			
+			$row = $statement->fetchColumn(0);
 			return $row;
 		}
 
@@ -207,9 +207,9 @@ use Slim\Http\UploadedFile;
               return $this->paddingLeft("0".$str,$strLenght);
         }
         function staffId($staff_department,$staff_position)
-        {   
-            $dp = $staff_department.$staff_position.'%';         
-            $sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';    
+        {
+            $dp = $staff_department.$staff_position.'%';
+            $sql ='SELECT COUNT (*) as num FROM staff.staff WHERE staff_id LIKE :dp;';
             $statement = $this->conn->prepare($sql);
             $statement->bindParam(':dp',$dp);
             $statement->execute();
@@ -218,7 +218,7 @@ use Slim\Http\UploadedFile;
             $row = (string)$row;
             $newId = $this->paddingLeft($row,4);
             $newId = $staff_department.$staff_position.$newId;
-            // echo $newId;    
+            // echo $newId;
             return $newId;
         }
 
@@ -236,26 +236,26 @@ use Slim\Http\UploadedFile;
        			return $field."不得為空";
        		}
        		$inputLen = strlen($input);
-       		
+
        		//A. 檢查是不是數字
-	        $standard_A = "/^([0-9]+)$/"; 
+	        $standard_A = "/^([0-9]+)$/";
        		//A. 檢查是不是分機符號
-	        $standard_A_1 = "/^([0-9]+)*(#([0-9]+))?$/"; 
+	        $standard_A_1 = "/^([0-9]+)*(#([0-9]+))?$/";
        		//A. 檢查是不是就學期間
-	        $standard_A_2 = "/^([0-9]{2,3}-[0-9]{2,3})$/"; 
+	        $standard_A_2 = "/^([0-9]{2,3}-[0-9]{2,3})$/";
 	        //B. 檢查是不是小寫英文
 	        $standard_B = "/^([a-z]+)$/";
 	        //C. 檢查是不是大寫英文
 	        $standard_C = "/^([A-Z]+)$/";
 	        //D. 檢查是不是全為英文字串
-	        $standard_D = "/^([A-Za-z]+)$/"; 
+	        $standard_D = "/^([A-Za-z]+)$/";
 	        //E. 檢查是不是英數混和字串
 	        $standard_E = "/^(?=.*\d)(?=.*[a-zA-Z]).{8,30}$/";
 	        //F. 檢查是不是中文
-	        $standard_F = "/^([\x7f-\xff]+)$/"; 
+	        $standard_F = "/^([\x7f-\xff]+)$/";
 	        //G. 檢查是不是電子信箱格式
-	        //$standard_G_1 這組正則允許 "stanley.543-ok@myweb.com" 
-	        //但 $standard_G_2 僅允許 "stanley543ok@myweb.com" ，字串內不包含 .(點)和 -(中線) 
+	        //$standard_G_1 這組正則允許 "stanley.543-ok@myweb.com"
+	        //但 $standard_G_2 僅允許 "stanley543ok@myweb.com" ，字串內不包含 .(點)和 -(中線)
 	        $standard_G_1 = "/^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/";
 	        $standard_G_2 = "/^[\w]*@[\w-]+(\.[\w-]+)+$/" ;
 	        //下面則是個簡單的範例，大家可以嘗試看看
@@ -269,7 +269,7 @@ use Slim\Http\UploadedFile;
        				// echo $name_len;
        				if(($this -> checkString($input, $standard_F)) == 0){
 						return $field."不符合格式";
-						
+
 					}
 					if (($name_len > 4) or ($name_len < 2 )){
 						return  $field."請輸入2~4字元";
@@ -329,7 +329,7 @@ use Slim\Http\UploadedFile;
        				$name_len = mb_strlen($input);
        				if(($this -> checkString($input, $standard_F)) == 0){
 						return $field."不符合格式";
-						
+
 					}
 					// else if (($name_len > 4) or ($name_len < 2 )){
 					// 	return $field."請輸入2~4個字";
@@ -395,7 +395,7 @@ use Slim\Http\UploadedFile;
        			default:
        				return "success";
        				break;
-       		} 	
+       		}
        	}
 		public function checkRegister(){
 
@@ -436,12 +436,12 @@ use Slim\Http\UploadedFile;
 			if(empty($_POST['staff_id']))
 				$ack = array(
 					'status' => true,
-					'content' => '確認新增此帳號'	
+					'content' => '確認新增此帳號'
 				);
 			else
 				$ack = array(
 					'status' => true,
-					'content' => '確認修改此帳號'	
+					'content' => '確認修改此帳號'
 				);
 			foreach($check as $ch){
 				// echo $ch;
@@ -455,7 +455,7 @@ use Slim\Http\UploadedFile;
 					}
 				}
 			}
-			return $ack;	
+			return $ack;
 		}
 
 		function register(){
@@ -470,7 +470,7 @@ use Slim\Http\UploadedFile;
 													  "contactPerson_relation","contactPerson_more",
 													  "education_time","education_type","education_school",
 													  "education_department","education_status","staff_password"
-													 )  
+													 )
 							VALUES (:staff_id, :staff_department, :staff_position, :staff_name,
 							 		:staff_birthday, :staff_gender, :staff_marriage, :staff_TWid,
 							 		:contact_homeNumber, :contact_phoneNumber, :contact_companyNumber,
@@ -526,12 +526,12 @@ use Slim\Http\UploadedFile;
 
 				$sth->execute();
 				$ack = array(
-					'status' => 'success', 
+					'status' => 'success',
 					'staff_id' => $staff_id
 				);
 			}catch(PDOException $e){
 				$ack = array(
-					'status' => 'failed', 
+					'status' => 'failed',
 				);
 			}
 			return $ack;
@@ -546,7 +546,7 @@ use Slim\Http\UploadedFile;
 								 "contact_companyNumber" = :contact_companyNumber, "contact_homeAddress" = :contact_homeAddress,
 								 "contact_contactAddress" = :contact_contactAddress,
 								 "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatus"= :seniority_workStatus,
-								 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate, 
+								 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate,
 								 "seniority_leaveDate" = :seniority_leaveDate,
 								 "contactPerson_name" = :contactPerson_name, "contactPerson_homeNumber" = :contactPerson_homeNumber,
 								 "contactPerson_phone" = :contactPerson_phone, "contactPerson_relation" = :contactPerson_relation,
@@ -604,11 +604,11 @@ use Slim\Http\UploadedFile;
 
 				$sth->execute();
 				$ack = array(
-					'status' => 'success', 
+					'status' => 'success',
 				);
 			}catch(PDOException $e){
 				$ack = array(
-					'status' => 'failed', 
+					'status' => 'failed',
 					'message'=>$e
 				);
 			}
@@ -624,7 +624,7 @@ use Slim\Http\UploadedFile;
                                  "contact_companyNumber" = :contact_companyNumber, "contact_homeAddress" = :contact_homeAddress,
                                  "contact_contactAddress" = :contact_contactAddress,
                                  "seniority_insuredCompany"= :seniority_insuredCompany, "seniority_workStatus"= :seniority_workStatus,
-                                 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate, 
+                                 "seniority_staffType"= :seniority_staffType, "seniority_endDate"= :seniority_endDate,
                                  "seniority_leaveDate" = :seniority_leaveDate,
                                  "contactPerson_name" = :contactPerson_name, "contactPerson_homeNumber" = :contactPerson_homeNumber,
                                  "contactPerson_phone" = :contactPerson_phone, "contactPerson_relation" = :contactPerson_relation,
@@ -788,11 +788,11 @@ use Slim\Http\UploadedFile;
 
                 $sth->execute();
                 $ack = array(
-                    'status' => 'success', 
+                    'status' => 'success',
                 );
             }catch(PDOException $e){
                 $ack = array(
-                    'status' => 'failed', 
+                    'status' => 'failed',
                     'message'=>$e
                 );
             }
@@ -801,7 +801,7 @@ use Slim\Http\UploadedFile;
 	}
 
 	Class Table{
-		var $result; 
+		var $result;
 		var $conn;
 		function __construct($db){
 			$this->conn = $db;
@@ -817,7 +817,7 @@ use Slim\Http\UploadedFile;
 			$statement = $this->conn->prepare($sql);
 			$statement->execute();
 			$row = $statement->fetchAll();
-			
+
 			return $row;
 		}
 		function allInfo($staff_id){
@@ -906,7 +906,7 @@ use Slim\Http\UploadedFile;
 					WHERE id=:id;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':id',$id,PDO::PARAM_STR);
-			$sth->execute();	
+			$sth->execute();
 			// $row = $sth->fetchAll();
 			$ack = array(
 				'status'=>'successs',
@@ -920,7 +920,7 @@ use Slim\Http\UploadedFile;
 					WHERE unread = true AND "UID"=:UID ;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-			$sth->execute();	
+			$sth->execute();
 			$row = $sth->fetchAll();
 			return $row;
 		}
@@ -935,7 +935,7 @@ use Slim\Http\UploadedFile;
 					order by "sendtime"desc;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-			$sth->execute();	
+			$sth->execute();
 			$row = $sth->fetchAll();
 			return $row;
 		}
@@ -956,11 +956,11 @@ use Slim\Http\UploadedFile;
 				);
 			}catch(PDOException $e){
 				$ack = array(
-					'status' => 'failed', 
+					'status' => 'failed',
 					'message'=>$e
 				);
 			}
-			
+
 			return $ack;
 
 		}
@@ -1029,7 +1029,7 @@ use Slim\Http\UploadedFile;
                 $now = new DateTime( 'NOW' );
 
 			}
-			
+
 			$ack=array(
 				'status'=>'success',
 				'notification'=>$notification,
@@ -1063,7 +1063,7 @@ use Slim\Http\UploadedFile;
 		    $out['delete'] = $out['new'] = $out['change'] = array();
 		    foreach($a as $val) {$map[$val['id']]['type'] = $this->classState['delete']; $map[$val['id']]['data'] = $val;}
 		    foreach($b as $val) {
-		    	if(isset($map[$val['id']])) {	
+		    	if(isset($map[$val['id']])) {
 		    		if($map[$val['id']]['data']['name']!=$val['name']) {
 		    			$map[$val['id']]['type'] = $this->classState['changeName'];
 		    			$map[$val['id']]['data'] = $val;
@@ -1071,7 +1071,7 @@ use Slim\Http\UploadedFile;
 		    		} else {
 		    			$map[$val['id']]['type'] = $this->classState['unchange'];
 		    			$map[$val['id']]['data'] = $val;
-		    		} 
+		    		}
 	    		}else {
 	    			$map[$val['id']]['type'] = $this->classState['new'];
 	    			$map[$val['id']]['data'] = $val;
@@ -1092,7 +1092,7 @@ use Slim\Http\UploadedFile;
 		    $out['delete'] = $out['new'] = $out['change'] = array();
 		    foreach($a as $val) {$map[$val['sentTime']]['type'] = $this->readCountState['delete']; $map[$val['sentTime']]['data'] = $val;}
 		    foreach($b as $val) {
-		    	if(isset($map[$val['sentTime']])) {	
+		    	if(isset($map[$val['sentTime']])) {
 		    		if($map[$val['sentTime']]['data']['sum']!=$val['sum']) {
 		    			$map[$val['sentTime']]['type'] = $this->readCountState['changeName'];
 		    			$map[$val['sentTime']]['data'] = $val;
@@ -1100,7 +1100,7 @@ use Slim\Http\UploadedFile;
 		    		} else {
 		    			$map[$val['sentTime']]['type'] = $this->readCountState['unchange'];
 		    			$map[$val['sentTime']]['data'] = $val;
-		    		} 
+		    		}
 	    		}else {
 	    			$map[$val['sentTime']]['type'] = $this->readCountState['new'];
 	    			$map[$val['sentTime']]['data'] = $val;
@@ -1154,7 +1154,7 @@ use Slim\Http\UploadedFile;
 		    		} else {
 		    			$map[$val['chatID']]['type'] = 0;
 		    			$map[$val['chatID']]['data'] = $val;
-		    		} 
+		    		}
 	    		}else {
 	    			$map[$val['chatID']]['type'] = 2;
 	    			$map[$val['chatID']]['data'] = $val;
@@ -1186,8 +1186,8 @@ use Slim\Http\UploadedFile;
 			return $result;
 		}
 		function getClass($classID = null)
-		{  	
-			$staff_id = $_SESSION['id'];		
+		{
+			$staff_id = $_SESSION['id'];
 			if(is_null($classID)){
 				$sql ='
 					SELECT  name,id
@@ -1208,7 +1208,7 @@ use Slim\Http\UploadedFile;
 			}
 			$statement->bindParam(':id',$staff_id);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
 		}
 
@@ -1242,7 +1242,7 @@ use Slim\Http\UploadedFile;
 		    LEFT JOIN (
 		     SELECT *
 		     FROM staff_chat."chatClass"
-		     LEFT JOIN staff_chat."chatClassify" 
+		     LEFT JOIN staff_chat."chatClassify"
 		     ON "chatClass".id="chatClassify" ."classID"
 		     WHERE "chatClassify"."UID"=:UID
 		    ) as cl on cl."chatID"="chatResult" ."chatID"
@@ -1256,13 +1256,13 @@ use Slim\Http\UploadedFile;
 				) as "countUnread"
 				group by "chatID","UID"
 			) as "countUnread" on "chatResult"."chatID"="countUnread"."chatID"
-		    UNION 
+		    UNION
 		    SELECT -1 AS "SUM",\'-1\' AS "SUM",\'-1\' AS "SUM",-1 AS "SUM",\'-1\' AS "SUM",SUM("countContent"), \'-1\' AS "SUM",\'1000-01-01 00:00:00\' AS "SUM", \'-1\' AS "SUM", \'-1\' AS "SUM",-1 AS "SUM",\'-1\' AS "SUM"
 		    FROM (SELECT "staff_chat"."chatHistory"."chatID","countContent"
 		    FROM "staff_chat"."chatHistory"
 		    LEFT JOIN (SELECT "chatID",count(*) AS "countContent" FROM "staff_chat"."chatContent" GROUP BY "chatID") AS "countChatroom" ON "countChatroom"."chatID" = "staff_chat"."chatHistory"."chatID"
 		    WHERE "UID" = :UID)AS "SELECT"
-		    order by "classID","Priority" desc,"LastTime1"desc 
+		    order by "classID","Priority" desc,"LastTime1"desc
 		   ';
 		   $sth = $this->conn->prepare($sql);
 		   $sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
@@ -1286,9 +1286,9 @@ use Slim\Http\UploadedFile;
 								SELECT "chatID", "time", "UID"
 								FROM staff_chat."chatHistory"
 								Where "chatID"=:chatID
-							) as "chatHistory" 
+							) as "chatHistory"
 						Where "UID"!=:UID and "display"."chatID"="chatHistory"."chatID" and "chatHistory"."time">"display"."sentTime"
-						Group by "content","sentTime","sentFrom" 
+						Group by "content","sentTime","sentFrom"
 					) as "displayContent" on "chatContent"."content"="displayContent"."content" and "chatContent"."sentTime"="displayContent"."sentTime" and "chatContent"."UID"="displayContent"."sentFrom"
 					LEFT JOIN staff."staff" on staff.staff_id="chatContent"."UID"
 						LEFT JOIN(
@@ -1297,7 +1297,7 @@ use Slim\Http\UploadedFile;
 							GROUP BY "likeID"
 						) as "CountLike" on "CountLike"."likeID" = "chatContent"."likeID"
 					Where "chatID"=:chatID
-					order by "chatContent"."sentTime" desc 
+					order by "chatContent"."sentTime" desc
 				) as "tmpChatContent"
 				order by "tmpChatContent"."sentTime" asc
 			';
@@ -1310,10 +1310,10 @@ use Slim\Http\UploadedFile;
 		}
 		function insertClass($classID,$chatID)
 		{
-			try{	
-				$sql ='DELETE 
+			try{
+				$sql ='DELETE
 						FROM staff_chat."chatClassify"
-						WHERE "chatID"=:chatID 
+						WHERE "chatID"=:chatID
 								AND EXISTS(SELECT "chatID"
 									FROM staff_chat."chatClassify"
 									WHERE  "chatID"=:chatID AND "UID"=:UID);';
@@ -1331,13 +1331,13 @@ use Slim\Http\UploadedFile;
 				$statement->execute();
 				$ack = array(
 					'status'=>'success',
-				);	
+				);
 			}catch(PDOException $e){
 				$ack = array(
 					'status'=>'failed',
-				);	
+				);
 			}
-			// try{	
+			// try{
 			// 	$sql ='INSERT INTO staff_chat."chatClassify"("classID", "chatID")
 			// 			VALUES (:id, :chatID);';
 			// 	$statement = $this->conn->prepare($sql);
@@ -1346,24 +1346,24 @@ use Slim\Http\UploadedFile;
 			// 	$statement->execute();
 			// 	$ack = array(
 			// 		'status'=>'success2',
-			// 	);	
+			// 	);
 			// 	return $ack;
 			// }catch(PDOException $e){
 			// 	$ack = array(
 			// 		'status'=>'failed',
-			// 	);	
+			// 	);
 			// }
 			return $ack;
 		}
 		function deleteClass($classID)
-		{  	
-			$staff_id = $_SESSION['id'];	
+		{
+			$staff_id = $_SESSION['id'];
 			$sql ='DELETE FROM staff_chat."chatClass"
 					WHERE id = :id ';
 			$statement = $this->conn->prepare($sql);
 			$statement->bindParam(':id',$classID);
 			$statement->execute();
-			$row = $statement->fetchAll();			
+			$row = $statement->fetchAll();
 			return $row;
 		}
 		function addClass(){
@@ -1377,7 +1377,7 @@ use Slim\Http\UploadedFile;
 			$ack = array(
 					'status'=>'success'
 				);
-			return $ack; 
+			return $ack;
 		}
 
 		function getChatroomTitle($chatID){
@@ -1538,7 +1538,7 @@ use Slim\Http\UploadedFile;
 			$chatID=$body['chatID'];
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-			$sth->execute();	
+			$sth->execute();
 
 			$ack = array(
 				'status'=>'success'
@@ -1573,15 +1573,15 @@ use Slim\Http\UploadedFile;
 			$ack = array(
 				'status'=>'success'
 			);
-			return $ack;	
+			return $ack;
 		}
-		
+
 		function createChatroom($body){
 			$body=json_decode($body['data'],true);
 			$sql = 'INSERT INTO staff_chat."chatroomInfo"( "chatName") VALUES (:chatName);';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatName',$body['title'],PDO::PARAM_STR);
-			$sth->execute();			
+			$sth->execute();
 			$chatID=$this->conn->lastInsertId();
 			array_push(
 				$body['member'], array('UID'=>$_SESSION['id'])
@@ -1653,7 +1653,7 @@ use Slim\Http\UploadedFile;
 				$sth->execute();
 				$row = $sth->fetchAll();
 				var_dump($row);
-				if(count($row)==1){	
+				if(count($row)==1){
 					if($row[0]["likeID"]==null){
 					// var_dump($content,$senttime,$UID,$chatID);
 	    			$sql='
@@ -1688,7 +1688,7 @@ use Slim\Http\UploadedFile;
 
 					$sql='
 						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
-						VALUES (:likeID, :UID);						
+						VALUES (:likeID, :UID);
 					';
 					$sth = $this->conn->prepare($sql);
 					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
@@ -1729,7 +1729,7 @@ use Slim\Http\UploadedFile;
 				else{
 					$sql='
 						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
-						VALUES (:likeID, :UID);	
+						VALUES (:likeID, :UID);
 					';
 					$sth = $this->conn->prepare($sql);
 					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
@@ -1737,7 +1737,7 @@ use Slim\Http\UploadedFile;
 					$sth->execute();
 				}
 			}
-			
+
 		}
 		function getList($chatID=null){
 			if(is_null($chatID)){
@@ -1746,7 +1746,7 @@ use Slim\Http\UploadedFile;
 				$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 				$sth->execute();
 
-				$row = $sth->fetchAll();	
+				$row = $sth->fetchAll();
 			}else{
 				$sql = 'SELECT staff_name as name,staff_id as id FROM staff.staff LEFT JOIN staff_chat."chatHistory" on staff_chat."chatHistory"."UID" = staff.staff.staff_id and "chatID"=:chatID WHERE "chatID" is null and staff_id != :staff_id and staff_delete=false and "seniority_workStatus" =1;';
 				$sth = $this->conn->prepare($sql);
@@ -1754,7 +1754,7 @@ use Slim\Http\UploadedFile;
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->execute();
 
-				$row = $sth->fetchAll();	
+				$row = $sth->fetchAll();
 			}
 			return $row;
 		}
@@ -1782,15 +1782,15 @@ use Slim\Http\UploadedFile;
 				// 		</a>
 				// 	';
 				// }else{
-				// 	$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';	
+				// 	$Msg = '<a href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
 				// }
 				$Msg = '<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/file/'.$this->conn->lastInsertId().'" style="color:#FFFFFF;">'.$uploadedFile->getClientFilename().'</a>';
-				
+
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':Msg',$Msg,PDO::PARAM_STR);
 				$sth->execute();
-				
+
 			    $result = array(
 			    	'status' => 'success',
 		    		'extension' => exif_imagetype($uploadedFile->getClientFilename())
@@ -1826,7 +1826,7 @@ use Slim\Http\UploadedFile;
 			$sth->bindParam(':fileID',$fileID,PDO::PARAM_INT);
 			$sth->execute();
 			$row = $sth->fetchAll();
-			if(count($row)==1){	
+			if(count($row)==1){
 			    $result = array(
 			    	'status' => 'success',
 			    );
@@ -1842,9 +1842,9 @@ use Slim\Http\UploadedFile;
 		    }
 		    return $result;
 		}
-		
-		
-		function downloadFile($fileID){	
+
+
+		function downloadFile($fileID){
 			$sql = '
 				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"
 				FROM staff_chat.files
@@ -1854,7 +1854,7 @@ use Slim\Http\UploadedFile;
 			$sth->bindParam(':fileID',$fileID,PDO::PARAM_INT);
 			$sth->execute();
 			$row = $sth->fetchAll();
-			if(count($row)==1){	
+			if(count($row)==1){
 			    $result = array(
 			    	'status' => 'success',
 			    	'data' => $row[0]
@@ -1870,31 +1870,31 @@ use Slim\Http\UploadedFile;
 	        //獲取原影象$filename的寬度$width_orig和高度$height_orig
 	        list($width_orig,$height_orig) = getimagesize($filename);
 	        $infos = @getimagesize($filename);
-            switch($infos['mime']) { 
-		     	case 'image/gif': 
-		      		$image = imagecreatefromgif($filename); 
-		     	break; 
-				case 'image/jpeg': 
-					$image = imagecreatefromjpeg($filename); 
-				break; 
-				case 'image/png': 
-					$image = imagecreatefrompng($filename); 
-				break; 
-		    } 
+            switch($infos['mime']) {
+		     	case 'image/gif':
+		      		$image = imagecreatefromgif($filename);
+		     	break;
+				case 'image/jpeg':
+					$image = imagecreatefromjpeg($filename);
+				break;
+				case 'image/png':
+					$image = imagecreatefrompng($filename);
+				break;
+		    }
 	        //根據引數$width和$height值，換算出等比例縮放的高度和寬度
 	        if ($width && ($width_orig<$height_orig)){
 	            $width = ($height/$height_orig)*$width_orig;
 	        }else{
 	            $height = ($width / $width_orig)*$height_orig;
 	        }
-	 
+
 	        //將原圖縮放到這個新建立的圖片資源中
 	        $image_p = imagecreatetruecolor($width, $height);
-	 
+
 	        //使用imagecopyresampled()函式進行縮放設定
 	        imagecopyresampled($image_p,$image,0,0,0,0,$width,$height,$width_orig,$height_orig);
 	 		return $image_p;
 	    }
-	    
+
 	}
 ?>
