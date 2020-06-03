@@ -1886,6 +1886,36 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
+		function getLastOnLine($UID){
+			$sql = 'SELECT CASE 
+					WHEN (
+							(
+								(
+									DATE_PART(\'day\', NOW()::timestamp - MAX("time")::timestamp) * 24 + DATE_PART(\'hour\', NOW()::timestamp - MAX("time")::timestamp)
+								) * 60 + DATE_PART(\'minute\', NOW()::timestamp - MAX("time")::timestamp)
+							)  > 60 
+					) then	to_char(MAX("time"), \'YYYY/MM/DD HH12:MI:SS\')
+					ELSE (
+								(
+									DATE_PART(\'day\', NOW()::timestamp - MAX("time")::timestamp) * 24 + DATE_PART(\'hour\', NOW()::timestamp - MAX("time")::timestamp)
+								) * 60 + DATE_PART(\'minute\', NOW()::timestamp - MAX("time")::timestamp)
+							)::text
+					END as "lastOnLine"
+					FROM staff_chat."chatHistory"
+					WHERE "chatHistory"."UID" = :UID
+					';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			$ack = array(
+				'status'=>'success',
+				'time'=>$row[0][lastOnLine],
+
+			);
+			return $ack;
+
+		}
 		function updateLastReadTime($body){
 			$sql = 'UPDATE staff_chat."chatHistory" SET "time"= NOW() WHERE "chatHistory"."chatID"= :chatID AND "chatHistory"."UID"= :UID ;';
 			$sth = $this->conn->prepare($sql);

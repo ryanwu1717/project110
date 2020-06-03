@@ -467,6 +467,13 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
+	$app->get('/lastOnLine/{UID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getLastOnLine($args['UID']);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->patch('/lastReadTime', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->updateLastReadTime($request->getParsedBody());

@@ -164,11 +164,111 @@ window.onblur = function () {
 }; 
 //focus end
 
+$('[name=btnStarNotification]').parent().show();
+
+
+
+$(function(){
+  $('[name=btnStarNotification]').unbind().on('click',function(){
+    // console.log("in");
+    getStarNotification();
+  });
+});
+
+function getStarNotification(){
+  $('[name=starDropdown]').empty();
+  $.ajax({
+    url:'/chat/star',
+    type:'get',
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      $('[name=starDropdown]').append('<h6 class="dropdown-header">待辦事項</h6>');
+      $(response).each(function(){
+        // console.log(this.sendtime);
+        $('[name=starDropdown]').append(
+          '<a class="dropdown-item d-flex align-items-center" id="star'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="starNotificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+            '<div class="mr-3">'+
+              '<div class="icon-circle bg-warning">'+
+                '<i class="fas fa-exclamation-triangle text-white"></i>'+
+              '</div>'+
+            '</div>'+
+            '<div>'+
+              '<div class="small text-gray-500">'+
+                this.sentTime+
+              '</div>'+
+              '<span class="font-weight-bold">'+
+                this.detail+
+              '</span>'+
+            '</div>'+
+          '</a>'
+        );
+        // if(this.unread == true){
+        //   // console.log("unread");
+        //   $("#notification"+this.id).css("background-color", "#F0F8FF");
+        // }else{
+        //   $("#notification"+this.id).css("background-color", "#FFFFFF");
+        // }
+      });
+      // $('[name=starDropdown]').append('<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>');
+    }
+  });
+}
+
+function starNotificationOnclick(chatID,chatName,id,attr){
+
+  tmpTagMsg = $(attr).data('time');
+  getTarget(chatID,chatName);
+}
+
+
+function starOnclick(cliclTime,chatID,content,button){
+  if($(button).find("i").css("color") == 'rgb(170, 170, 170)'){
+    $(button).find("i").css("color","#FFBB00");
+    $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())+1);
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      }
+    });
+  }else{
+    $(button).find("i").css("color","#AAAAAA");
+    $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())-1);
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            }),_METHOD:'DELETE'},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+      }
+    });
+  }
+  
+  console.log(chatID);
+  console.log(content);
+
+
+}
+
 
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
   $('.msg_history').on("scroll",function(){
-    if($(this)[0].scrollHeight-500>$(this).scrollTop()){
+
+    if($(this)[0].scrollHeight-$(this)[0].clientHeight>$(this).scrollTop()){
       $(".scroll-to-down").fadeIn(); 
       scrollable = true;
     }else{
@@ -206,6 +306,9 @@ function init(){
             changeChatroom('init',value);
           }else if(key == 'notification'){
             changeNotification('init',response.notification);
+          }else if(key == 'star'){
+            changeStar('init',response.star);
+
           }
         });
       }
@@ -231,6 +334,7 @@ function routine(){
             changeChatroom('routine',response);
           }else if(key=='chat'){
             changeChat('routine',response);
+            changeStar('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
           }else if(key=='readCount'){
@@ -247,6 +351,7 @@ function routine(){
         
         scrollToTag()
       }
+      
       routine();
     }
   });
@@ -275,6 +380,44 @@ function changeReadCount(type,data){
     });
   }
 }
+
+function changeStar(type,data){
+  if(type == 'init'){
+    $.each(data.num,function(){
+      // console.log(this.count);
+      $('[name=starNotificationNum]').empty();
+      $('[name=starNotificationNum]').append(this.count);
+    });
+  }else if(type == 'routine'){
+    console.log(data.result.star);
+    // if(data.result.star.change != ''){
+    //   $('[name=starNotificationNum]').empty();
+    //   $('[name=starNotificationNum]').append(data.change);
+    // }
+    $.each(data.result.star.change,function(){
+      console.log(this);
+      $('[name=starNotificationNum]').empty();
+      $('[name=starNotificationNum]').append(this);
+    });
+    $.each(data.result.star.new,function(){
+      // console.log(this.sentTime);
+      // console.log($('[name="starBtn"]'));
+      // console.log($('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]'));
+
+      // $('button[name=starBtn]').find("i").css("color","#FFBB00");
+      $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#FFBB00");
+    });
+    $.each(data.result.star.delete,function(){
+      // console.log(this.sentTime);
+      // console.log("delete");
+
+      $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#AAAAAA");
+    });
+        
+    
+  }
+}
+
 
 function changeNotification(type,data){
   if(type == 'init'){
@@ -456,6 +599,7 @@ function notifyUnread(){
     $('title').text('[您有訊息!!]'+titleOrg);
   notify['Unread'] = setTimeout(notifyUnread,1000);
 }
+var staffStatus;
 function changeChat(type,data){
   // $('[name=chatBox]').html("");
   $('[name=msgSendNow]').remove();
@@ -484,18 +628,22 @@ function changeChat(type,data){
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        '<div class="text-left incoming_msg" data-sentTime="'+this.fullsentTime+'">'+
-          '<div class="">'+this.UID+','+this.staff_name+'</div>'+
-          '<div class="d-flex bd-highlight">'+
-            '<div class="p-2 bd-highlight bg-dark text-white rounded">'+
-            this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
-            '</div>'+
-          '</div>'+
-          '<small>'+this.sentTime+'</small>'+
-          '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-          '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
-        '</div>'
+        `<div class="text-left incoming_msg" data-sentTime="${this.fullsentTime}">
+          <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
+          <div class="d-flex bd-highlight">
+            <div class="p-2 bd-highlight bg-dark text-white rounded">
+            ${this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')}
+            </div>
+          </div>
+          <button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"${this.fullsentTime}\",\"${chatID}\",\"${this.content}\",this);\'>
+            <i class="fa fa-star mr-1" data-sentTime="${this.fullsentTime}" aria-hidden="true" style="color: #AAAAAA;"></i>
+          </button>
+
+          <small>${this.sentTime}</small>
+          <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
+          <a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
+          <a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
+        </div>`
       );
     }
     else{
@@ -507,6 +655,10 @@ function changeChat(type,data){
             '</div>'+
           '</div>'+
           '<small>'+this.sentTime+'</small>'+
+          '<button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+            '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
+          '</button>'+
+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
           '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
@@ -518,6 +670,35 @@ function changeChat(type,data){
   });
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
+  $('[name="tooltipOnlineTime"]').tooltip();
+  $("[name='tooltipOnlineTime']").on('shown.bs.tooltip', function () {
+        // do something…
+        // $(this).attr('data-original-title',$(this).attr("data-id"));
+    var currentTooltip = this;
+    console.log($(currentTooltip).data('id'));
+    if(staffStatus!= null){
+      staffStatus.abort();
+    }
+    setTimeout(function(){
+      staffStatus =$.ajax({
+        url:'/chat/lastOnLine/'+$(currentTooltip).data('id'),
+        type:'get',
+        data:{},
+        dataType:'json',
+        success:function(response){
+          //routine();
+          // console.log(response.time);
+          console.log($(currentTooltip).attr('aria-describedby'));
+          $('div#'+$(currentTooltip).attr('aria-describedby')).find('div.tooltip-inner').text(response.time);
+            }
+      });
+
+
+      
+    },3000);
+    // getStatus($(this).attr("data-id"),this);
+
+  });
 }
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
