@@ -1926,7 +1926,7 @@ use Slim\Http\UploadedFile;
 								(
 									DATE_PART(\'day\', NOW()::timestamp - MAX("time")::timestamp) * 24 + DATE_PART(\'hour\', NOW()::timestamp - MAX("time")::timestamp)
 								) * 60 + DATE_PART(\'minute\', NOW()::timestamp - MAX("time")::timestamp)
-							)::text
+							)::text || \' 分鐘前上線\'
 					END as "lastOnLine"
 					FROM staff_chat."chatHistory"
 					WHERE "chatHistory"."UID" = :UID

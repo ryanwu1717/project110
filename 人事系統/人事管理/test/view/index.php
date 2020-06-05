@@ -95,7 +95,7 @@
           </div>
           <div class="card-footer">
             <div class="align-bottom">
-              <div class="dropup">
+              <div class="dropup" id = "dropupTag">
                <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" id="tagPeople">
                   <a class="dropdown-item" href="#">Action</a>
                   <a class="dropdown-item" href="#">Another action</a>
@@ -110,6 +110,23 @@
                   <textarea class="form-control" style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="textinput"></textarea>
                 </div>
                 <input style="display:none;" type="file" name="inputFile">
+                <div class="btn-group dropup">
+                  <div class="flex-shrink-1  align-self-center ml-1">
+                    <button type="button" class="btn btn-secondary btn-block far fa-smile "  aria-haspopup="true" aria-expanded="false" id="btnEmoji">
+                    </button>
+                  </div>
+                 <div class="dropdown-menu overflow-auto"  aria-labelledby="dropdownMenuEmoji" id="dropdownMenuEmoji" style="display:none;">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                      <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128512;</button>
+                      <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128513;</button>
+                      <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128514;</button>
+                    </div>
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                  </div>
+                </div>
+                
                 <div class="flex-shrink-1  align-self-center ml-1">
                     <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" name="ButtonMsgSend" type="button"></button>
                 </div>
@@ -166,7 +183,38 @@ window.onblur = function () {
 
 $('[name=btnStarNotification]').parent().show();
 
+$(function(){
+  $('#btnEmoji').unbind().on('click',function(){
+    if($('#dropdownMenuEmoji').css('display') != 'none'){
+      $('#dropdownMenuEmoji').hide();
+    }else{
+      $('#dropdownMenuEmoji').empty();
+      var tmpEmojiNum = 128512;
+      $('#dropdownMenuEmoji').append(`<div class="btn-group" role="group" aria-label="Basic example">`);
+      for (var i = 0; i < 80; i ++) {
+        $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#${tmpEmojiNum}</button>`);
+        tmpEmojiNum++;
+      }
+      //打勾
+      $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#${10004}</button>`);
+      //叉叉
+      $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#${10005}</button>`);
+      $('#dropdownMenuEmoji').append(`</div>`);
+      $('#dropdownMenuEmoji').show();
 
+      $('[name=emojiPic]').unbind().on('click',function(){
+        console.log($(this).text());
+        var cursorPos = $('#textinput').getCursorPosition();
+        var v = $('#textinput').val();
+        var textBefore = v.substring(0,  cursorPos);
+        var textAfter  = v.substring(cursorPos, v.length);
+
+        $('#textinput').val(textBefore + $(this).text() + textAfter);
+        $('#dropdownMenuEmoji').hide();
+      });
+    }
+  });
+});
 
 $(function(){
   $('[name=btnStarNotification]').unbind().on('click',function(){
@@ -635,7 +683,7 @@ function changeChat(type,data){
             ${this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')}
             </div>
           </div>
-          <button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"${this.fullsentTime}\",\"${chatID}\",\"${this.content}\",this);\'>
+          <button type="button" class="btn badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"${this.fullsentTime}\",\"${chatID}\",\"${this.content}\",this);\'>
             <i class="fa fa-star mr-1" data-sentTime="${this.fullsentTime}" aria-hidden="true" style="color: #AAAAAA;"></i>
           </button>
 
@@ -655,12 +703,12 @@ function changeChat(type,data){
             '</div>'+
           '</div>'+
           '<small>'+this.sentTime+'</small>'+
-          '<button type="button" class="badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+          '<button type="button" class="btn badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
             '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
           '</button>'+
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-          '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a style="display:none" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
           '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
             this.LikeCount+
           '</a>'+
@@ -672,7 +720,6 @@ function changeChat(type,data){
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   $('[name="tooltipOnlineTime"]').tooltip();
   $("[name='tooltipOnlineTime']").on('shown.bs.tooltip', function () {
-        // do something…
         // $(this).attr('data-original-title',$(this).attr("data-id"));
     var currentTooltip = this;
     console.log($(currentTooltip).data('id'));
@@ -692,12 +739,8 @@ function changeChat(type,data){
           $('div#'+$(currentTooltip).attr('aria-describedby')).find('div.tooltip-inner').text(response.time);
             }
       });
-
-
-      
     },3000);
     // getStatus($(this).attr("data-id"),this);
-
   });
 }
 function updateLastReadTime(){
@@ -870,7 +913,7 @@ $("#textinput").on('input',function(e){
     }
   });
   if(tagboolean == false){
-      $('.dropup').hide();
+      $('#dropupTag').hide();
   }
   tagboolean = false;
   var code=e.which;
@@ -883,7 +926,7 @@ var tmpTag;
 var nowkey;
 var tagPeople = "";
 var tagDepartment = "";
-$('.dropup').hide();
+$('#dropupTag').hide();
 (function ($, undefined) {
     $.fn.getCursorPosition = function() {
         var el = $(this).get(0);
@@ -933,7 +976,7 @@ function addTag(tagname,tagID){
       $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
     }
   }
-  $('.dropup').hide();
+  $('#dropupTag').hide();
   if(tagPeople.indexOf(tagID)==-1)
     tagPeople = tagPeople+tagID+" ";
   // console.log(tagPeople);
@@ -949,7 +992,7 @@ function addDepartmentTag(tagname,tagID){
       $("textarea#textinput").val($("#textinput").val().substr(0, i-1)+$("#textinput").val().substr(i));
     }
   }
-  $('.dropup').hide();
+  $('#dropupTag').hide();
   if(tagDepartment.indexOf(tagID)==-1)
     tagDepartment = tagDepartment+tagID+" ";
   //console.log(tagname);
