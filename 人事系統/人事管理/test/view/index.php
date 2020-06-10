@@ -269,26 +269,74 @@ function starNotificationOnclick(chatID,chatName,id,attr){
   getTarget(chatID,chatName);
 }
 
-
+function starOnlongclick(){
+  console.log("ininin");
+}
 function starOnclick(cliclTime,chatID,content,button){
+  // $('#basicModal').modal('show');
   if($(button).find("i").css("color") == 'rgb(170, 170, 170)'){
-    $(button).find("i").css("color","#FFBB00");
-    $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())+1);
+    // $('#basicModal').empty();
+    $('#basicModal').modal('show');
+    $('#basicModal .modal-title').text('交辦人'); 
+    $('#basicModal .modal-body').empty();
+    $('#basicModal .modal-body').append(
+      `<div class="form-check">
+          <input class="form-check-input" type="radio" name="starRadios" id="gridRadios1" value="me" >
+          <label class="form-check-label" for="gridRadios1">
+            待辦事項
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="starRadios" id="gridRadios2" value="other">
+          <label class="form-check-label" for="gridRadios2">
+            交辦事項
+          </label>
+        </div>
+        <select required class="custom-select" id="selectStar">
+          <option name = "optionStar" selected disabled value="">請選擇</option>
+        </select>
+      `); 
+    $('#basicModal .modal-footer').append(`<button type="submit" onclick ='todoStar("${cliclTime}","${chatID}","${content}","${button}")' class="btn btn-primary" id="
+btnTodo">確定</button>`);
+
     $.ajax({
-      url:'/chat/star',
-      type:'post',
-      data:{data:JSON.stringify({
-              chatID:chatID,
-              time : cliclTime,
-              content : content
-            })},
+      url:'/chat/member/'+chatID,
+      type:'get',
       dataType:'json',
       success:function(response){
-        console.log(response);
+        // $('#selectStar').empty();
+        $(response).each(function(){
+          $('#selectStar').append(`<option name = "optionStar" value="${this.id}">${this.name}</option>`);
+        });
       }
     });
+    $('#selectStar').hide();
+    $('[name="starRadios"]').on('change', function() {
+      if ($(this).is(':checked') && this.value == "other") {
+        $('#selectStar').show();
+      }else{
+        $('#selectStar').hide();
+      }
+    });
+    
+    
+    // $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())+1);
+    // $.ajax({
+    //   url:'/chat/star',
+    //   type:'post',
+    //   data:{data:JSON.stringify({
+    //           chatID:chatID,
+    //           time : cliclTime,
+    //           content : content
+    //         })},
+    //   dataType:'json',
+    //   success:function(response){
+    //     console.log(response);
+    //   }
+    // });
   }else{
     $(button).find("i").css("color","#AAAAAA");
+
     $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())-1);
     $.ajax({
       url:'/chat/star',
@@ -304,13 +352,51 @@ function starOnclick(cliclTime,chatID,content,button){
       }
     });
   }
-  
-  console.log(chatID);
-  console.log(content);
-
-
 }
 
+function todoStar(cliclTime,chatID,content,button){
+  if($('[name=starRadios]:checked').val() == 'me'){
+    $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())+1);
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+
+      }
+    });
+    // $(`[name=starBtn] i[data-slide='${cliclTime}']`).css("color","#FFBB00");
+    $('[name=starBtn]').find('[data-senttime="'+cliclTime+'"]').css("color","#FFBB00");
+    $('#basicModal').modal('hide');
+  }else if($('[name=starRadios]:checked').val() == 'other'){
+    console.log('other');
+    console.log($('#selectStar :selected').val());
+    $('[name=starNotificationNum]').text(parseInt($('[name=starNotificationNum]').text())+1);
+    $.ajax({
+      url:'/chat/star',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : cliclTime,
+              content : content,
+              starPerson : $('#selectStar :selected').val()
+            })},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+
+      }
+    });
+    $('#basicModal').modal('hide');
+  }
+  
+}
 
   if (window.innerWidth <= 700) $('.navbar-collapse').removeClass('show');
 var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dismiss="modal">關閉</button>';
@@ -689,7 +775,7 @@ function changeChat(type,data){
 
           <small>${this.sentTime}</small>
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
-          <a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
+          <a style="display" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
           <a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
         </div>`
       );
@@ -703,18 +789,22 @@ function changeChat(type,data){
             '</div>'+
           '</div>'+
           '<small>'+this.sentTime+'</small>'+
-          '<button type="button" class="btn badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
+          '<button type="button" class="btn badge badge-light ml-1" name="starBtn" href="#" onlongclick=\'starOnlongclick();\' onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
             '<i class="fa fa-star mr-1" data-sentTime="'+this.fullsentTime+'" aria-hidden="true" style="color: #AAAAAA;"></i>'+
           '</button>'+
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-          '<a style="display:none" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
           '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
             this.LikeCount+
           '</a>'+
         '</div>'
       );
     }
+    // $("#starBtn").longclick(500, function(){
+    //    console.log("inininin");
+    // });
+    
   });
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
@@ -1529,18 +1619,46 @@ function getComment(relatedData){//TODO
   
   $('#basicModal .modal-title').text('留言板');
   $('#basicModal .modal-body').html(
-    '<h5>訊息</h5>'+
-    '<div name="message">'+decodeURIComponent(relatedData['content'])+'</div>'+
-    '已讀:'+relatedData['readcount']+
-    '<hr>'+
-    '<h5>留言</h5>'+
-    '<div name="comment"></div>'+
-    '<div class="type_msg">'+
-      '<div class="input_msg_write">'+
-        '<textarea style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>'+
-        '<button class="msg_send_btn" type="button" id="commentbutton"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>'+
-        '</div>'+
-      '</div>'
+    `<h5>訊息</h5>
+    <div name="message">${decodeURIComponent(relatedData['content'])}</div>
+    已讀:${relatedData['readcount']}
+    <hr>
+    <h5>留言</h5>
+    <div name="comment"></div>
+      <div class="dropup" id = "dropupTag">
+      </div>
+      <div class="d-flex">
+        <a class="scroll-to-down rounded">
+          <i class="fas fa-angle-down"></i>
+        </a>
+        <div class="w-100">
+          <textarea class="form-control" style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>
+        </div>
+        <input style="display:none;" type="file" name="inputFile">
+        <div class="btn-group dropup">
+          <div class="flex-shrink-1  align-self-center ml-1">
+            <button type="button" class="btn btn-secondary btn-block far fa-smile "  aria-haspopup="true" aria-expanded="false" id="btnEmoji">
+            </button>
+          </div>
+         <div class="dropdown-menu overflow-auto"  aria-labelledby="dropdownMenuEmoji" id="dropdownMenuEmoji" style="display:none;">
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128512;</button>
+              <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128513;</button>
+              <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128514;</button>
+            </div>
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </div>
+        
+        <div class="flex-shrink-1  align-self-center ml-1">
+            <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" name="ButtonMsgSend" type="button"></button>
+        </div>
+        <div style="display:none;" class="flex-shrink-1  align-self-center ml-1">
+            <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
+        </div>
+      </div>`
 
   );
   $('#commentbutton').unbind().on('click',function(){

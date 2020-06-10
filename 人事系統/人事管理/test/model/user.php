@@ -1020,12 +1020,20 @@ use Slim\Http\UploadedFile;
 
 		function addStar(){
 			$_POST=json_decode($_POST['data'],true);
-
-			$sql = 'INSERT INTO staff.star(
+			if(is_null($_POST['starPerson'])){
+				$sql = 'INSERT INTO staff.star(
 					"UID", "chatID", "sentTime", detail)
 					VALUES (:UID, :chatID, :sentTime, :detail)';
-			$sth = $this->conn->prepare($sql);
-			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			}else {
+				$sql = 'INSERT INTO staff.star(
+					"UID", "chatID", "sentTime", detail)
+					VALUES (:UID, :chatID, :sentTime, :detail)';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_POST['starPerson'],PDO::PARAM_STR);
+			}
+			
 			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
 			$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_STR);
 			$sth->bindParam(':detail',$_POST['content'],PDO::PARAM_STR);
