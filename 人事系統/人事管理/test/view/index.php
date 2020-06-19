@@ -236,8 +236,10 @@ function routine(){
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
+          
         });
       }
+      console.log(response);
       if(tmpTagMsg!=""){
         // console.log("in");
         //console.log(tmpTagMsg);
@@ -494,7 +496,7 @@ function changeChat(type,data){
           '<small>'+this.sentTime+'</small>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#"data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-heart mr-1" aria-hidden="true" ></i>'+this.LikeCount+'</a>'+
         '</div>'
       );
     }
@@ -509,7 +511,7 @@ function changeChat(type,data){
           '<small>'+this.sentTime+'</small>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display:none" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
+          '<a class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'likeChange(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
             this.LikeCount+
           '</a>'+
         '</div>'
@@ -519,6 +521,26 @@ function changeChat(type,data){
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
 }
+
+function likeChange(content,fullsentTime,UID,likeID){
+  if(likeID==null){
+    console.log("16565");
+    console.log(checkLiked(content,fullsentTime));
+  }
+}
+
+function checkLiked(content,fullsentTime){
+  $.ajax({
+    url:'/chat/checkLiked/',
+    type:'get',
+    data:{content:content,fullsentTime:fullsentTime},
+    dataType:'json',
+    success:function(response){
+      return response;
+    }
+  });
+}
+
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
     queue['lastReadTime'].abort();
@@ -537,7 +559,7 @@ $('[name=bellbtn]').parent().show();
 $(function(){
   $('[name=bellbtn]').click(getNotification);
 });
-  
+
 function getNotification(){
   console.log("inget");
   $('[name=bellDropdown]').empty();

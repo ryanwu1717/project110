@@ -1134,6 +1134,7 @@ use Slim\Http\UploadedFile;
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
 				'readCount'=>array(),
+				'like'=>array(),
 				'result'=>array(
 					'class'=>array(),
 					'chatroom'=>array(),
@@ -1143,11 +1144,15 @@ use Slim\Http\UploadedFile;
 						'count'=>-1,
 						'new'=>array()
 					),
+					'like'=>array(
+						'new'=>array(),
+						'change'=>array()
+					),
 					'readCount'=>array(
 						'new'=>array(),
 						'delete'=>array(),
 						'change'=>array()
-					),
+					)
 				)
 			);
 			return $ack;
@@ -1168,6 +1173,7 @@ use Slim\Http\UploadedFile;
 					$data = $_SESSION['last'][$timestamp];
 				}
 				$this->firstCheck=true;
+				$like = $this->getLike($chatID);
 				$class = $this->getClass();
 				$notification = $this->getNotificationNum();
 				$starNum = $this->getStar('num');
@@ -1200,7 +1206,10 @@ use Slim\Http\UploadedFile;
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
-                $now = new DateTime( 'NOW' );
+				$now = new DateTime( 'NOW' );
+				
+				
+				$result['like']= $this->checkLike($data['like'],$like);
 
 			}
 
@@ -1212,6 +1221,7 @@ use Slim\Http\UploadedFile;
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
 				'readCount'=>$readCount,
+				'like'=>$like,
 				'result'=>$result
 			);
 			return $ack;
@@ -1295,6 +1305,39 @@ use Slim\Http\UploadedFile;
 		    foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
 		    return $out;
 		}
+		var $likeCountState = array(
+			'unchange'=>0,
+			'new'=>1,
+			'changed'=>2
+		);
+		function checkLike($a, $b) {
+		    $map = $out = array();
+		    $out['new'] = $out['change'] = array();
+		    foreach($a as $val) {$map[$val['sentTime']]['data'] = $val;}
+		    foreach($b as $val) {
+		    	if(isset($map[$val['sentTime']])) {
+		    		if($map[$val['sentTime']]['data']['likeCount']!=$val['likeCount']) {
+		    			$map[$val['sentTime']]['type'] = $this->likeCountState['changed'];
+		    			$map[$val['sentTime']]['data'] = $val;
+		    			$this->change=true;
+		    		} else {
+		    			$map[$val['sentTime']]['type'] = $this->likeCountState['unchange'];
+		    			$map[$val['sentTime']]['data'] = $val;
+		    		}
+	    		}else {
+	    			$map[$val['sentTime']]['type'] = $this->likeCountState['new'];
+	    			$map[$val['sentTime']]['data'] = $val;
+	    			$this->change=true;
+		    	}
+			}
+		    foreach($map as $val => $ok) if($ok['type']==1) $out['new'][] = $ok['data']; else if($ok['type']==2) $out['change'][] = $ok['data'];
+		    return $out;
+		}
+
+
+
+
+
 		function getReadCountN($body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
@@ -1417,6 +1460,25 @@ use Slim\Http\UploadedFile;
 				'new'=>$new
 			);
 			return $result;
+		}
+		function getLike($chatID){
+			if(isset($chatID)){
+				$sql='
+					SELECT "sentTime", "chatContent"."likeID", "likeCount"
+					FROM staff_chat."chatContent"
+					left join(
+						SELECT "likeID", Count("UID")as "likeCount"
+						FROM staff_chat."chatLikeCount"
+						group by "likeID")as "likeCount"
+					on "chatContent"."likeID"="likeCount"."likeID"
+					where "chatID"= :chatID AND "chatContent"."likeID" is not null;
+				';
+				$statement = $this->conn->prepare($sql);
+				$statement->bindParam(':chatID',$chatID);
+				$statement->execute();
+				$row = $statement->fetchAll();
+				return $row;
+			}
 		}
 		function getClass($classID = null)
 		{
@@ -1710,6 +1772,21 @@ use Slim\Http\UploadedFile;
 
 			$row = $sth->fetchAll();
 			array_push($row,array('chatID'=>$data['chatID']));
+			return $row;
+		}
+		function checkLiked($body){
+			$sql='SELECT "likeID"
+			FROM staff_chat."chatContent"
+			where "content"=:content and "sentTime"=:fullsentTime;';
+
+			$sth = $this->conn->prepare($sql);
+			$content=$body['content'];
+			$fullsentTime=$body['fullsentTime'];
+			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
 			return $row;
 		}
 		function getReadList($body){
