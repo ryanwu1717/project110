@@ -390,17 +390,24 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->get('/comment', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
+	$app->get('/comment/{commentID}', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
 		$chat = new Chat($this->db);
-		$result = $chat->getComment($_GET);
+		$result = $chat->getComment($args['commentID']);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->get('/commentID/{chatID}/{sendtime}', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
+		$chat = new Chat($this->db);
+		$result = $chat->getCommentID($args['chatID'],$args['sendtime']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
 	});
 
-	$app->get('/commentReadList', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
+	$app->get('/commentReadlist/{commentID}/{senttime}/{UID}/{chatID}', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
 		$chat = new Chat($this->db);
-		$result = $chat->getCommentReadList($_GET);
+		$result = $chat->getCommentReadList($args['commentID'],$args['senttime'],$args['UID'],$args['chatID']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -466,9 +473,9 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->patch('/comment', function (Request $request, Response $response, array $args) { //TODO
+	$app->post('/comment/{commentID}/{content}', function (Request $request, Response $response, array $args) { //TODO
 		$chat = new Chat($this->db);
-		$result = $chat->updateComment($request->getParsedBody());
+		$result = $chat->insertComment($args['commentID'],$args['content']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;
@@ -487,9 +494,9 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->patch('/commentReadTime', function (Request $request, Response $response, array $args) {
+	$app->patch('/commentReadTime/{commentID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->updateCommentReadTime($request->getParsedBody());
+		$result = $chat->updateCommentReadTime($args['commentID']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;

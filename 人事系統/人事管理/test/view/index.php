@@ -115,7 +115,7 @@
                     <button type="button" class="btn btn-secondary btn-block far fa-smile "  aria-haspopup="true" aria-expanded="false" id="btnEmoji">
                     </button>
                   </div>
-                 <div class="dropdown-menu overflow-auto"  aria-labelledby="dropdownMenuEmoji" id="dropdownMenuEmoji" style="display:none;">
+                 <div class="dropdown-menu overflow-auto"  aria-labelledby="dropdownMenuEmoji" id="dropdownMenuEmoji" style="display:none;height:20vh">
                     <div class="btn-group" role="group" aria-label="Basic example">
                       <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128512;</button>
                       <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128513;</button>
@@ -159,6 +159,26 @@
     </div>
   </div>
 </div>
+<!-- double Modal-->
+<div class="modal fade" id="newModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
 <?php
  include('partial/footer.php')
 ?>
@@ -192,13 +212,13 @@ $(function(){
       var tmpEmojiNum = 128512;
       $('#dropdownMenuEmoji').append(`<div class="btn-group" role="group" aria-label="Basic example">`);
       for (var i = 0; i < 80; i ++) {
-        $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#${tmpEmojiNum}</button>`);
+        $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn btn-sm btn-light ml-1-">&#${tmpEmojiNum}</button>`);
         tmpEmojiNum++;
       }
       //打勾
-      $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#${10004}</button>`);
+      $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn btn-sm btn-light ml-1-">&#${10004}</button>`);
       //叉叉
-      $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#${10005}</button>`);
+      $('#dropdownMenuEmoji').append(`<button type="button" name="emojiPic" class="btn btn-sm btn-light ml-1-">&#${10005}</button>`);
       $('#dropdownMenuEmoji').append(`</div>`);
       $('#dropdownMenuEmoji').show();
 
@@ -774,8 +794,8 @@ function changeChat(type,data){
           </button>
 
           <small>${this.sentTime}</small>
-          <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
-          <a style="display" class="badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal"><i class="fa fa-reply" aria-hidden="true"></i></a>
+          <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
+          <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" ><i class="fa fa-reply" aria-hidden="true"></i></a>
           <a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
         </div>`
       );
@@ -892,15 +912,12 @@ function getNotification(){
     }
   });
 }
-function updateCommentReadTime(data){
-  //console.log("UPDATE CMT")
-  if(queue['commentreadtime']!=null){
-    queue['commentreadtime'].abort();
-  }
-  queue['commentreadtime'] = $.ajax({
-    url:'/chat/commentReadTime',
-    type:'patch',
-    data:{data:JSON.stringify(data)},
+function updateCommentReadTime(commentID){
+ 
+  $.ajax({
+    url:'/chat/commentReadTime/'+commentID,
+    type:'POST',
+    data:{_METHOD: 'PATCH'},
     dataType:'json'
   });
 }
@@ -957,6 +974,7 @@ $("#textinput").keypress(function(e){
     $('.msg_send_btn').click();
   }
 });
+
 $("#textinput").on('input',function(e){
   if(($("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="＠")||($("#textinput").val().charAt($("#textinput").getCursorPosition()-1)=="@")){
     if($("#textinput").getCursorPosition() == 1 || $("#textinput").val().charAt($("#textinput").getCursorPosition()-2)==" "){
@@ -1315,22 +1333,27 @@ function sendMsg(){
     }
   });
 }
-function sendCemmene(msgsender,msgtime,data){
-  Msg=$("#commentinput").val();
-  Msg = Msg.replace(/\r?\n/g, '<br />');
+function sendComment(commentID){
+  if($("#commentinput").val()!=""){
+    Msg=$("#commentinput").val();
+    Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
-      url:'/chat/comment',
+      url:'/chat/comment/'+commentID+'/'+Msg,
       type:'post',
-      data:{Msg:Msg,
-            chatID:chatID,
-            chatOrigin:msgsender,
-            chatTime:msgtime,
-            _METHOD:'PATCH'},
+      data:{
+           commentID:commentID,
+            Msg:Msg
+          },
       dataType:'json',
       success:function(response){
-        getCommentContent(data);
-    }
-  });
+        // console.log(response);
+
+        getCommentReadList(commentID)
+      }
+    });
+    $("#commentinput").val("");
+  }
+  
 }
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
@@ -1606,67 +1629,84 @@ function getReadlist(relatedData){
     }
   });
 }
-function getComment(relatedData){//TODO
-  //console.log(relatedData);
+// var tmpCommentID;
+
+function getComment(relatedData){
   var scrollableComment = false;
   var data = new Object();
   data['UID'] = relatedData['uid'];
   data['sentTime'] = relatedData['senttime'];
   data['content'] = decodeURIComponent(relatedData['content']);
   data['chatID'] = chatID;
-  updateCommentReadTime(data);
-  getCommentReadList(data);
-  
-  $('#basicModal .modal-title').text('留言板');
-  $('#basicModal .modal-body').html(
-    `<h5>訊息</h5>
-    <div name="message">${decodeURIComponent(relatedData['content'])}</div>
-    已讀:${relatedData['readcount']}
-    <hr>
-    <h5>留言</h5>
-    <div name="comment"></div>
-      <div class="dropup" id = "dropupTag">
-      </div>
-      <div class="d-flex">
-        <a class="scroll-to-down rounded">
-          <i class="fas fa-angle-down"></i>
-        </a>
-        <div class="w-100">
-          <textarea class="form-control" style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>
-        </div>
-        <input style="display:none;" type="file" name="inputFile">
-        <div class="btn-group dropup">
-          <div class="flex-shrink-1  align-self-center ml-1">
-            <button type="button" class="btn btn-secondary btn-block far fa-smile "  aria-haspopup="true" aria-expanded="false" id="btnEmoji">
-            </button>
-          </div>
-         <div class="dropdown-menu overflow-auto"  aria-labelledby="dropdownMenuEmoji" id="dropdownMenuEmoji" style="display:none;">
-            <div class="btn-group" role="group" aria-label="Basic example">
-              <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128512;</button>
-              <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128513;</button>
-              <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128514;</button>
-            </div>
-            <a class="dropdown-item" href="#">Action</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something else here</a>
-          </div>
-        </div>
-        
-        <div class="flex-shrink-1  align-self-center ml-1">
-            <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" name="ButtonMsgSend" type="button"></button>
-        </div>
-        <div style="display:none;" class="flex-shrink-1  align-self-center ml-1">
-            <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
-        </div>
-      </div>`
 
-  );
-  $('#commentbutton').unbind().on('click',function(){
-    if($("#commentinput").val()!=""){
-      sendComment(relatedData['uid'],relatedData['senttime'],data);
-      $("#commentinput").val("");
+  $.ajax({
+    url:'/chat/commentID/'+chatID+'/'+encodeURIComponent(relatedData['senttime']),
+    type:'get',
+    dataType:'json',
+    success:function(response){
+
+       
+      $('#basicModal .modal-title').text('留言板');
+      $('#basicModal .modal-body').html(
+        `<h5>訊息</h5>
+        <div name="message">${decodeURIComponent(relatedData['content'])}</div>
+        已讀:${relatedData['readcount']}
+        <hr>
+        <h5>留言</h5>
+        <div class="card">
+          <div class="card-body overflow-auto" name="comment" style="height:30vh">
+          </div>
+        </div>
+          <div class="dropup" id = "dropupTag">
+          </div>
+          <div class="d-flex">
+            <a class="scroll-to-down rounded">
+              <i class="fas fa-angle-down"></i>
+            </a>
+            <div class="w-100">
+              <textarea class="form-control" style="word-wrap:break-word;width:100%;"placeholder="請在此輸入訊息，ENTER可以換行&#13;&#10;SHIFT+ENTER送出訊息" id="commentinput"></textarea>
+            </div>
+            <input style="display:none;" type="file" name="inputFile">
+            <div class="btn-group dropup">
+              <div class="flex-shrink-1  align-self-center ml-1">
+                <button type="button" class="btn btn-secondary btn-block far fa-smile "  aria-haspopup="true" aria-expanded="false" id="btnEmoji">
+                </button>
+              </div>
+             <div class="dropdown-menu overflow-auto"  aria-labelledby="dropdownMenuEmoji" id="dropdownMenuEmoji" style="display:none;">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                  <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128512;</button>
+                  <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128513;</button>
+                  <button type="button" name="emojiPic" class="btn badge badge-light ml-1-">&#128514;</button>
+                </div>
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </div>
+            
+            <div class="flex-shrink-1  align-self-center ml-1">
+                <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" id="commentbutton" data-commentID="${response}" type="button" onclick="sendComment(\'${response}\');"></button>
+            </div>
+            <div style="display:none;" class="flex-shrink-1  align-self-center ml-1">
+                <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
+            </div>
+          </div>`
+
+      );
+      getCommentReadList(response);
+
+      $("#commentinput").unbind().keypress(function(e){
+        var code=e.which;
+        if((code&&e.shiftKey) &&code==13){
+          e.preventDefault();
+          $('#commentbutton').click();
+        }
+      });
     }
   });
+ 
+  
+  
   $("#commentinput").unbind().keypress(function(e){
     var code=e.which;
     if((code&&e.shiftKey) &&code==13){
@@ -1680,60 +1720,103 @@ function getComment(relatedData){//TODO
     }
   });
 }
-function getCommentContent(data,readlist){
-  $.ajax({
-    url:'/chat/comment',
-    type:'get',
-    data:{data:JSON.stringify(data)},
-    dataType:'json',
-    success:function(response){
-      //console.log(response)
-      $('[name=comment]').html("");
-      $(response).each(function(){
-        var count = 0;
-        for (var i = 0; i < readlist.length; i++) {
-          if(readlist[i].lasttime > this.sentTime)count++;
-        }
-        $('[name=comment]').append(
-            '<div class="incoming_msg">'+
-                '<div class="">'+this.sender+'</div>'+
-                '<div class="received_msg">'+
-                  '<div class="received_withd_msg">'+
-                    '<p class="text-break">'+
-                      this.content+
-                    '</p>'+
-                    '<span class="time_date"> '+this.formatTime+'</span>'+
-                    '<i class="fa fa-eye" aria-hidden="true"></i>'+count+
-                  '</div>'+
-                '</div>'+
-              '</div>'
-          )
-      });    
-      //TODO, scroll to bottom, bootstrap bug??
-      /*
-      $('#basicModal .modal-content').css('overflow','hidden');
-      $('#modal').animate({ scrollTop: $('#modal .modal-content').height() }, 'slow');
-      console.log($('#basicModal .modal-content').height());
-      console.log($('#basicModal .modal-content'));
-      console.log($('#basicModal').height());
-      */
-      //$('#basicModal .modal-content').scrollTop($('#basicModal .modal-content').height());
-      //console.log($('#basicModal .modal-content'));
-    }
-  });
+
+function getCommentReadList(commentID){//TODO : promise
+  getCommentContent(commentID);
+  updateCommentReadTime(commentID);
 }
-function getCommentReadList(data){//TODO : promise
+ 
+function getCommentContent(commentID){
   $.ajax({
-    url:'/chat/commentReadList',
+    url:'/chat/comment/'+commentID,
     type:'get',
-    data:{data:JSON.stringify(data)},
+    data:{},
     dataType:'json',
     success:function(response){
       console.log(response)
-      getCommentContent(data,response);
+      $('[name=comment]').html("");
+      $(response).each(function(){
+        console.log(this.case);
+        if(this.case == 'me'){
+          $('[name=comment]').append(
+          `<div class="text-right outgoing_msg" data-sentTime="${this.sentTime}">
+              <div class="d-flex flex-row-reverse bd-highlight">
+                <div class="p-2 bd-highlight bg-secondary text-white rounded">
+                  ${this.content.replace('<a href="/chat/,<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')}
+                </div>
+              </div>
+              <small>${this.showSentTime}</small>
+              <a target="_blank" href="#" data-toggle="modal" data-target="#newModal"  data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.sentTime}" data-UID="${this.UID}" data-commentID="${commentID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.readNum==null? 0 :this.readNum }
+              </a>
+            </div>
+          `);
+        }else{
+          $('[name=comment]').append(
+          `<div class="text-left incoming_msg" data-sentTime="${this.fullsentTime}">
+            <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
+              <div class="d-flex bd-highlight">
+                <div class="p-2 bd-highlight bg-dark text-white rounded">
+                  ${this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')}
+                </div>
+              </div>
+            </div>
+            <small>${this.showSentTime}</small>
+            <a target="_blank" href="#" data-toggle="modal" data-target="#newModal" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.sentTime}" data-UID="${this.UID}" data-commentID="${commentID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.readNum==null? 0 :this.readNum }
+            </a>
+          </div>
+          `);
+        }
+      });
+      console.log($('[name=comment]').scrollHeight);
+      $('[name=comment]').scrollTop($('[name=comment]')[0].scrollHeight);
     }
   });
 }
+$('#newModal').on('show.bs.modal',function(e){
+  $('#newModal .modal-footer').html(basicModalFooter);
+  var tmpTarget= $(e.relatedTarget);
+
+  // console.log($(e.relatedTarget).data());
+  $('#newModal .modal-title').text('已讀清單');
+  $('#newModal .modal-body').html(
+    '<h5>已讀</h5>'+
+    '<div name="commentReadList"></div>'+
+    '<hr>'+
+    '<div class="alert alert-secondary" role="alert">'+
+      '<h5 class="font-weight-bold">未讀</h5>'+
+      '<div name="commentUnreadList"></div>'+
+    '</div>'
+  );
+
+  // var data = new Object();
+  // data['UID'] = $(e.relatedTarget).data('uid');
+  // data['sentTime'] = tmpsendtime;
+  // data['content'] = decodeURIComponent($(e.relatedTarget).data('content'));
+  // data['chatID'] = chatID;
+  // data['commentID'] = $(e.relatedTarget).data('commentid');
+  // console.log(data);
+
+  $.ajax({
+    url:`/chat/commentReadlist/${tmpTarget.data('commentid')}/${encodeURIComponent(tmpTarget.data('senttime'))}/${tmpTarget.data('uid')}/${chatID}`,
+    type:'get',
+    data:{},
+    dataType:'json',
+    success:function(response){
+      $('[name=commentReadList]').html("");
+      $('[name=commentUnreadList]').html("");
+      $(response).each(function(){
+        if(this.haveread==1){
+          $('[name=commentReadList]').append('<p>'+this.name+'</p>')
+        }
+        else if(this.haveread==0){
+          $('[name=commentUnreadList]').append('<p class="font-weight-bold">'+this.name+'</p>')
+        }
+      });
+    }
+  });
+
+});
+
 function getMember(){
   $('#basicModal .modal-title').text('議題成員');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');
