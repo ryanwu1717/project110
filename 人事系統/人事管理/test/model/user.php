@@ -1020,6 +1020,31 @@ use Slim\Http\UploadedFile;
 
 		function addStar(){
 			$_POST=json_decode($_POST['data'],true);
+
+			if(is_null($_POST['starPerson'])){
+				$sql = 'SELECT id, "UID", "chatID", "sentTime", detail
+						FROM staff.star
+						WHERE "UID"=:UID AND "chatID"=:chatID AND "sentTime"=:sentTime;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			}else {
+				$sql = 'SELECT id, "UID", "chatID", "sentTime", detail
+						FROM staff.star
+						WHERE "UID"=:UID AND "chatID"=:chatID AND "sentTime"=:sentTime;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_POST['starPerson'],PDO::PARAM_STR);
+			}
+			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row) >0){
+				$ack = array(
+					'status'=>'已存在',
+				);
+				return $ack;
+			}
+
 			if(is_null($_POST['starPerson'])){
 				$sql = 'INSERT INTO staff.star(
 					"UID", "chatID", "sentTime", detail)
@@ -1141,6 +1166,7 @@ use Slim\Http\UploadedFile;
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
+				'comment'=>array(),
 				'readCount'=>array(),
 				'result'=>array(
 					'class'=>array(),
@@ -1190,6 +1216,7 @@ use Slim\Http\UploadedFile;
 				// $new['id'] = 3;
 				// array_push($class,$new);
 				// $class[0]['id']=14;
+
 				$result = array();
 				$result['notification'] = $this->checkNotification($data['notification'], $notification);
 				$result['star'] = $this->checkStar($data['star'], $newstar,$chatID);
@@ -1203,11 +1230,20 @@ use Slim\Http\UploadedFile;
 				// $chat = $this->getChat();
 				// var_dump($chat);
 				$result['chatroom'] = $this->checkChatroom($data['chatroom'], $chatroom);
+				
+
 				$chat = $this->getChat($chatID);
 
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
+
+				$commentNum = $this->getCommentNum($chatID);
+				$comment=array(
+					'chatID'=>$chatID,
+					'comment' => $commentNum
+				);
+				$result['comment'] = $this->checkComment($data['comment'],$commentNum,$chatID);
                 $now = new DateTime( 'NOW' );
 
 			}
@@ -1219,6 +1255,7 @@ use Slim\Http\UploadedFile;
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
+				'comment'=>$comment,
 				'readCount'=>$readCount,
 				'result'=>$result
 			);
@@ -1242,6 +1279,46 @@ use Slim\Http\UploadedFile;
 			}
 			return $out;
 		}
+		
+
+		function checkComment($old,$new,$chatID){
+			$map = $out = array();
+			$out['delete'] = $out['new'] = $out['change'] = array();
+			if($chatID == $old['chatID']){
+				foreach($old['comment'] as $val) {
+					$map[$val['id']]['type'] = 1; 
+					$map[$val['id']]['data'] = $val;
+				}
+				foreach($new as $val) {
+		    		if(isset($map[$val['id']])) {
+		    			if($map[$val['id']]['data']['count']!=$val['count']) {
+			    			$map[$val['id']]['type'] = 3;
+			    			$map[$val['id']]['data'] = $val;
+			    			$this->change=true;
+			    		} else {
+			    			$map[$val['id']]['type'] = 0;
+			    			$map[$val['id']]['data'] = $val;
+			    		}
+			    	}else {
+	    				$map[$val['id']]['type'] = 2;
+		    			$map[$val['id']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+		    		
+	    		}
+
+				foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data'];else if($ok['type']==3) $out['change'][] = $ok['data'];
+
+
+
+			}else{
+				// var_dump('inin');
+				$out['new'] = $new;
+    			$this->change=true;
+			}
+			return $out;
+		}
+
 		function checkClass($a, $b) {
 		    $map = $out = array();
 		    $out['delete'] = $out['new'] = $out['change'] =  $out['changeNum'] =array();
@@ -1587,6 +1664,29 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+
+		function getCommentNum($chatID){
+			$sql = 'SELECT  "sentTIme" AS "sentTime" , id,
+					case when "commentChat".count IS NULL
+						then 0 
+						else "commentChat".count
+						end
+					FROM staff_chat."commentInfo"
+					LEFT JOIN (
+						SELECT "commentID",count(*)
+						FROM staff_chat."commentChat"
+						GROUP BY "commentID"
+					)as "commentChat" on "commentChat"."commentID" = "commentInfo".id
+					WHERE "chatID" = :chatID;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+			return $row;
+
+		}
+
 		function insertClass($classID,$chatID)
 		{
 			try{
