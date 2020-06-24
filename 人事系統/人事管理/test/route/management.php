@@ -88,6 +88,10 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/seeCheckin.php', $viewParam);
 			});
+			$app->get('/checkLevel', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/checkLevel.php', $viewParam);
+			});
 
 		})->add('ManagementViewMiddleware');
 		$app->get('/login', function (Request $request, Response $response, array $args) {	
@@ -161,6 +165,37 @@ $app->group('/management', function () use ($app) {
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 			return $response;
+		});
+	});
+
+	$app->group('/holiday', function () use ($app) {
+		$app->get('/list/{department}', function (Request $request, Response $response, array $args) {
+		    $staff = new Work($this->db);
+		    $result = $staff->getlist($args["department"]);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		$app->get('/person/{department}', function (Request $request, Response $response, array $args) {
+		    $staff = new Work($this->db);
+		    $result = $staff->getPerson($args["department"]);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		$app->post('/levelAdd', function (Request $request, Response $response, array $args) {
+		    $staff = new Work($this->db);
+		    $result = $staff->levelAdd();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->post('/levelTable', function (Request $request, Response $response, array $args) {
+		    $staff = new Work($this->db);
+		    $result = $staff->levelTable();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
 		});
 	});
 });

@@ -44,7 +44,7 @@ $container['notFoundHandler'] = function ($container) {
 $container['ViewMiddleware'] = function($container) {
     return new ViewMiddleware($container->db);
 };
-$container['upload_directory'] = __DIR__ . '/../uploads';
+$container['upload_directory'] ='C:\inetpub\wwwroot\uploads';
 
 session_start();
 require_once __DIR__.'/../route/management.php';
@@ -96,7 +96,17 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');		
 			return $this->view->render($response, '/Joomla/index.php', $viewParam);
 		});
-		// $app->get('/table', function (Request $request, Response $response, array $args) {	
+		$app->group('/holiday', function () use ($app) {
+			$app->get('/apply', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/apply.php', $viewParam);
+			});
+			$app->get('/review', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/review.php', $viewParam);
+			});
+		});
+			// $app->get('/table', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
 		// 	return $this->view->render($response, '/tables.php', $viewParam);
 		// });
@@ -110,6 +120,7 @@ $app->group('', function () use ($app) {
 		session_start();
 		return $this->view->render($response, '/login.php', []);
 	});
+
 });
 
 $app->group('/user', function () use ($app) {
@@ -605,8 +616,60 @@ $app->group('/work', function () use ($app) {
 	    return $response;
 	    
 	});
-	
+
+	$app->group('/holiday', function () use ($app) {
+		$app->post('/file', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->uploadFile($this->upload_directory,$request->getUploadedFiles(),false);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('/file/{fileID}', function (Request $request, Response $response, array $args) {
+			$work = new Work($this->db);
+			$result = $work->downloadFile($args['fileID']);
+			if(isset($result['data'])){
+		    	$file = $this->upload_directory.'/'.$result['data']['fileName'];
+			    $response = $response
+			    	->withHeader('Content-Description', 'File Transfer')
+				   	->withHeader('Content-Type', 'application/octet-stream')
+				   	->withHeader('Content-Disposition', 'attachment;filename="'.$result['data']['fileNameClient'].'"')
+				   	->withHeader('Expires', '0')
+				   	->withHeader('Cache-Control', 'must-revalidate')
+				   	->withHeader('Pragma', 'public')
+				   	->withHeader('Content-Length', filesize($file));
+				readfile($file);
+			}else{
+			    $response = $response->withHeader('Content-type', 'application/json' );
+				$response = $response->withJson($result);
+			}
+			return $response;
+		});
+
+		$app->post('/holidayAsk', function (Request $request, Response $response, array $args) {
+		    $staff = new Work($this->db);
+		    $result = $staff->holidayAsk();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+
+		$app->get('/checkingData', function(Request $request, Response $response, array $args){
+			$staff = new Work($this->db);
+			$result = $staff->checkingData();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+
 });
+
+
+});
+
+
+
 
 $app->run();
 
