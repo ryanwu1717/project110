@@ -84,13 +84,16 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/deleteChat.php', $viewParam);
 			});
-			$app->get('/checkinlist', function (Request $request, Response $response, array $args) {	
+			$app->get('/oldcheckinlist', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/seeCheckin.php', $viewParam);
 			});
 			$app->get('/checkLevel', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/checkLevel.php', $viewParam);
+			$app->get('/checkinlist', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/managementCheckin.php', $viewParam);
 			});
 
 		})->add('ManagementViewMiddleware');
@@ -159,7 +162,7 @@ $app->group('/management', function () use ($app) {
 	});
 
 	$app->group('/chat', function () use ($app) {
-		$app->delete('', function (Request $request, Response $response, array $args) {		
+		$app->delete('', function (Request $request, Response $response,array $args) {		
 		    $checkin = new ChatManage($this->db);
 		    $result = $checkin->deleteChat();
 		    $response = $response->withHeader('Content-type', 'application/json' );
