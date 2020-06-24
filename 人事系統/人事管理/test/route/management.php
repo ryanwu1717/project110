@@ -91,6 +91,7 @@ $app->group('/management', function () use ($app) {
 			$app->get('/checkLevel', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/checkLevel.php', $viewParam);
+			});
 			$app->get('/checkinlist', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/managementCheckin.php', $viewParam);
@@ -202,4 +203,5 @@ $app->group('/management', function () use ($app) {
 		});
 	});
 });
+ 	
 ?>

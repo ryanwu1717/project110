@@ -106,10 +106,6 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/issue.php', $viewParam);
 		});
-		$app->get('/test', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');		
-			return $this->view->render($response, '/Joomla/index.php', $viewParam);
-		});
 		$app->group('/holiday', function () use ($app) {
 			$app->get('/apply', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');	
