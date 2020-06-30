@@ -1,4 +1,5 @@
 <?php
+use Slim\Http\UploadedFile;
 	Class Management{
 		var $result;   
 		var $conn;
@@ -302,9 +303,231 @@
 					);
 					return $ack;
 			}
-
 			
 		} 
+
+		function holidayAsk(){
+			$_POST=json_decode($_POST['data'],true);
+			if(strpos($_POST["startTime"],"請")!= false || strpos($_POST["endTime"],"請")!= false || mb_strlen($_POST["startTime"]) < 10 || mb_strlen($_POST["endTime"]) < 10){
+				$ack = array(
+					'status' => 'fail', 
+					'reason' => "時間輸入正確"
+				);
+			}else{
+				$dteStart = new DateTime($_POST["startTime"]);
+	   			$dteEnd = new DateTime($_POST["endTime"]);
+				$dteDiff = $dteStart->diff($dteEnd);
+				if($dteDiff->format("%R") == "+"){
+					// var_dump($dteDiff->format("%R%a:%H:%I:%S"));
+					$sql ='INSERT INTO holiday.form("startTime", "endTime", reason, type, now)
+						VALUES (:startTime, :endTime, :reason, :type, now());';
+					$sth = $this->conn->prepare($sql);
+					$sth->bindParam(":startTime", $_POST["startTime"]);
+					$sth->bindParam(":endTime", $_POST["endTime"]);
+					$sth->bindParam(":reason", $_POST["reason"]);
+					$sth->bindParam(":type", $_POST["type"]);
+					$sth->execute();
+					$row = $sth->fetchAll();
+					$ack = array(
+						'status' => 'success', 
+					);
+				}else{
+					$ack = array(
+						'status' => 'fail', 
+						'reason' => "時間輸入正確"
+					);
+				}
+				return $ack;
+				
+			}
+
+
+		}
+
+		function getlist($department){
+			$sql ='SELECT * 
+					FROM holiday.level
+					LEFT JOIN staff_information.department
+					on holiday.level.department = staff_information.department.department_id
+					where department = :department;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(":department", $department);
+			$sth->execute();
+			$response = $sth->fetchAll(PDO::FETCH_ASSOC);
+
+			return $response;
+		}
+
+		function getPerson($department){
+			if($department != null){
+				$sql ='SELECT id
+						FROM holiday.level
+						where department = :department
+						ORDER BY level;
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":department", $department);
+				$sth->execute();
+				$response = $sth->fetchAll(PDO::FETCH_ASSOC);
+			}else{
+				$response = array(
+				);
+			}
+			return $response;
+		}
+
+		function levelAdd(){
+			$_POST=json_decode($_POST['data'],true);
+			$name = 'SELECT staff_name
+						FROM staff.staff
+						where staff_id = :UID;
+					';
+			$sth = $this->conn->prepare($name);
+			$sth->bindParam(":UID", $_POST["UID"]);
+			$sth->execute();
+			$row = $sth->fetch();
+			if($row){
+				$dep ='SELECT department_name
+					FROM staff_information.department
+					where department_id = :department;';
+				$sth4 = $this->conn->prepare($dep);
+				$sth4->bindParam(":department", $_POST["department"]);
+				$sth4->execute();
+				$getDep = $sth4->fetch();
+				$max = 'SELECT MAX(level)
+						FROM holiday.level
+						WHERE department = :department;
+						';
+				$sth3 = $this->conn->prepare($max);
+				$sth3->bindParam(":department", $_POST["department"]);
+				$sth3->execute();
+				$big = $sth3->fetch();
+				if($big[0] == null){
+					$big[0] = 1;
+				}else{
+					$big[0] += 1;
+				}
+				
+				$ack = array(
+					'name' => $row[0],
+					'level'=> $big[0],
+					'department' => $getDep[0]
+				);
+			}else{
+				$ack = array(
+					'name' => null
+				);
+			}
+			return $ack;
+		}
+
+		function levelTable(){
+			$_POST=json_decode($_POST['data'],true);
+			$dep = (int)$_POST["tableList"][0]["department"];
+			$del ='DELETE FROM holiday.level
+					WHERE department=:department;
+					';
+			$sth = $this->conn->prepare($del);
+			$sth->bindParam(":department", $dep);
+			$sth->execute();
+			for($i=0;$i<count($_POST["tableList"]);$i++){
+				$named = $_POST["tableList"][$i]["named"];
+				$level = (int)$_POST["tableList"][$i]["level"];
+				$num = $_POST["tableList"][$i]["num"];
+				$sql ='INSERT INTO holiday.level(name, level, id, department)
+					VALUES (:name, :level, :UID, :department);
+					';
+				$sth2 = $this->conn->prepare($sql);
+				$sth2->bindParam(":name", $named);
+				$sth2->bindParam(":department", $dep);
+				$sth2->bindParam(":UID", $num);
+				$sth2->bindParam(":level", $level);
+				$sth2->execute();
+			}
+		}
+
+		
+
+		function checkingData(){
+
+			try{	 
+				$staff_id = $_SESSION['id'];	
+				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name
+						FROM holiday.form
+						INNER JOIN holiday.type
+						on holiday.form.type = holiday.type.id;';
+				$sth = $this->conn->prepare($sql);
+				$sth->execute(); 
+			    $response = $sth->fetchAll();
+			}catch(PDOException $e){
+				$response = array(
+					'status' => 'failed', 
+					'checkin'=> false
+				);
+			}	
+			return $response;
+
+		}
+
+		function uploadFile($directory,$uploadedFiles,$isPicture){
+			// handle single input with single file upload
+		    $uploadedFile = $uploadedFiles['inputFile'];
+		    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+		        $filename = $this->moveUploadedFile($directory, $uploadedFile);
+		        $UID = $_SESSION['id'];
+		        $clientName = $uploadedFile->getClientFilename();
+				$sql = 'INSERT INTO holiday.file("fileName", "UID", "fileNameClient") VALUES (:fileName, :UID, :fileNameClient);';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':fileName',$filename,PDO::PARAM_STR);
+				$sth->bindParam(':fileNameClient',$clientName,PDO::PARAM_STR);
+				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+				$sth->execute();
+				$id = $this->conn->lastInsertId();
+				// $uploadedFile->getClientFilename()
+				$result = array(
+			    	'fileID' => $id,
+			    	'fileNameClient' => $clientName,
+			    );
+				
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
+		}
+		private function moveUploadedFile($directory, UploadedFile $uploadedFile)
+		{
+		    $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+		    $basename = bin2hex(random_bytes(8)); // see http://php.net/manual/en/function.random-bytes.php
+		    $filename = sprintf('%s.%0.8s', $basename, $extension);
+		    $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+		    return $filename;
+		}
+
+		function downloadFile($fileID){	
+			$sql = '
+				SELECT id, "fileName", "fileNameClient", "uploadTime", "UID"
+				FROM holiday.file
+				WHERE id = :fileID;
+			';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':fileID',$fileID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row)==1){	
+			    $result = array(
+			    	'status' => 'success',
+			    	'data' => $row[0]
+			    );
+		    }else{
+			    $result = array(
+			    	'status' => 'failed'
+			    );
+		    }
+		    return $result;
+		}
+
 	}
 
 	Class CheckinList{

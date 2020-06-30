@@ -166,10 +166,16 @@
               <span>打卡資訊</span>
             </a>
           </li>
-           <li class="nav-item">
+          <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/deleteChat">
               <i class="fas fa-fw fa-table"></i>
               <span>刪除訊息</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/checkLevel">
+              <i class="fas fa-fw fa-table"></i>
+              <span>審核層級</span>
             </a>
           </li>
           <?php } //management end?>

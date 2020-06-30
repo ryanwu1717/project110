@@ -489,6 +489,7 @@ function routine(){
           }else if(key=='chat'){
             changeChat('routine',response);
             changeStar('routine',response);
+            changeComment('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
           }else if(key=='readCount'){
@@ -521,6 +522,24 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
+
+function changeComment(type,data){
+  console.log(data.result.comment);
+  $.each(data.result.comment.new,function(){
+    console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).data('sendtime'));
+    console.log(this.sentTime);
+    if(this.count!=0){
+      $(`[name=iconComment][data-senttime="${this.sentTime}"]`).append(`${this.count}`);
+    }
+     console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).text());
+    
+  });
+  $.each(data.result.comment.change,function(){
+    if(this.count!=0){
+      $(`[name=iconComment][data-senttime="${this.sentTime}"]`).html(`<i class="fa fa-reply" aria-hidden="true"></i>${this.count}`);
+    }
+  });
+}
 function changeReadCount(type,data){
   if(data.result.readCount.new.length!=0 || data.result.readCount.change.length!=0 ||data.result.readCount.delete.length!=0 ){
     var readcountElement = data.readCount.shift();
@@ -540,37 +559,21 @@ function changeReadCount(type,data){
 function changeStar(type,data){
   if(type == 'init'){
     $.each(data.num,function(){
-      // console.log(this.count);
       $('[name=starNotificationNum]').empty();
       $('[name=starNotificationNum]').append(this.count);
     });
   }else if(type == 'routine'){
-    console.log(data.result.star);
-    // if(data.result.star.change != ''){
-    //   $('[name=starNotificationNum]').empty();
-    //   $('[name=starNotificationNum]').append(data.change);
-    // }
     $.each(data.result.star.change,function(){
-      console.log(this);
+      // console.log(this);
       $('[name=starNotificationNum]').empty();
       $('[name=starNotificationNum]').append(this);
     });
     $.each(data.result.star.new,function(){
-      // console.log(this.sentTime);
-      // console.log($('[name="starBtn"]'));
-      // console.log($('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]'));
-
-      // $('button[name=starBtn]').find("i").css("color","#FFBB00");
       $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#FFBB00");
     });
     $.each(data.result.star.delete,function(){
-      // console.log(this.sentTime);
-      // console.log("delete");
-
       $('[name=starBtn]').find('[data-senttime="'+this.sentTime+'"]').css("color","#AAAAAA");
     });
-        
-    
   }
 }
 
@@ -818,8 +821,10 @@ function changeChat(type,data){
           '</button>'+
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
-          '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          `<button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" onclick=\'addLikeID(\"${this.content}\",\"${this.fullsentTime}\",\"${this.UID}\",${this.likeID},${chatID});\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.LikeCount}</button>`+
+          '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
+          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
+            this.LikeCount+
+          '</a>'+
         '</div>'
       );
     }
@@ -1380,6 +1385,7 @@ function beforeTag(tmpSplit,tmpFullTime){
 }
 function sendMsg(){
   Msg=$("#textinput").val();
+  Msg=Msg.replace(/\'/g,"’");
   $('[name=chatBox]').append(
     '<div class="text-right outgoing_msg" name="msgSendNow" data-sentTime="">'+
       '<div class="d-flex flex-row-reverse bd-highlight">'+
@@ -1710,6 +1716,13 @@ function getReadlist(relatedData){
 // var tmpCommentID;
 
 function getComment(relatedData){
+  $('#basicModal .modal-title').text('留言板');
+  $('#basicModal .modal-body').html(`
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>`);
+
+  
   var scrollableComment = false;
   var data = new Object();
   data['UID'] = relatedData['uid'];
@@ -1733,6 +1746,9 @@ function getComment(relatedData){
         <h5>留言</h5>
         <div class="card">
           <div class="card-body overflow-auto" name="comment" style="height:30vh">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
           </div>
         </div>
           <div class="dropup" id = "dropupTag">
