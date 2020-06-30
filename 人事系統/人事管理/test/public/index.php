@@ -327,7 +327,7 @@ $app->group('/table', function () use ($app) {
 });
 
 $app->group('/chat', function () use ($app) {
-	$app->post('/likeID',function (Request $request, Response $response, array $args){
+	$app->patch('/likeID',function (Request $request, Response $response, array $args){
 		$chat = new Chat($this->db);
 		$result = $chat->addlikeID($request->getParsedBody());
 	    $response = $response->withHeader('Content-type', 'application/json' );
@@ -421,7 +421,21 @@ $app->group('/chat', function () use ($app) {
 	});
 	$app->get('/checkLiked', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
-		$result = $chat->checkLiked($request->getParsedBody());
+		$result = $chat->checkLiked($_GET);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->post('/addLikeID', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->addLikeID($_POST);
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
+	$app->patch('/deleteLike', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->deleteLike($request->getParsedBody());
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 	    return $response;

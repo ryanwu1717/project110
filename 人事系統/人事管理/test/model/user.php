@@ -1094,7 +1094,7 @@ use Slim\Http\UploadedFile;
 		   	$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 			$sth->execute();
 			$row = $sth->fetchColumn(0);
-			var_dump($row);
+			// var_dump($row);
 			$tmpName = '你被 '.$row.' 標註在一則訊息';
 			// var_dump($_POST);
 			try{
@@ -1785,16 +1785,67 @@ use Slim\Http\UploadedFile;
 		function checkLiked($body){
 			$sql='SELECT "likeID"
 			FROM staff_chat."chatContent"
-			where "content"=:content and "sentTime"=:fullsentTime;';
+			where "chatID"=:chatID and "sentTime"=:fullsentTime;';
 
 			$sth = $this->conn->prepare($sql);
-			$content=$body['content'];
 			$fullsentTime=$body['fullsentTime'];
-			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
+			$chatID=$body['chatID'];
+			$sth->bindParam(':fullsentTime',$fullsentTime,PDO::PARAM_STR);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
 
 			$row = $sth->fetchAll();
+			return $row;
+		}
+		// function addLikeID($body){
+		// 	$sql='SELECT "likeID"
+		// 	FROM staff_chat."chatContent"
+		// 	where "chatID"=:chatID and "sentTime"=:fullsentTime;';
+
+		// 	$sth = $this->conn->prepare($sql);
+		// 	$fullsentTime=$body['fullsentTime'];
+		// 	$chatID=$body['chatID'];
+		// 	$sth->bindParam(':fullsentTime',$fullsentTime,PDO::PARAM_STR);
+		// 	$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+		// 	$sth->execute();
+
+		// 	$row = $sth->fetchAll();
+		// 	return $row;
+		// }
+		function deleteLike($body){
+			$sql='SELECT "chatContent"."likeID"
+			FROM staff_chat."chatContent"
+			left join (
+				SELECT "likeID"
+				FROM staff_chat."chatLikeCount"
+				where "UID"= :UID )as "userLiked"
+			on "chatContent"."likeID"="userLiked"."likeID"
+			where "chatID"=:chatID and "sentTime"=:fullsentTime;';
+
+			$sth = $this->conn->prepare($sql);
+			$fullsentTime=$body['fullsentTime'];
+			$chatID=$body['chatID'];
+			$UID=$body['UID'];
+			$sth->bindParam(':fullsentTime',$fullsentTime,PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->bindParam(':UID',$UID,PDO::PARAM_INT);
+			$sth->execute();
+
+			$row = $sth->fetchAll();
+			// $row[0]['likeID']
+			if(count($row) != 0){
+				$sql ='
+					INSERT INTO staff_chat."commentInfo"("chatID", "sentTIme")
+					VALUES (:chatID, :sentTIme);
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
+				$sth->bindParam(':sentTIme',$sendtime,PDO::PARAM_INT);
+				$sth->execute();
+				return intval($this->conn->lastInsertId());
+			}else{
+				return ($row[0]['id']);
+			}
 			return $row;
 		}
 		function getReadList($body){
@@ -1965,7 +2016,7 @@ use Slim\Http\UploadedFile;
 				// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
 				$sth->execute();
 				$row = $sth->fetchAll();
-				var_dump($row);
+				// var_dump($row);
 				if(count($row)==$data['count']){
 					usleep(3000000);
 				}else{
@@ -2200,15 +2251,15 @@ use Slim\Http\UploadedFile;
 			return $ack;
 		}
 		function addlikeID($body){
-			$body=json_decode($body['data'],true);
+			// $body=json_decode($body['data'],true);
 			$likeID=$body['likeID'];
-			var_dump($body);
-			if(is_null($likeID)){
+			var_dump($body['likeID']);
+			if($likeID==-1){//確認前端無likeID
 				$sql='
 					SELECT "likeID"
 					FROM staff_chat."chatContent"
 					where content=:content AND "UID"=:UID AND "sentTime"=:senttime AND"chatID"=:chatID;
-				';
+				';//確認資料庫無likeID
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
 				$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
@@ -2216,7 +2267,7 @@ use Slim\Http\UploadedFile;
 				$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
 				$sth->execute();
 				$row = $sth->fetchAll();
-				var_dump($row);
+				// var_dump($row);
 				if(count($row)==1){
 					if($row[0]["likeID"]==null){
 					// var_dump($content,$senttime,$UID,$chatID);
@@ -2224,7 +2275,7 @@ use Slim\Http\UploadedFile;
 						UPDATE staff_chat."chatContent"
 						SET "likeID"=nextval(\'staff_chat."chatContent_likeID_seq"\'::regclass)
 						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID AND "likeID" is NULL;
-					';
+					';//如資料庫無likeID則新增
 					$sth = $this->conn->prepare($sql);
 					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
 					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
@@ -2239,7 +2290,7 @@ use Slim\Http\UploadedFile;
 						SELECT "UID","likeID"
 						FROM staff_chat."chatContent"
 						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID ;
-					';
+					';//抓取新增的likeID
 					$sth = $this->conn->prepare($sql);
 					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
 					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
@@ -2253,7 +2304,7 @@ use Slim\Http\UploadedFile;
 					$sql='
 						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
 						VALUES (:likeID, :UID);
-					';
+					';//新增按愛心
 					$sth = $this->conn->prepare($sql);
 					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
@@ -2263,7 +2314,7 @@ use Slim\Http\UploadedFile;
 		    	}
 
 			}
-			else{
+			else{//搜尋是否按愛心
 				$sql='
 					SELECT *
 					FROM staff_chat."chatLikeCount"
@@ -2275,9 +2326,9 @@ use Slim\Http\UploadedFile;
 				$sth->execute();
 				$row=$sth->fetchAll();
 
-				var_dump($row);
+				// var_dump($row);
 
-				if(count($row)==1){
+				if(count($row)==1){//有搜尋結果則取消按讚
 				//dislike
 					if($row[0]["likeID"]!=null){
 					$sql='
@@ -2290,7 +2341,7 @@ use Slim\Http\UploadedFile;
 					$sth->execute();
 					}
 				}
-				else{
+				else{//反之新增
 					$sql='
 						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
 						VALUES (:likeID, :UID);

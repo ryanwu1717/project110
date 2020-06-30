@@ -781,6 +781,8 @@ function changeChat(type,data){
         '</div>'
       );
     }
+    // console.log(newChat);
+    // console.log(this.likeID);
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
@@ -798,7 +800,7 @@ function changeChat(type,data){
           <small>${this.sentTime}</small>
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
           <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" ><i class="fa fa-reply" aria-hidden="true"></i></a>
-          <a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
+          <button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" onclick=\'addLikeID(\"${this.content}\",\"${this.fullsentTime}\",\"${this.UID}\",${this.likeID},${chatID});\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.LikeCount}</button>
         </div>`
       );
     }
@@ -817,9 +819,7 @@ function changeChat(type,data){
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" ><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
-            this.LikeCount+
-          '</a>'+
+          `<button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" onclick=\'addLikeID(\"${this.content}\",\"${this.fullsentTime}\",\"${this.UID}\",${this.likeID},${chatID});\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.LikeCount}</button>`+
         '</div>'
       );
     }
@@ -856,23 +856,79 @@ function changeChat(type,data){
   });
 }
 
-function likeChange(content,fullsentTime,UID,likeID){
-  if(likeID==null){
-    console.log("16565");
-    console.log(checkLiked(content,fullsentTime));
-  }
+function likeChange(content,senttime,UID,likeID,liked,chatID){
+  console.log(fullsentTime);
+  // switch(liked){
+  //   case true:
+  //   console.log("liked");
+  //     deleteLike(chatID,senttime,UID);
+  //     break;
+  //   case false:
+  //     console.log("nonliked");
+  //     console.log("0");
+  //     break;
+  //   case null:
+  //     console.log("000000000");
+  //     console.log(checkLiked(content,UID,chatID,likeID,senttime));
+  //     break;
+  // }
 }
 
-function checkLiked(content,fullsentTime){
+function checkLiked(content,UID,chatID,likeID,senttime){
+  var uuu;
   $.ajax({
-    url:'/chat/checkLiked/',
+    url:'/chat/checkLiked',
     type:'get',
-    data:{content:content,fullsentTime:fullsentTime},
+    data:{chatID:chatID,fullsentTime:fullsentTime},
     dataType:'json',
     success:function(response){
-      return response;
+      console.log(response[0].likeID);
+      if(response[0].likeID==null){
+
+        console.log("777");
+      }
     }
   });
+  console.log(uuu);
+  return uuu;
+}
+function addLikeID(content,senttime,UID,likeID,chatID){
+  console.log("inF");
+  console.log(content,senttime,UID,likeID,chatID);
+  if(likeID==null){
+    likeID=-1;
+    $.ajax({
+    url:'/chat/likeID',
+    type:'patch',
+    data:{content:content, UID:UID, chatID:chatID, likeID:likeID, senttime:senttime},
+    dataType:'json',
+    success:function(response){
+      // console.log(response);
+      // if(response.likeID==null){
+      //   console.log("777");
+      // }
+    }
+  });
+  }
+  
+}
+function deleteLike(chatID,fullsentTime,UID){
+  console.log("123");
+  var uuu;
+  $.ajax({
+    url:'/chat/deleteLike',
+    type:'patch',
+    data:{chatID:chatID,fullsentTime:fullsentTime,UID:UID},
+    dataType:'json',
+    success:function(response){
+      console.log(response[0].likeID);
+      if(response[0].likeID==null){
+        console.log("777");
+      }
+    }
+  });
+  console.log(uuu);
+  return uuu;
 }
 
 function updateLastReadTime(){
