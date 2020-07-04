@@ -387,7 +387,7 @@ function todoStar(cliclTime,chatID,content,button){
             })},
       dataType:'json',
       success:function(response){
-        console.log(response);
+        // console.log(response);
 
       }
     });
@@ -409,7 +409,7 @@ function todoStar(cliclTime,chatID,content,button){
             })},
       dataType:'json',
       success:function(response){
-        console.log(response);
+        // console.log(response);
 
       }
     });
@@ -490,6 +490,7 @@ function routine(){
             changeChat('routine',response);
             changeStar('routine',response);
             changeComment('routine',response);
+            changeHeart(response)
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
           }else if(key=='readCount'){
@@ -498,7 +499,7 @@ function routine(){
           
         });
       }
-      console.log(response);
+      // console.log(response);
       if(tmpTagMsg!=""){
         // console.log("in");
         //console.log(tmpTagMsg);
@@ -522,16 +523,49 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
+function changeHeart(data){
+   $.each(data.result.heartNum.new,function(){
+    // console.log(this.count);
+    $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`
+      <i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.count}
+      `);
+   });
+   $.each(data.result.heartNum.delete,function(){
+    $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`
+      <i class="fa fa-heart mr-1" aria-hidden="true"></i>0
+      `);
+   });
+   $.each(data.result.heartClick.new,function(){
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'true');
+    });
+   $.each(data.result.heartClick.delete,function(){
 
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'false');
+    });
+   $.each(data.result.heartNum.change,function(){
+    $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.count}`);
+    // if($(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick")=='false'){
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
+    // }else{
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
+    // }
+    
+   });
+}
 function changeComment(type,data){
-  console.log(data.result.comment);
   $.each(data.result.comment.new,function(){
-    console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).data('sendtime'));
-    console.log(this.sentTime);
+    // console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).data('sendtime'));
+    // console.log(this.sentTime);
     if(this.count!=0){
       $(`[name=iconComment][data-senttime="${this.sentTime}"]`).append(`${this.count}`);
     }
-     console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).text());
+     // console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).text());
     
   });
   $.each(data.result.comment.change,function(){
@@ -803,7 +837,7 @@ function changeChat(type,data){
           <small>${this.sentTime}</small>
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
           <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" ><i class="fa fa-reply" aria-hidden="true"></i></a>
-          <button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" onclick=\'addLikeID(\"${this.content}\",\"${this.fullsentTime}\",\"${this.UID}\",${this.likeID},${chatID});\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.LikeCount}</button>
+          <button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button>
         </div>`
       );
     }
@@ -822,9 +856,9 @@ function changeChat(type,data){
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
-            this.LikeCount+
-          '</a>'+
+          '<button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-isClick="false" onclick=\'onclickHeart(this,\"'+this.fullsentTime+'\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
+            0+
+          '</button>'+
         '</div>'
       );
     }
@@ -852,7 +886,7 @@ function changeChat(type,data){
         success:function(response){
           //routine();
           // console.log(response.time);
-          console.log($(currentTooltip).attr('aria-describedby'));
+          // console.log($(currentTooltip).attr('aria-describedby'));
           $('div#'+$(currentTooltip).attr('aria-describedby')).find('div.tooltip-inner').text(response.time);
             }
       });
@@ -860,81 +894,36 @@ function changeChat(type,data){
     // getStatus($(this).attr("data-id"),this);
   });
 }
+function onclickHeart(button,senttime){
+  var tmpHeartNum = parseInt($(button).text());
+  if($(button).attr("data-isClick") == 'false'){
+    $(button).attr("data-isClick",'true');
+    $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum+1}`);
+    $(button).css("background-color","#FFFFFF");
+    $(button).css("color","#d9534f");
 
-function likeChange(content,senttime,UID,likeID,liked,chatID){
-  console.log(fullsentTime);
-  // switch(liked){
-  //   case true:
-  //   console.log("liked");
-  //     deleteLike(chatID,senttime,UID);
-  //     break;
-  //   case false:
-  //     console.log("nonliked");
-  //     console.log("0");
-  //     break;
-  //   case null:
-  //     console.log("000000000");
-  //     console.log(checkLiked(content,UID,chatID,likeID,senttime));
-  //     break;
-  // }
-}
-
-function checkLiked(content,UID,chatID,likeID,senttime){
-  var uuu;
-  $.ajax({
-    url:'/chat/checkLiked',
-    type:'get',
-    data:{chatID:chatID,fullsentTime:fullsentTime},
-    dataType:'json',
-    success:function(response){
-      console.log(response[0].likeID);
-      if(response[0].likeID==null){
-
-        console.log("777");
-      }
-    }
-  });
-  console.log(uuu);
-  return uuu;
-}
-function addLikeID(content,senttime,UID,likeID,chatID){
-  console.log("inF");
-  console.log(content,senttime,UID,likeID,chatID);
-  if(likeID==null){
-    likeID=-1;
-    $.ajax({
-    url:'/chat/likeID',
-    type:'patch',
-    data:{content:content, UID:UID, chatID:chatID, likeID:likeID, senttime:senttime},
-    dataType:'json',
-    success:function(response){
-      // console.log(response);
-      // if(response.likeID==null){
-      //   console.log("777");
-      // }
-    }
-  });
+  }else{
+    $(button).attr("data-isClick", 'false' );
+    $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum-1}`);
+    $(button).css("background-color","#d9534f");
+    $(button).css("color","#FFFFFF");
+    
   }
-  
-}
-function deleteLike(chatID,fullsentTime,UID){
-  console.log("123");
-  var uuu;
   $.ajax({
-    url:'/chat/deleteLike',
-    type:'patch',
-    data:{chatID:chatID,fullsentTime:fullsentTime,UID:UID},
-    dataType:'json',
-    success:function(response){
-      console.log(response[0].likeID);
-      if(response[0].likeID==null){
-        console.log("777");
+      url:'/chat/heart',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : senttime
+            }),_METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        // console.log(response);
+
       }
-    }
-  });
-  console.log(uuu);
-  return uuu;
+    });
 }
+
 
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
