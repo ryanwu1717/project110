@@ -1956,72 +1956,7 @@ use Slim\Http\UploadedFile;
 			array_push($row,array('chatID'=>$data['chatID']));
 			return $row;
 		}
-		// function checkLiked($body){
-		// 	$sql='SELECT "likeID"
-		// 	FROM staff_chat."chatContent"
-		// 	where "chatID"=:chatID and "sentTime"=:fullsentTime;';
-
-		// 	$sth = $this->conn->prepare($sql);
-		// 	$fullsentTime=$body['fullsentTime'];
-		// 	$chatID=$body['chatID'];
-		// 	$sth->bindParam(':fullsentTime',$fullsentTime,PDO::PARAM_STR);
-		// 	$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-		// 	$sth->execute();
-
-		// 	$row = $sth->fetchAll();
-		// 	return $row;
-		// }
-		// function addLikeID($body){
-		// 	$sql='SELECT "likeID"
-		// 	FROM staff_chat."chatContent"
-		// 	where "chatID"=:chatID and "sentTime"=:fullsentTime;';
-
-		// 	$sth = $this->conn->prepare($sql);
-		// 	$fullsentTime=$body['fullsentTime'];
-		// 	$chatID=$body['chatID'];
-		// 	$sth->bindParam(':fullsentTime',$fullsentTime,PDO::PARAM_STR);
-		// 	$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-		// 	$sth->execute();
-
-		// 	$row = $sth->fetchAll();
-		// 	return $row;
-		// }
-		// function deleteLike($body){
-		// 	$sql='SELECT "chatContent"."likeID"
-		// 	FROM staff_chat."chatContent"
-		// 	left join (
-		// 		SELECT "likeID"
-		// 		FROM staff_chat."chatLikeCount"
-		// 		where "UID"= :UID )as "userLiked"
-		// 	on "chatContent"."likeID"="userLiked"."likeID"
-		// 	where "chatID"=:chatID and "sentTime"=:fullsentTime;';
-
-		// 	$sth = $this->conn->prepare($sql);
-		// 	$fullsentTime=$body['fullsentTime'];
-		// 	$chatID=$body['chatID'];
-		// 	$UID=$body['UID'];
-		// 	$sth->bindParam(':fullsentTime',$fullsentTime,PDO::PARAM_STR);
-		// 	$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
-		// 	$sth->bindParam(':UID',$UID,PDO::PARAM_INT);
-		// 	$sth->execute();
-
-		// 	$row = $sth->fetchAll();
-		// 	// $row[0]['likeID']
-		// 	if(count($row) != 0){
-		// 		$sql ='
-		// 			INSERT INTO staff_chat."commentInfo"("chatID", "sentTIme")
-		// 			VALUES (:chatID, :sentTIme);
-		// 		';
-		// 		$sth = $this->conn->prepare($sql);
-		// 		$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
-		// 		$sth->bindParam(':sentTIme',$sendtime,PDO::PARAM_INT);
-		// 		$sth->execute();
-		// 		return intval($this->conn->lastInsertId());
-		// 	}else{
-		// 		return ($row[0]['id']);
-		// 	}
-		// 	return $row;
-		// }
+		
 		function getReadList($body){
 			$data = json_decode($body['data'],true);
 			$sql = '

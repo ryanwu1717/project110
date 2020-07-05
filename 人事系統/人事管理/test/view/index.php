@@ -536,14 +536,16 @@ function changeHeart(data){
       `);
    });
    $.each(data.result.heartClick.new,function(){
-      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'true');
     });
    $.each(data.result.heartClick.delete,function(){
 
-      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
-      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#AAAAAA");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'false');
     });
    $.each(data.result.heartNum.change,function(){
@@ -560,12 +562,9 @@ function changeHeart(data){
 }
 function changeComment(type,data){
   $.each(data.result.comment.new,function(){
-    // console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).data('sendtime'));
-    // console.log(this.sentTime);
     if(this.count!=0){
       $(`[name=iconComment][data-senttime="${this.sentTime}"]`).append(`${this.count}`);
     }
-     // console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).text());
     
   });
   $.each(data.result.comment.change,function(){
@@ -836,8 +835,8 @@ function changeChat(type,data){
 
           <small>${this.sentTime}</small>
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
-          <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" ><i class="fa fa-reply" aria-hidden="true"></i></a>
-          <button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button>
+          <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>
+          <button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button>
         </div>`
       );
     }
@@ -856,7 +855,7 @@ function changeChat(type,data){
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<button class="btn badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-isClick="false" onclick=\'onclickHeart(this,\"'+this.fullsentTime+'\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
+          '<button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-isClick="false" onclick=\'onclickHeart(this,\"'+this.fullsentTime+'\");\'><i class="fa fa-heart mr-1"  aria-hidden="true"></i>'+
             0+
           '</button>'+
         '</div>'
@@ -899,14 +898,14 @@ function onclickHeart(button,senttime){
   if($(button).attr("data-isClick") == 'false'){
     $(button).attr("data-isClick",'true');
     $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum+1}`);
-    $(button).css("background-color","#FFFFFF");
     $(button).css("color","#d9534f");
+    // $(button).css("color","#d9534f");
 
   }else{
     $(button).attr("data-isClick", 'false' );
     $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum-1}`);
-    $(button).css("background-color","#d9534f");
-    $(button).css("color","#FFFFFF");
+    $(button).css("color","#AAAAAA");
+    // $(button).css("color","#FFFFFF");
     
   }
   $.ajax({
@@ -1871,13 +1870,7 @@ $('#newModal').on('show.bs.modal',function(e){
     '</div>'
   );
 
-  // var data = new Object();
-  // data['UID'] = $(e.relatedTarget).data('uid');
-  // data['sentTime'] = tmpsendtime;
-  // data['content'] = decodeURIComponent($(e.relatedTarget).data('content'));
-  // data['chatID'] = chatID;
-  // data['commentID'] = $(e.relatedTarget).data('commentid');
-  // console.log(data);
+ 
 
   $.ajax({
     url:`/chat/commentReadlist/${tmpTarget.data('commentid')}/${encodeURIComponent(tmpTarget.data('senttime'))}/${tmpTarget.data('uid')}/${chatID}`,
