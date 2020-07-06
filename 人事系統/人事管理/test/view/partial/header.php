@@ -73,6 +73,18 @@
               <span>打卡</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/holiday/review">
+              <i class="fa fa-file" aria-hidden="true"></i>
+              <span>請假</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>">
+              <i class="fa fa-archive" aria-hidden="true"></i>
+              <span>審核假單</span>
+            </a>
+          </li>
           <!-- Nav Item - Pages Collapse Menu -->
           <!-- <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">

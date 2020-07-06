@@ -349,7 +349,8 @@ use Slim\Http\UploadedFile;
 					FROM holiday.level
 					LEFT JOIN staff_information.department
 					on holiday.level.department = staff_information.department.department_id
-					where department = :department;';
+					where department = :department
+					ORDER BY level;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(":department", $department);
 			$sth->execute();
@@ -420,7 +421,7 @@ use Slim\Http\UploadedFile;
 			}
 			return $ack;
 		}
-
+		//把level先複製在檢查level(未實做)
 		function levelTable(){
 			$_POST=json_decode($_POST['data'],true);
 			$dep = (int)$_POST["tableList"][0]["department"];

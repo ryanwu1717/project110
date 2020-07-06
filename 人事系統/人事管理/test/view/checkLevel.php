@@ -32,7 +32,7 @@
                 </div>
             </div>
         	</br></br>
-            <div class="col-md-12">
+            <div class="col-md-12 table-responsive">
             	<table class="table table-striped" id="table">
             		<thead>
             			<tr>
@@ -87,16 +87,15 @@
 				type: 'GET',
 				dataType: 'json',
 				beforeSend: function(){
-					console.log()
 				},
 				success: function(response){
+					console.log(response);
 					if(response.length == 0){
 						var td = $('<td colspan="5">').text("資料是空的");
 						var tr = $('<tr>').append(td);
 						$('#table tbody').append(tr);
 					}
 					$(response).each(function(i,n){
-						console.log(n);
 						var tr = $(`
 							<tr>
 								<td>
@@ -131,7 +130,7 @@
 
 	});
 
-
+	//level 判斷在前端
 	function sent(){
 		var tableList = new Array();
 		$.each($("#table tbody").children(), function(i,n){
@@ -142,21 +141,35 @@
 			temp.department = $("#department").val();
 			tableList.push(temp);
 		});
-		console.log(tableList);
-		$.ajax({
-			url: '/management/holiday/levelTable',
-			type: 'POST',
-			dataType: 'json',
-			data: {
-				data:JSON.stringify({
-					tableList
-        		})
-			},
-		});
+		var isLevel = true;
+		for(var i = 0; i<tableList.length; i++){
+			for(var j = i + 1; j < tableList.length; j++){
+				if(tableList[i].level == tableList[j].level){
+					isLevel = false;
+				}
+			}
+		}
+		if(isLevel){
+			$.ajax({
+				url: '/management/holiday/levelTable',
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					data:JSON.stringify({
+						tableList
+	        		})
+				},
+				success: function(){
+					alert("送出成功");
+				}
+			});
+		}else{
+			alert("層級錯誤");
+		}
+		
 	}
 
 	function del(i){
-		console.log(i);
 		$("[name='delBtn"+i+"']").parent().parent().remove();
 		$("[name='levelSelect']").empty();
 		for(var k = 1; k<=$("#table tbody").children().length; k++){
