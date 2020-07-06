@@ -387,7 +387,7 @@ function todoStar(cliclTime,chatID,content,button){
             })},
       dataType:'json',
       success:function(response){
-        console.log(response);
+        // console.log(response);
 
       }
     });
@@ -409,7 +409,7 @@ function todoStar(cliclTime,chatID,content,button){
             })},
       dataType:'json',
       success:function(response){
-        console.log(response);
+        // console.log(response);
 
       }
     });
@@ -490,13 +490,16 @@ function routine(){
             changeChat('routine',response);
             changeStar('routine',response);
             changeComment('routine',response);
+            changeHeart(response)
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
           }else if(key=='readCount'){
             changeReadCount('routine',response);
           }
+          
         });
       }
+      // console.log(response);
       if(tmpTagMsg!=""){
         // console.log("in");
         //console.log(tmpTagMsg);
@@ -520,16 +523,48 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
+function changeHeart(data){
+   $.each(data.result.heartNum.new,function(){
+    // console.log(this.count);
+    $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`
+      <i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.count}
+      `);
+   });
+   $.each(data.result.heartNum.delete,function(){
+    $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`
+      <i class="fa fa-heart mr-1" aria-hidden="true"></i>0
+      `);
+   });
+   $.each(data.result.heartClick.new,function(){
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'true');
+    });
+   $.each(data.result.heartClick.delete,function(){
 
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
+      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#AAAAAA");
+      $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'false');
+    });
+   $.each(data.result.heartNum.change,function(){
+    $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.count}`);
+    // if($(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick")=='false'){
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
+    // }else{
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
+    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
+    // }
+    
+   });
+}
 function changeComment(type,data){
-  console.log(data.result.comment);
   $.each(data.result.comment.new,function(){
-    console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).data('sendtime'));
-    console.log(this.sentTime);
     if(this.count!=0){
       $(`[name=iconComment][data-senttime="${this.sentTime}"]`).append(`${this.count}`);
     }
-     console.log($(`[name=iconComment][data-senttime="${this.sentTime}"]`).text());
     
   });
   $.each(data.result.comment.change,function(){
@@ -782,6 +817,8 @@ function changeChat(type,data){
         '</div>'
       );
     }
+    // console.log(newChat);
+    // console.log(this.likeID);
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
@@ -799,7 +836,7 @@ function changeChat(type,data){
           <small>${this.sentTime}</small>
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
           <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>
-          <a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#"><i class="fa fa-heart mr-1" aria-hidden="true"></i>1</a>
+          <button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button>
         </div>`
       );
     }
@@ -818,9 +855,9 @@ function changeChat(type,data){
 
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-          '<a style="display:none" class="badge badge-danger ml-1" name="badgeLike" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" onclick=\'addLike(\"'+this.content+'\",\"'+this.fullsentTime+'\",\"'+this.UID+'\",'+this.likeID+');\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>'+
-            this.LikeCount+
-          '</a>'+
+          '<button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-isClick="false" onclick=\'onclickHeart(this,\"'+this.fullsentTime+'\");\'><i class="fa fa-heart mr-1"  aria-hidden="true"></i>'+
+            0+
+          '</button>'+
         '</div>'
       );
     }
@@ -848,7 +885,7 @@ function changeChat(type,data){
         success:function(response){
           //routine();
           // console.log(response.time);
-          console.log($(currentTooltip).attr('aria-describedby'));
+          // console.log($(currentTooltip).attr('aria-describedby'));
           $('div#'+$(currentTooltip).attr('aria-describedby')).find('div.tooltip-inner').text(response.time);
             }
       });
@@ -856,6 +893,37 @@ function changeChat(type,data){
     // getStatus($(this).attr("data-id"),this);
   });
 }
+function onclickHeart(button,senttime){
+  var tmpHeartNum = parseInt($(button).text());
+  if($(button).attr("data-isClick") == 'false'){
+    $(button).attr("data-isClick",'true');
+    $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum+1}`);
+    $(button).css("color","#d9534f");
+    // $(button).css("color","#d9534f");
+
+  }else{
+    $(button).attr("data-isClick", 'false' );
+    $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum-1}`);
+    $(button).css("color","#AAAAAA");
+    // $(button).css("color","#FFFFFF");
+    
+  }
+  $.ajax({
+      url:'/chat/heart',
+      type:'post',
+      data:{data:JSON.stringify({
+              chatID:chatID,
+              time : senttime
+            }),_METHOD:'PATCH'},
+      dataType:'json',
+      success:function(response){
+        // console.log(response);
+
+      }
+    });
+}
+
+
 function updateLastReadTime(){
   if(queue['lastReadTime']!=null)
     queue['lastReadTime'].abort();
@@ -874,7 +942,7 @@ $('[name=bellbtn]').parent().show();
 $(function(){
   $('[name=bellbtn]').click(getNotification);
 });
-  
+
 function getNotification(){
   console.log("inget");
   $('[name=bellDropdown]').empty();
@@ -1802,13 +1870,7 @@ $('#newModal').on('show.bs.modal',function(e){
     '</div>'
   );
 
-  // var data = new Object();
-  // data['UID'] = $(e.relatedTarget).data('uid');
-  // data['sentTime'] = tmpsendtime;
-  // data['content'] = decodeURIComponent($(e.relatedTarget).data('content'));
-  // data['chatID'] = chatID;
-  // data['commentID'] = $(e.relatedTarget).data('commentid');
-  // console.log(data);
+ 
 
   $.ajax({
     url:`/chat/commentReadlist/${tmpTarget.data('commentid')}/${encodeURIComponent(tmpTarget.data('senttime'))}/${tmpTarget.data('uid')}/${chatID}`,

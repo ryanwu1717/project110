@@ -1119,7 +1119,7 @@ use Slim\Http\UploadedFile;
 		   	$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
 			$sth->execute();
 			$row = $sth->fetchColumn(0);
-			var_dump($row);
+			// var_dump($row);
 			$tmpName = '你被 '.$row.' 標註在一則訊息';
 			// var_dump($_POST);
 			try{
@@ -1167,7 +1167,9 @@ use Slim\Http\UploadedFile;
 				'chatroom'=>$chatroom,
 				'chat'=>array(),
 				'comment'=>array(),
+				'heart'=>array(),
 				'readCount'=>array(),
+				// 'like'=>array(),
 				'result'=>array(
 					'class'=>array(),
 					'chatroom'=>array(),
@@ -1177,11 +1179,15 @@ use Slim\Http\UploadedFile;
 						'count'=>-1,
 						'new'=>array()
 					),
+					'like'=>array(
+						'new'=>array(),
+						'change'=>array()
+					),
 					'readCount'=>array(
 						'new'=>array(),
 						'delete'=>array(),
 						'change'=>array()
-					),
+					)
 				)
 			);
 			return $ack;
@@ -1202,6 +1208,7 @@ use Slim\Http\UploadedFile;
 					$data = $_SESSION['last'][$timestamp];
 				}
 				$this->firstCheck=true;
+				// $like = $this->getLike($chatID);
 				$class = $this->getClass();
 				$notification = $this->getNotificationNum();
 				$starNum = $this->getStar('num');
@@ -1237,13 +1244,22 @@ use Slim\Http\UploadedFile;
 				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
-
+				// $result['like']= $this->checkLike($data['like'],$like);
 				$commentNum = $this->getCommentNum($chatID);
 				$comment=array(
 					'chatID'=>$chatID,
 					'comment' => $commentNum
 				);
 				$result['comment'] = $this->checkComment($data['comment'],$commentNum,$chatID);
+				$clickHeart = $this->getChatHeart($chatID);
+				$heartNum = $this->getChatHeartNum($chatID);
+				$heart=array(
+					'chatID'=>$chatID,
+					'num' => $heartNum,
+					'click' =>$clickHeart
+				);
+				$result['heartNum'] = $this->checkHeartNum($data['heart'],$heart);
+				$result['heartClick'] = $this->checkHeartClick($data['heart'],$heart);
                 $now = new DateTime( 'NOW' );
 
 			}
@@ -1256,7 +1272,9 @@ use Slim\Http\UploadedFile;
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
 				'comment'=>$comment,
+				'heart'=>$heart,
 				'readCount'=>$readCount,
+				// 'like'=>$like,
 				'result'=>$result
 			);
 			return $ack;
@@ -1279,7 +1297,80 @@ use Slim\Http\UploadedFile;
 			}
 			return $out;
 		}
-		
+		function checkHeartNum($old,$new){
+			$map = $out = array();
+			$out['delete'] = $out['new'] = $out['change'] = array();
+			if($new['chatID'] == $old['chatID']){
+				// var_dump($old);
+				// var_dump($new);
+				foreach($old['num'] as $val) {
+					$map[$val['sentTime']]['type'] = 1; 
+					$map[$val['sentTime']]['data'] = $val;
+				}
+				
+				foreach($new['num'] as $val) {
+		    		if(isset($map[$val['sentTime']])) {
+		    			if($map[$val['sentTime']]['data']['count']!=$val['count']) {
+			    			$map[$val['sentTime']]['type'] = 3;
+			    			$map[$val['sentTime']]['data'] = $val;
+			    			$this->change=true;
+			    		} else {
+			    			$map[$val['sentTime']]['type'] = 0;
+			    			$map[$val['sentTime']]['data'] = $val;
+			    		}
+		    		
+			    	}else {
+	    				$map[$val['sentTime']]['type'] = 2;
+		    			$map[$val['sentTime']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+		    		
+	    		}
+	    		
+				foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data'];else if($ok['type']==3) $out['change'][] = $ok['data'];
+
+
+			}else{
+				$out['new']= $new['num'];
+    			$this->change=true;
+			}
+			return $out;
+		}
+		function checkHeartClick($old,$new){
+			$map = $out = array();
+			$out['delete'] = $out['new'] = array();
+			if($new['chatID'] == $old['chatID']){
+				// var_dump($old);
+				// var_dump($new);
+				foreach($old['click'] as $val) {
+					$map[$val['id']]['type'] = 1; 
+					$map[$val['id']]['data'] = $val;
+				}
+				
+				foreach($new['click'] as $val) {
+		    		if(isset($map[$val['id']])) {
+
+		    		
+			    		$map[$val['id']]['type'] = 0;
+			    		$map[$val['id']]['data'] = $val;
+			    	}else {
+	    				$map[$val['id']]['type'] = 2;
+		    			$map[$val['id']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+		    		
+	    		}
+	    		
+				foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data'];
+
+
+			}else{
+				$out['new']= $new['click'];
+    			$this->change=true;
+			}
+			return $out;
+
+		}
 
 		function checkComment($old,$new,$chatID){
 			$map = $out = array();
@@ -1380,6 +1471,35 @@ use Slim\Http\UploadedFile;
 		    foreach($map as $val => $ok) if($ok['type']==1) {$out['delete'][] = $ok['data']; $this->change=true;} else if($ok['type']==2) $out['new'][] = $ok['data']; else if($ok['type']==3) $out['change'][] = $ok['data'];
 		    return $out;
 		}
+		// var $likeCountState = array(
+		// 	'unchange'=>0,
+		// 	'new'=>1,
+		// 	'changed'=>2
+		// );
+		// function checkLike($a, $b) {
+		//     $map = $out = array();
+		//     $out['new'] = $out['change'] = array();
+		//     foreach($a as $val) {$map[$val['sentTime']]['data'] = $val;}
+		//     foreach($b as $val) {
+		//     	if(isset($map[$val['sentTime']])) {
+		//     		if($map[$val['sentTime']]['data']['likeCount']!=$val['likeCount']) {
+		//     			$map[$val['sentTime']]['type'] = $this->likeCountState['changed'];
+		//     			$map[$val['sentTime']]['data'] = $val;
+		//     			$this->change=true;
+		//     		} else {
+		//     			$map[$val['sentTime']]['type'] = $this->likeCountState['unchange'];
+		//     			$map[$val['sentTime']]['data'] = $val;
+		//     		}
+	 //    		}else {
+	 //    			$map[$val['sentTime']]['type'] = $this->likeCountState['new'];
+	 //    			$map[$val['sentTime']]['data'] = $val;
+	 //    			$this->change=true;
+		//     	}
+		// 	}
+		//     foreach($map as $val => $ok) if($ok['type']==1) $out['new'][] = $ok['data']; else if($ok['type']==2) $out['change'][] = $ok['data'];
+		//     return $out;
+		// }
+
 		function getReadCountN($body){
 			$data = json_decode($body['data'],true);
 			$UID =$_SESSION['id'];
@@ -1439,10 +1559,7 @@ use Slim\Http\UploadedFile;
 			// var_dump($new[0][count]);
 			$map = $out = array();
 			
-			// var_dump($old);
-			// var_dump($new);
-			// var_dump($old['chatID']);
-			// var_dump($chatID);
+			
 			$out['delete'] = $out['new'] = $out['change'] = array();
 			if($old['num'][0]['count'] != $new['num'][0]['count']){
 				$this->change=true;
@@ -1503,6 +1620,25 @@ use Slim\Http\UploadedFile;
 			);
 			return $result;
 		}
+		// function getLike($chatID){
+		// 	if(isset($chatID)){
+		// 		$sql='
+		// 			SELECT "sentTime", "chatContent"."likeID", "likeCount"
+		// 			FROM staff_chat."chatContent"
+		// 			left join(
+		// 				SELECT "likeID", Count("UID")as "likeCount"
+		// 				FROM staff_chat."chatLikeCount"
+		// 				group by "likeID")as "likeCount"
+		// 			on "chatContent"."likeID"="likeCount"."likeID"
+		// 			where "chatID"= :chatID AND "chatContent"."likeID" is not null;
+		// 		';
+		// 		$statement = $this->conn->prepare($sql);
+		// 		$statement->bindParam(':chatID',$chatID);
+		// 		$statement->execute();
+		// 		$row = $statement->fetchAll();
+		// 		return $row;
+		// 	}
+		// }
 		function getClass($classID = null)
 		{
 			$staff_id = $_SESSION['id'];
@@ -1820,6 +1956,7 @@ use Slim\Http\UploadedFile;
 			array_push($row,array('chatID'=>$data['chatID']));
 			return $row;
 		}
+		
 		function getReadList($body){
 			$data = json_decode($body['data'],true);
 			$sql = '
@@ -1988,7 +2125,7 @@ use Slim\Http\UploadedFile;
 				// $sth->bindParam(':limit',$data['limit'],PDO::PARAM_INT);
 				$sth->execute();
 				$row = $sth->fetchAll();
-				var_dump($row);
+				// var_dump($row);
 				if(count($row)==$data['count']){
 					usleep(3000000);
 				}else{
@@ -2222,110 +2359,174 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
-		function addlikeID($body){
-			$body=json_decode($body['data'],true);
-			$likeID=$body['likeID'];
-			var_dump($body);
-			if(is_null($likeID)){
-				$sql='
-					SELECT "likeID"
-					FROM staff_chat."chatContent"
-					where content=:content AND "UID"=:UID AND "sentTime"=:senttime AND"chatID"=:chatID;
-				';
-				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
-				$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
-				$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
-				$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
-				$sth->execute();
-				$row = $sth->fetchAll();
-				var_dump($row);
-				if(count($row)==1){
-					if($row[0]["likeID"]==null){
-					// var_dump($content,$senttime,$UID,$chatID);
-	    			$sql='
-						UPDATE staff_chat."chatContent"
-						SET "likeID"=nextval(\'staff_chat."chatContent_likeID_seq"\'::regclass)
-						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID AND "likeID" is NULL;
-					';
-					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
-					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
-					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
-					$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
-					$sth->execute();
-
-					// $likeID = $this -> $conn -> lastInsertId();
-
-					// search likeID from "chatContent" and record likeid and uid to "chatLikeCount"
-					$sql='
-						SELECT "UID","likeID"
-						FROM staff_chat."chatContent"
-						WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID ;
-					';
-					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
-					$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
-					$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
-					$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
-					$sth->execute();
-
-					$row=$sth -> fetchAll();
-					$likeID = $row[0]["likeID"];
-
-					$sql='
-						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
-						VALUES (:likeID, :UID);
-					';
-					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
-					$sth->execute();
-
-					}
-		    	}
-
-			}
-			else{
-				$sql='
-					SELECT *
-					FROM staff_chat."chatLikeCount"
-					WHERE "UID"=:UID AND "likeID"=:likeID
-				';
-				$sth = $this->conn->prepare($sql);
-				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-				$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
-				$sth->execute();
-				$row=$sth->fetchAll();
-
-				var_dump($row);
-
-				if(count($row)==1){
-				//dislike
-					if($row[0]["likeID"]!=null){
-					$sql='
-						DELETE FROM staff_chat."chatLikeCount"
-						WHERE "UID"=:UID AND "likeID" =:likeID;
-					';
-					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
-					$sth->execute();
-					}
-				}
-				else{
-					$sql='
-						INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
-						VALUES (:likeID, :UID);
-					';
-					$sth = $this->conn->prepare($sql);
-					$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-					$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
-					$sth->execute();
-				}
-			}
+		function getChatHeart($chatID){
+			$sql = 'SELECT id,"sentTime"
+					FROM staff_chat."chatHeart"	
+					WHERE "chatID" = :chatID AND "UID"=:UID;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
 
 		}
+		function getChatHeartNum($chatID){
+			$sql = 'SELECT "sentTime",count(*)
+					FROM staff_chat."chatHeart"	
+					WHERE "chatID" = :chatID
+					GROUP BY"sentTime";';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row;
+		}
+		function patchHeart(){
+			$_POST=json_decode($_POST['data'],true);
+			$sql = 'SELECT id, "chatID", "UID", "sentTime"
+					FROM staff_chat."chatHeart"
+					WHERE "chatID"=:chatID AND "UID"=:UID AND "sentTime"=:sentTime;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+			$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row) == 0){
+				$sql = 'INSERT INTO staff_chat."chatHeart"("chatID", "UID", "sentTime")
+						VALUES (:chatID, :UID, :sentTime);';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_INT);
+				$sth->execute();
+				$ack = array(
+					'status'=>'success',
+					'type' =>'add'
+				);
+				return $ack;
+			}else{
+				$sql = 'DELETE 
+						FROM staff_chat."chatHeart"
+						WHERE "chatID"=:chatID AND "UID"=:UID AND "sentTime"=:sentTime;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_INT);
+				$sth->execute();
+				$ack = array(
+					'status'=>'success',
+					'type' =>'delete'
+				);
+				return $ack;
+			}
+			
+		}
+		// function addlikeID($body){
+		// 	// $body=json_decode($body['data'],true);
+		// 	$likeID=$body['likeID'];
+		// 	var_dump($body['likeID']);
+		// 	if($likeID==-1){//確認前端無likeID
+		// 		$sql='
+		// 			SELECT "likeID"
+		// 			FROM staff_chat."chatContent"
+		// 			where content=:content AND "UID"=:UID AND "sentTime"=:senttime AND"chatID"=:chatID;
+		// 		';//確認資料庫無likeID
+		// 		$sth = $this->conn->prepare($sql);
+		// 		$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+		// 		$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+		// 		$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+		// 		$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+		// 		$sth->execute();
+		// 		$row = $sth->fetchAll();
+		// 		// var_dump($row);
+		// 		if(count($row)==1){
+		// 			if($row[0]["likeID"]==null){
+		// 			// var_dump($content,$senttime,$UID,$chatID);
+	 //    			$sql='
+		// 				UPDATE staff_chat."chatContent"
+		// 				SET "likeID"=nextval(\'staff_chat."chatContent_likeID_seq"\'::regclass)
+		// 				WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID AND "likeID" is NULL;
+		// 			';//如資料庫無likeID則新增
+		// 			$sth = $this->conn->prepare($sql);
+		// 			$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+		// 			$sth->execute();
+
+		// 			// $likeID = $this -> $conn -> lastInsertId();
+
+		// 			// search likeID from "chatContent" and record likeid and uid to "chatLikeCount"
+		// 			$sql='
+		// 				SELECT "UID","likeID"
+		// 				FROM staff_chat."chatContent"
+		// 				WHERE content=:content AND "sentTime"=:senttime AND "UID"=:UID AND "chatID"=:chatID ;
+		// 			';//抓取新增的likeID
+		// 			$sth = $this->conn->prepare($sql);
+		// 			$sth->bindParam(':content',$body['content'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':senttime',$body['senttime'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':UID',$body['UID'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':chatID',$body['chatID'],PDO::PARAM_INT);
+		// 			$sth->execute();
+
+		// 			$row=$sth -> fetchAll();
+		// 			$likeID = $row[0]["likeID"];
+
+		// 			$sql='
+		// 				INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
+		// 				VALUES (:likeID, :UID);
+		// 			';//新增按愛心
+		// 			$sth = $this->conn->prepare($sql);
+		// 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+		// 			$sth->execute();
+
+		// 			}
+		//     	}
+
+		// 	}
+		// 	else{//搜尋是否按愛心
+		// 		$sql='
+		// 			SELECT *
+		// 			FROM staff_chat."chatLikeCount"
+		// 			WHERE "UID"=:UID AND "likeID"=:likeID
+		// 		';
+		// 		$sth = $this->conn->prepare($sql);
+		// 		$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+		// 		$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+		// 		$sth->execute();
+		// 		$row=$sth->fetchAll();
+
+		// 		// var_dump($row);
+
+		// 		if(count($row)==1){//有搜尋結果則取消按讚
+		// 		//dislike
+		// 			if($row[0]["likeID"]!=null){
+		// 			$sql='
+		// 				DELETE FROM staff_chat."chatLikeCount"
+		// 				WHERE "UID"=:UID AND "likeID" =:likeID;
+		// 			';
+		// 			$sth = $this->conn->prepare($sql);
+		// 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+		// 			$sth->execute();
+		// 			}
+		// 		}
+		// 		else{//反之新增
+		// 			$sql='
+		// 				INSERT INTO staff_chat."chatLikeCount"("likeID", "UID")
+		// 				VALUES (:likeID, :UID);
+		// 			';
+		// 			$sth = $this->conn->prepare($sql);
+		// 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+		// 			$sth->bindParam(':likeID',$likeID,PDO::PARAM_INT);
+		// 			$sth->execute();
+		// 		}
+		// 	}
+
+		// }
 		function getList($chatID=null){
 			if(is_null($chatID)){
 				$sql ="SELECT staff_name as name,staff_id as id FROM staff.staff WHERE staff_id != :staff_id and staff_delete=false and \"seniority_workStatus\" =1;";
