@@ -89,6 +89,9 @@
             <div class="h-100 d-flex flex-column">
               <div class="card flex-grow-1 mb-3">
                 <div class="card-body" name="chatBox">
+                  
+
+
                 </div>
               </div>
             </div>
@@ -183,7 +186,11 @@
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
-//window focus
+// window focus
+// $("body").on('contextmenu', function () {
+//   return false;
+// });
+
 var isTabActive = true;
 var titleOrg=$('title').text();
 $(function(){
@@ -200,6 +207,9 @@ window.onblur = function () {
   window.isTabActive = false; 
 }; 
 //focus end
+function onclickBtnDelete(senttime){
+
+}
 
 $('[name=btnStarNotification]').parent().show();
 
@@ -490,7 +500,8 @@ function routine(){
             changeChat('routine',response);
             changeStar('routine',response);
             changeComment('routine',response);
-            changeHeart(response)
+            changeHeart(response);
+            changeDelete(response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
           }else if(key=='readCount'){
@@ -523,9 +534,22 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   tmpTagMsg = "";
 }
+function changeDelete(data){
+   $.each(data.result.delete.new,function(){
+      // console.log(this);outgoingBox
+      $(`[name=outgoingBox][data-senttime="${this.sentTime}"]`).html(`
+        <div class="d-flex flex-row-reverse bd-highlight">
+          <div class="p-2 bd-highlight bg-secondary text-white rounded" >
+            此訊息已刪除
+          </div>
+        </div>
+        <small>${this.showTime}</small>
+      `);
+   });
+}
+
 function changeHeart(data){
    $.each(data.result.heartNum.new,function(){
-    // console.log(this.count);
     $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`
       <i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.count}
       `);
@@ -536,28 +560,15 @@ function changeHeart(data){
       `);
    });
    $.each(data.result.heartClick.new,function(){
-      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
-      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'true');
     });
    $.each(data.result.heartClick.delete,function(){
-
-      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
-      // $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#AAAAAA");
       $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick",'false');
     });
    $.each(data.result.heartNum.change,function(){
     $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${this.count}`);
-    // if($(`[name=badgeLike][data-senttime="${this.sentTime}"]`).attr("data-isClick")=='false'){
-    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#FFFFFF");
-    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#d9534f");
-    // }else{
-    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("background-color","#d9534f");
-    //   $(`[name=badgeLike][data-senttime="${this.sentTime}"]`).css("color","#FFFFFF");
-    // }
-    
    });
 }
 function changeComment(type,data){
@@ -824,8 +835,8 @@ function changeChat(type,data){
       $('[name=chatBox]').append(
         `<div class="text-left incoming_msg" data-sentTime="${this.fullsentTime}">
           <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
-          <div class="d-flex bd-highlight">
-            <div class="p-2 bd-highlight bg-dark text-white rounded">
+          <div class="d-flex bd-highlight" >
+            <div class="p-2 bd-highlight bg-dark text-white rounded"  >
             ${this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')}
             </div>
           </div>
@@ -837,14 +848,15 @@ function changeChat(type,data){
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
           <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>
           <button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button>
+          
         </div>`
       );
     }
     else{
       $('[name=chatBox]').append(
-        '<div class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
+        '<div name="outgoingBox" class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
-            '<div class="p-2 bd-highlight bg-secondary text-white rounded">'+
+            '<div class="p-2 bd-highlight bg-secondary text-white rounded" name="contentBox" ondblclick="ondblclickMessage(this)" data-type="deleteMessage" data-sentTime="'+this.fullsentTime+'">'+
               this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
@@ -892,21 +904,74 @@ function changeChat(type,data){
     },3000);
     // getStatus($(this).attr("data-id"),this);
   });
+  
+  // $('[name="dropdownItemDelete"]').unbind().on('click',function(){
+  //    console.log($(this).data('senttime'));
+  // });
 }
+function deleteItemOnclick(senttime){
+     console.log($(this).data('senttime'));
+
+} 
+
+function ondblclickMessage(message){
+  // console.log(message);
+  $(message).prepend(`<div class="btn-group dropleft">
+                    <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
+                     <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(message).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
+                    </div>
+                  </div>`);
+  $('body').mouseup(function(e){
+    if(1 == e.which){
+      $('[name="dropdownRightClick"]').hide();
+    }
+  });
+}
+
+function deleteMessage(senttime){
+  $('[name="dropdownRightClick"]').hide();
+  $('#basicModal .modal-title').text('刪除訊息');
+  $('#basicModal .modal-body').html('確認刪除此訊息?');
+  $('#basicModal .modal-footer').html(`<button class="btn btn-primary" name="sureDeleteBtn" data-senttime="${senttime}" type="button">確認</button>`);
+  $('[name="sureDeleteBtn"]').unbind().on('click',function(){
+    console.log($(this).data('senttime'));
+    $.ajax({
+      url:'/chat/delete',
+      type:'post',
+      data:{data:JSON.stringify({
+         chatID : chatID,
+            time : $(this).data('senttime')}
+        )},
+      dataType:'json',
+      success:function(response){
+        // getTarget(chatID,chatName);
+        
+      }
+    });
+    $(`[name=outgoingBox][data-senttime="${$(this).data('senttime')}"]`).html(`
+      <div class="d-flex flex-row-reverse bd-highlight">
+        <div class="p-2 bd-highlight bg-secondary text-white rounded" >
+          此訊息已刪除
+        </div>
+      </div>
+      <small></small>
+    `);
+    $('#basicModal').modal('hide');
+  });
+
+
+}
+
 function onclickHeart(button,senttime){
   var tmpHeartNum = parseInt($(button).text());
   if($(button).attr("data-isClick") == 'false'){
     $(button).attr("data-isClick",'true');
     $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum+1}`);
     $(button).css("color","#d9534f");
-    // $(button).css("color","#d9534f");
-
   }else{
     $(button).attr("data-isClick", 'false' );
     $(button).html(`<i class="fa fa-heart mr-1" aria-hidden="true"></i>${tmpHeartNum-1}`);
     $(button).css("color","#AAAAAA");
-    // $(button).css("color","#FFFFFF");
-    
   }
   $.ajax({
       url:'/chat/heart',
@@ -917,8 +982,6 @@ function onclickHeart(button,senttime){
             }),_METHOD:'PATCH'},
       dataType:'json',
       success:function(response){
-        // console.log(response);
-
       }
     });
 }
@@ -1405,7 +1468,7 @@ function sendMsg(){
     }
   });
 }
-function sendComment(commentID){
+function sendComment(commentID,senttime){
   if($("#commentinput").val()!=""){
     Msg=$("#commentinput").val();
     Msg = Msg.replace(/\r?\n/g, '<br />');
@@ -1423,6 +1486,31 @@ function sendComment(commentID){
         getCommentReadList(commentID)
       }
     });
+    $.ajax({
+      url:'/chat/comment/member/'+commentID,
+      type:'get',
+      data:{},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+
+        // getCommentReadList(commentID)
+      }
+    });
+    // $.ajax({
+    //   url:'/chat/notification/comment',
+    //   type:'post',
+    //   data:{data:JSON.stringify(
+    //         commentID:commentID,
+    //         Msg:Msg,
+    //         time:senttime)},
+    //   dataType:'json',
+    //   success:function(response){
+    //     console.log(response);
+
+    //     // getCommentReadList(commentID)
+    //   }
+    // });
     $("#commentinput").val("");
   }
   
@@ -1454,6 +1542,8 @@ $('#basicModal').on('show.bs.modal',function(e){
     insertIssue();
   }else if(type=='file'){
     getFile($(e.relatedTarget).data());
+  }else if(type=='deleteMessage'){
+    deleteMessage($(e.relatedTarget).data('senttime'));
   }
 });
 function getFile(relatedData){
@@ -1767,7 +1857,7 @@ function getComment(relatedData){
             </div>
             
             <div class="flex-shrink-1  align-self-center ml-1">
-                <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" id="commentbutton" data-commentID="${response}" type="button" onclick="sendComment(\'${response}\');"></button>
+                <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" id="commentbutton" data-commentID="${response}" type="button" onclick="sendComment(\'${response}\',${relatedData['senttime']});"></button>
             </div>
             <div style="display:none;" class="flex-shrink-1  align-self-center ml-1">
                 <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
