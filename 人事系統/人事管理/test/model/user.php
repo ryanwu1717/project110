@@ -1018,6 +1018,30 @@ use Slim\Http\UploadedFile;
 			return $ack;
 		}
 
+		function getDelete($chatID){
+			$sql = 'SELECT id, "chatID", "UID", "sentTime",to_char( "sentTime",\'MON DD , HH24:MI\' )as "showTime"
+					FROM staff_chat."chatDelete"
+					WHERE "chatID"=:chatID AND  "UID"=:UID;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
+
+		function addDelete(){
+			$_POST=json_decode($_POST['data'],true);
+			// var_dump($_POST);
+			$sql = 'INSERT INTO staff_chat."chatDelete"("chatID", "UID", "sentTime")
+					VALUES (:chatID, :UID, :sentTime);';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_STR);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':sentTime',$_POST['time'],PDO::PARAM_STR);
+			$sth->execute();
+			return 'success';
+		}
 		function addStar(){
 			$_POST=json_decode($_POST['data'],true);
 
@@ -1111,6 +1135,11 @@ use Slim\Http\UploadedFile;
 			return $row;
 		}
 
+		function commentTag(){
+			$_POST=json_decode($_POST['data'],true);
+
+		}
+
 		function tag(){
 			$_POST=json_decode($_POST['data'],true);
 
@@ -1157,6 +1186,7 @@ use Slim\Http\UploadedFile;
 				'info'=>'',
 				'chatID'=>'-1'
 			);
+
 			// unset($chatroom[0]);
 			// $chat = $this->getChat();
 			$ack = array(
@@ -1169,6 +1199,7 @@ use Slim\Http\UploadedFile;
 				'comment'=>array(),
 				'heart'=>array(),
 				'readCount'=>array(),
+				'delete'=>array(),
 				// 'like'=>array(),
 				'result'=>array(
 					'class'=>array(),
@@ -1260,6 +1291,14 @@ use Slim\Http\UploadedFile;
 				);
 				$result['heartNum'] = $this->checkHeartNum($data['heart'],$heart);
 				$result['heartClick'] = $this->checkHeartClick($data['heart'],$heart);
+
+				$deleteMes = $this->getDelete($chatID);
+				$delete=array(
+					'chatID'=>$chatID,
+					'delete' => $deleteMes
+				);
+				$result['delete'] = $this->checkDelete($data['delete'],$delete);
+
                 $now = new DateTime( 'NOW' );
 
 			}
@@ -1273,6 +1312,7 @@ use Slim\Http\UploadedFile;
 				'chat'=>$chat,
 				'comment'=>$comment,
 				'heart'=>$heart,
+				'delete'=>$delete,
 				'readCount'=>$readCount,
 				// 'like'=>$like,
 				'result'=>$result
@@ -1286,6 +1326,41 @@ use Slim\Http\UploadedFile;
 			'changeName'=>3,
 			'changeNum'=>4
 		);
+
+		function checkDelete($old,$new){
+			$map = $out = array();
+			$out['new'] = array();
+			// var_dump($old['chatID'],$new['chatID']);
+			if($new['chatID'] == $old['chatID']){
+				foreach($old['delete'] as $val) {
+					$map[$val['id']]['type'] = 1; 
+					$map[$val['id']]['data'] = $val;
+				}
+				foreach($new['delete'] as $val) {
+		    		if(isset($map[$val['id']])) {
+		    			// if($map[$val['id']]['data']['count']!=$val['count']) {
+			    		// 	$map[$val['id']]['type'] = 3;
+			    		// 	$map[$val['id']]['data'] = $val;
+			    		// 	$this->change=true;
+			    		// } else {
+		    			$map[$val['id']]['type'] = 0;
+		    			$map[$val['id']]['data'] = $val;
+			    		// }
+			    	}else {
+	    				$map[$val['id']]['type'] = 2;
+		    			$map[$val['id']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+			    	foreach($map as $val => $ok) if($ok['type']==2) $out['new'][] = $ok['data'];
+		    		
+	    		}
+
+			}else{
+				$out['new']= $new['delete'];
+    			$this->change=true;
+			}
+			return $out;
+		}
 		function checkNotification($old,$new){
 			// var_dump($old[0][count]);
 			// var_dump($new[0][count]);
@@ -2042,6 +2117,9 @@ use Slim\Http\UploadedFile;
 
 			$row = $sth->fetchAll();
 			return $row;
+		}
+		function getCommentMember($commentID){
+			
 		}
 		function getCommentReadList($commentID,$sentTime,$UID,$chatID){
 			// $data = json_decode($body['data'],true);

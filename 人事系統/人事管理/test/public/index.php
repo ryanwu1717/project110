@@ -334,6 +334,13 @@ $app->group('/table', function () use ($app) {
 });
 
 $app->group('/chat', function () use ($app) {
+	$app->post('/delete',function (Request $request, Response $response, array $args){
+		$chat = new Chat($this->db);
+		$result = $chat->addDelete();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+	    return $response;
+	});
 	$app->patch('/likeID',function (Request $request, Response $response, array $args){
 		$chat = new Chat($this->db);
 		$result = $chat->addlikeID($request->getParsedBody());
@@ -404,13 +411,8 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->get('/comment/{commentID}', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
-		$chat = new Chat($this->db);
-		$result = $chat->getComment($args['commentID']);
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;
-	});
+
+	
 	$app->get('/commentID/{chatID}/{sendtime}', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
 		$chat = new Chat($this->db);
 		$result = $chat->getCommentID($args['chatID'],$args['sendtime']);
@@ -508,13 +510,7 @@ $app->group('/chat', function () use ($app) {
 		$response = $response->withJson($result);
 	    return $response;
 	});
-	$app->post('/comment/{commentID}/{content}', function (Request $request, Response $response, array $args) { //TODO
-		$chat = new Chat($this->db);
-		$result = $chat->insertComment($args['commentID'],$args['content']);
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;
-	});
+	
 	$app->get('/lastOnLine/{UID}', function (Request $request, Response $response, array $args) {
 		$chat = new Chat($this->db);
 		$result = $chat->getLastOnLine($args['UID']);
@@ -673,7 +669,29 @@ $app->group('/chat', function () use ($app) {
 		    return $response;
 		});
 	});
-
+	$app->group('/comment', function () use ($app) {
+		$app->get('/{commentID}', function (Request $request, Response $response, array $args) {//TODO, borrow readlist for testing
+			$chat = new Chat($this->db);
+			$result = $chat->getComment($args['commentID']);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->post('/{commentID}/{content}', function (Request $request, Response $response, array $args) { //TODO
+			$chat = new Chat($this->db);
+			$result = $chat->insertComment($args['commentID'],$args['content']);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+		$app->get('/member/{commentID}', function (Request $request, Response $response, array $args) { //TODO
+			$chat = new Chat($this->db);
+			$result = $chat->getCommentMember($args['commentID']);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+	});
 	$app->group('/notification', function () use ($app) {
 		$app->get('/', function(Request $request, Response $response, array $args){
 			$notification = new Chat($this->db);
@@ -692,6 +710,14 @@ $app->group('/chat', function () use ($app) {
 		$app->post('/tag', function (Request $request, Response $response, array $args) {
 		    $notification = new Chat($this->db);
 		    $result = $notification->tag();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+
+		});
+		$app->post('/comment', function (Request $request, Response $response, array $args) {
+		    $notification = new Chat($this->db);
+		    $result = $notification->commentTag();
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
