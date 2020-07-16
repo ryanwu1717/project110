@@ -447,13 +447,10 @@ use Slim\Http\UploadedFile;
 			}
 		}
 
-		
-
 		function checkingData(){
-
 			try{	 
-				$staff_id = $_SESSION['id'];	
-				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name
+				// $staff_id = $_SESSION['id'];	
+				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name, form.staff_id, form."isCheck" 
 						FROM holiday.form
 						INNER JOIN holiday.type
 						on holiday.form.type = holiday.type.id;';
