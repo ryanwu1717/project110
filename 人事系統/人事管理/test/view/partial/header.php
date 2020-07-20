@@ -80,7 +80,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="<?=@$url?>">
+            <a class="nav-link" href="<?=@$url?>/holiday/checkApply">
               <i class="fa fa-archive" aria-hidden="true"></i>
               <span>審核假單</span>
             </a>

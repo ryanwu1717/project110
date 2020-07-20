@@ -115,6 +115,10 @@ $app->group('', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');	
 				return $this->view->render($response, '/review.php', $viewParam);
 			});
+			$app->get('/checkApply', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/checkApply.php', $viewParam);
+			});
 		});
 			// $app->get('/table', function (Request $request, Response $response, array $args) {	
 		// 	$viewParam = $request->getAttribute('viewParam');		
