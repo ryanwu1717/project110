@@ -1121,13 +1121,17 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getNotification(){
-			$sql = 'SELECT notification.detail, notification.unread, to_char( notification."sendtime",\'MON DD , HH24:MI\' )as "sendtime", notification.sendtime AS "fullsendTime",notification.type, chatroomInfo."chatName",chatroomInfo."chatID",notification.id
+			$sql = 'SELECT notification.detail, notification.unread, to_char( notification."sendtime",\'MON DD , HH24:MI\' )as "sendtime", notification.sendtime AS "fullsendTime",notification.type, chatroomInfo."chatName",chatroomInfo."chatID",notification.id,notification."tagTime",
+						CASE notification.type 
+							WHEN \'tag\' THEN notification.sendtime
+							WHEN \'comment\' THEN notification."tagTime"
+						END as "fullTime"
 					FROM staff.notification AS notification
-				LEFT JOIN ( SELECT *
-				FROM staff_chat."chatroomInfo") AS chatroomInfo
-				on chatroomInfo."chatID" = CAST(notification."tagChatRoom" AS INT)
+					LEFT JOIN ( SELECT *
+							FROM staff_chat."chatroomInfo") AS chatroomInfo
+							on chatroomInfo."chatID" = CAST(notification."tagChatRoom" AS INT)
 					WHERE "UID"= :UID
-					order by "fullsendTime"desc;';
+					order by "fullTime" desc;';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 			$sth->execute();
@@ -1137,6 +1141,42 @@ use Slim\Http\UploadedFile;
 
 		function commentTag(){
 			$_POST=json_decode($_POST['data'],true);
+			$sql = 'SELECT *
+					FROM staff.notification
+					WHERE  "UID"=:UID AND type = \'comment\' AND sendtime = :sendtime AND "tagChatRoom" = :chatID
+					;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_POST['UID'],PDO::PARAM_STR);
+			$sth->bindParam(':sendtime',$_POST['senttime'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			if(count($row) == 0){
+				$sql = 'INSERT INTO staff.notification("UID",detail, unread, "tagChatRoom", sendtime, type, "tagTime")
+					VALUES (:UID, :detail, \'true\', :chatID, :senttime, \'comment\',NOW() )
+					;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_POST['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':senttime',$_POST['senttime'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				$sth->bindParam(':detail',$_POST['detail'],PDO::PARAM_STR);
+				$sth->execute();
+				$ack = array('status' => 'success');
+				return $ack;
+			}else{
+				$sql = 'UPDATE staff.notification
+						SET detail = :detail, unread = \'true\', "tagTime"  = NOW()
+						WHERE "UID" = :UID AND "tagChatRoom" = :chatID AND sendtime = :senttime
+					;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':UID',$_POST['UID'],PDO::PARAM_STR);
+				$sth->bindParam(':senttime',$_POST['senttime'],PDO::PARAM_STR);
+				$sth->bindParam(':chatID',$_POST['chatID'],PDO::PARAM_INT);
+				$sth->bindParam(':detail',$_POST['detail'],PDO::PARAM_STR);
+				$sth->execute();
+				$ack = array('status' => 'update');
+				return $ack;
+			}
 
 		}
 
@@ -1152,7 +1192,7 @@ use Slim\Http\UploadedFile;
 			$tmpName = '你被 '.$row.' 標註在一則訊息';
 			// var_dump($_POST);
 			try{
-				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type")VALUES (:UID,:message,:tmpFullTime,\'true\',:chatID,\'tag\');';
+				$sql = 'INSERT INTO staff.notification("UID","detail", sendtime, unread, "tagChatRoom","type","tagTime")VALUES (:UID,:message,:tmpFullTime,\'true\',:chatID,\'tag\',NOW());';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(':UID',$_POST['id'],PDO::PARAM_STR);
 				$sth->bindParam(':message',$tmpName,PDO::PARAM_STR);
@@ -1772,6 +1812,21 @@ use Slim\Http\UploadedFile;
 			return $row;
 		}
 
+		function getSenter($commentID){
+			$sql = 'SELECT "commentInfo"."chatID", "commentInfo"."sentTIme", "commentInfo".id,"chatContent"."UID"
+					FROM staff_chat."commentInfo"
+					LEFT JOIN(
+						SELECT  "UID", "sentTime", "chatID"
+						FROM staff_chat."chatContent"
+					)as "chatContent" on "chatContent"."chatID" = "commentInfo"."chatID" AND "chatContent"."sentTime" = "commentInfo"."sentTIme"
+					WHERE "commentInfo".id = :commentID';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			return $row[0];
+		}
+
 		function getChatroom(){
 		   $sql = '
 
@@ -2119,7 +2174,81 @@ use Slim\Http\UploadedFile;
 			return $row;
 		}
 		function getCommentMember($commentID){
+			// $data = json_decode($body['data'],true);
+
+			$sql = '
+				SELECT  "UID",  "commentID"
+				FROM staff_chat."commentChat"
+				WHERE "commentID" = :commentID AND "UID" != :UID
+				GROUP BY  "UID", "commentID"';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();
+			$row = $sth->fetchAll();
+
+			$num = count($row);
+
+			// $sql = '
+			// 	SELECT  "UID",  "commentID"
+			// 	FROM staff_chat."commentChat"
+			// 	WHERE "commentID" = :commentID AND "UID" != :UID
+			// 	GROUP BY  "UID", "commentID"';
+			// $sth = $this->conn->prepare($sql);
+			// $sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
+			// $sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			// $sth->execute();
+			// $row = $sth->fetchAll();
+			$sql = '
+					SELECT  staff_name
+					FROM staff."staff"
+					WHERE "staff_id" = :staff_id ';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':staff_id',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->execute();
+			$senderrow = $sth->fetchAll();
+			if($num == 0 ){
+				
+
+				$ack = array(
+					'status' => 'no',
+					'text' => $senderrow[0]['staff_name'].'回復了留言'
+				);
+
+				// $num = 
+			}else{
+				$sql = '
+					SELECT "commentChat"."UID", "commentChat"."sentTime" ,staff.staff_name as name
+					FROM staff_chat."commentChat" 
+					LEFT JOIN (
+						SELECT staff_name,staff_id 
+						FROM staff.staff 
+					)AS staff on staff.staff_id = "commentChat" ."UID"
+					WHERE "commentID" = :commentID AND "UID" != :UID
+					ORDER BY "commentChat"."sentTime" DESC LIMIT 1
+				';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
+				$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+				$sth->execute();
+				$tmprow = $sth->fetchAll();
+				if($num <= 1){
+					$text = $tmprow[0]['name'].'回復了留言';
+				}else{
+					$text = $tmprow[0]['name'].'以及其他'.($num-1).'人
+					回復了留言';
+				}
+				$textSender =  $senderrow[0]['staff_name'].'以及其他'.$num.'人回復了留言';
+				$ack = array(
+					'status' => 'success',
+					'people'=>$row ,
+					'num' =>  $num ,
+					'text' => $text,
+					'textSender' => $textSender
+ 				);
+			}
 			
+			return $ack;
 		}
 		function getCommentReadList($commentID,$sentTime,$UID,$chatID){
 			// $data = json_decode($body['data'],true);

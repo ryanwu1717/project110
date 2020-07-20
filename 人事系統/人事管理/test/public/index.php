@@ -691,6 +691,13 @@ $app->group('/chat', function () use ($app) {
 			$response = $response->withJson($result);
 		    return $response;
 		});
+		$app->get('/senter/{commentID}', function (Request $request, Response $response, array $args) { //TODO
+			$chat = new Chat($this->db);
+			$result = $chat->getSenter($args['commentID']);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
 	});
 	$app->group('/notification', function () use ($app) {
 		$app->get('/', function(Request $request, Response $response, array $args){

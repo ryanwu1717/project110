@@ -904,28 +904,114 @@ function changeChat(type,data){
     },3000);
     // getStatus($(this).attr("data-id"),this);
   });
-  
+  inDelete();
   // $('[name="dropdownItemDelete"]').unbind().on('click',function(){
   //    console.log($(this).data('senttime'));
   // });
 }
-function deleteItemOnclick(senttime){
-     console.log($(this).data('senttime'));
+
+function inDelete(){
+    var longpress = 1000;
+    // holds the start time
+    var start;
+    var touchtime = 0;
+    $("[name=contentBox]").on("click", function() {
+        if (touchtime == 0) {
+            // set first click
+            touchtime = new Date().getTime();
+        } else {
+            // compare first click to this click and see if they occurred within double click threshold
+            if (((new Date().getTime()) - touchtime) < 800) {
+              // double click occurred
+              // alert("double clicked");
+              console.log($(this));
+              // $(this).hide();
+             $(this).prepend(
+              `<div class="btn-group dropleft">
+                <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
+                 <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(this).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
+                </div>
+              </div>`);
+              touchtime = 0;
+               $('body').mouseup(function(e){
+                  if(1 == e.which){
+                    $('[name="dropdownRightClick"]').hide();
+                  }
+                });
+            } else {
+                // not a double click so set as a new first click
+                touchtime = new Date().getTime();
+            }
+        }
+    });
+    // $("[name=contentBox]").on( 'mousedown', function( e ) {
+    //     start = new Date().getTime();
+         
+    // } );
+    // $("[name=contentBox]").draggable({ 
+    //       axis: "x",
+    //      revert : function(event, ui) {
+    //         // on older version of jQuery use "draggable"
+    //         // $(this).data("draggable")
+    //         // on 2.x versions of jQuery use "ui-draggable"
+    //         // $(this).data("ui-draggable")
+    //         $(this).data("uiDraggable").originalPosition = {
+    //             top : 0,
+    //             left : 0
+    //         };
+    //         // return boolean
+    //         return !event;
+    //         // that evaluate like this:
+    //         // return event !== false ? false : true;
+    //       }
+    //     }
+    // );
+
+    // // $("[name=contentBox]").on( 'mouseleave', function( e ) {
+    // //     start = 0;
+    // // } );
+    // $("[name=contentBox]").select(function(){
+    //   alert("Text marked!");
+    // });
+    // $("[name=contentBox]").on( 'mouseup', function( e ) {
+    //    console.log(new Date().getTime()-start);
+    //    console.log($(this)[0]);
+    //    // alert('long press!');
+    //   if ( new Date().getTime() >= ( start + longpress )  ) {
+    //     // alert('long press!');
+    //     // $(this).hide();
+    //     $(this).prepend(
+    //       `<div class="btn-group dropleft">
+    //         <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
+    //          <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(this).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
+    //         </div>
+    //       </div>`);
+    //     $('body').mouseup(function(e){
+    //       if(1 == e.which){
+    //         $('[name="dropdownRightClick"]').hide();
+    //       }
+    //     });
+    //     // console.log('short press!');
+    //   } else {
+    //     // alert('short press!');
+    //   }
+    //   start = 0;
+    // } );
 
 } 
 
 function ondblclickMessage(message){
   // console.log(message);
-  $(message).prepend(`<div class="btn-group dropleft">
-                    <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
-                     <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(message).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
-                    </div>
-                  </div>`);
-  $('body').mouseup(function(e){
-    if(1 == e.which){
-      $('[name="dropdownRightClick"]').hide();
-    }
-  });
+  // $(message).prepend(`<div class="btn-group dropleft">
+  //                   <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
+  //                    <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(message).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
+  //                   </div>
+  //                 </div>`);
+  // $('body').mouseup(function(e){
+  //   if(1 == e.which){
+  //     $('[name="dropdownRightClick"]').hide();
+  //   }
+  // });
 }
 
 function deleteMessage(senttime){
@@ -1018,22 +1104,23 @@ function getNotification(){
       $('[name=bellDropdown]').append('<h6 class="dropdown-header">通知中心</h6>');
       $(response).each(function(){
         // console.log(this.sendtime);
+
         $('[name=bellDropdown]').append(
           '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
-            '<div class="mr-3">'+
-              '<div class="icon-circle bg-primary">'+
-                '<i class="fas fa-file-alt text-white"></i>'+
-              '</div>'+
-            '</div>'+
-            '<div>'+
-              '<div class="small text-gray-500">'+
-                this.sendtime+
-              '</div>'+
-              '<span class="font-weight-bold">'+
-                this.detail+
-              '</span>'+
-            '</div>'+
-          '</a>'
+            `<div class="mr-3">
+              <div class="icon-circle bg-primary">
+                <i class="fas ${this.type == 'tag'? 'fa-file-alt': 'fa-comment-dots'} text-white"></i>
+              </div>
+            </div>
+            <div>
+              <div class="small text-gray-500">
+                ${this.sendtime}
+              </div>
+              <span class="font-weight-bold">
+                ${this.detail}
+              </span>
+            </div>
+          </a>`
         );
         if(this.unread == true){
           // console.log("unread");
@@ -1486,34 +1573,60 @@ function sendComment(commentID,senttime){
         getCommentReadList(commentID)
       }
     });
+    var tmpsenter;
+    $.ajax({
+      url:'/chat/comment/senter/'+commentID,
+      type:'get',
+      data:{},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        tmpsenter = response.UID;
+      }
+    });
     $.ajax({
       url:'/chat/comment/member/'+commentID,
       type:'get',
       data:{},
       dataType:'json',
       success:function(response){
-        console.log(response);
-
-        // getCommentReadList(commentID)
+        // console.log(response.num);
+        if(response.status == 'success'){
+          addCommentNotice(tmpsenter,response.textSender,Msg,senttime);
+          $(response.people).each(function(){
+            // console.log(this);
+            addCommentNotice(this.UID,response.text,Msg,senttime);
+          });
+        }else if(response.status == 'no'){
+          addCommentNotice(tmpsenter,response.text,Msg,senttime);
+        }
+          
       }
     });
-    // $.ajax({
-    //   url:'/chat/notification/comment',
-    //   type:'post',
-    //   data:{data:JSON.stringify(
-    //         commentID:commentID,
-    //         Msg:Msg,
-    //         time:senttime)},
-    //   dataType:'json',
-    //   success:function(response){
-    //     console.log(response);
-
-    //     // getCommentReadList(commentID)
-    //   }
-    // });
+    
     $("#commentinput").val("");
   }
   
+}
+function addCommentNotice(tmpStaff,tmpDetail,tmpMsg,senttime){
+  console.log(tmpStaff,tmpDetail,tmpMsg);
+
+  $.ajax({
+    url:'/chat/notification/comment',
+    type:'post',
+    data:{data:JSON.stringify({
+              UID : tmpStaff,
+              detail :tmpDetail,
+              msg : tmpMsg,
+              senttime : senttime,
+              chatID : chatID
+            })},
+    dataType:'json',
+   success:function(response){
+    // console.log(response);
+    }
+  });
+
 }
 $('#basicModal').on('show.bs.modal',function(e){
   $('#basicModal .modal-footer').html(basicModalFooter);
@@ -1857,7 +1970,7 @@ function getComment(relatedData){
             </div>
             
             <div class="flex-shrink-1  align-self-center ml-1">
-                <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" id="commentbutton" data-commentID="${response}" type="button" onclick="sendComment(\'${response}\',${relatedData['senttime']});"></button>
+                <button class="btn btn-secondary btn-block far fa-paper-plane msg_send_btn" id="commentbutton" data-commentID="${response}" type="button" onclick="sendComment(\'${response}\',\'${relatedData['senttime']}\');"></button>
             </div>
             <div style="display:none;" class="flex-shrink-1  align-self-center ml-1">
                 <button class="btn btn-secondary " type="button"onclick="uploadFile(this)">+</button>
@@ -1905,10 +2018,10 @@ function getCommentContent(commentID){
     data:{},
     dataType:'json',
     success:function(response){
-      console.log(response)
+      // console.log(response)
       $('[name=comment]').html("");
       $(response).each(function(){
-        console.log(this.case);
+        // console.log(this.case);
         if(this.case == 'me'){
           $('[name=comment]').append(
           `<div class="text-right outgoing_msg" data-sentTime="${this.sentTime}">
@@ -1939,7 +2052,7 @@ function getCommentContent(commentID){
           `);
         }
       });
-      console.log($('[name=comment]').scrollHeight);
+      // console.log($('[name=comment]').scrollHeight);
       $('[name=comment]').scrollTop($('[name=comment]')[0].scrollHeight);
     }
   });
