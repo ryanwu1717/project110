@@ -1017,6 +1017,17 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
+		function getOtherDelete($chatID){
+			$sql = 'SELECT id, "chatID", "UID", "sentTime",to_char( "sentTime",\'MON DD , HH24:MI\' )as "showTime"
+					FROM staff_chat."chatDelete"
+					WHERE "chatID"=:chatID AND  "UID" != :UID;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
 
 		function getDelete($chatID){
 			$sql = 'SELECT id, "chatID", "UID", "sentTime",to_char( "sentTime",\'MON DD , HH24:MI\' )as "showTime"
@@ -1333,9 +1344,12 @@ use Slim\Http\UploadedFile;
 				$result['heartClick'] = $this->checkHeartClick($data['heart'],$heart);
 
 				$deleteMes = $this->getDelete($chatID);
+				$otherDelete = $this->getOtherDelete($chatID);
 				$delete=array(
 					'chatID'=>$chatID,
-					'delete' => $deleteMes
+					'delete' => $deleteMes,
+					'other' =>$otherDelete
+
 				);
 				$result['delete'] = $this->checkDelete($data['delete'],$delete);
 
@@ -1368,7 +1382,7 @@ use Slim\Http\UploadedFile;
 		);
 
 		function checkDelete($old,$new){
-			$map = $out = array();
+			$map = $mapother = $out = array();
 			$out['new'] = array();
 			// var_dump($old['chatID'],$new['chatID']);
 			if($new['chatID'] == $old['chatID']){
@@ -1395,8 +1409,32 @@ use Slim\Http\UploadedFile;
 		    		
 	    		}
 
+	    		foreach($old['other'] as $val) {
+					$mapother[$val['id']]['type'] = 1; 
+					$mapother[$val['id']]['data'] = $val;
+				}
+				foreach($new['other'] as $val) {
+		    		if(isset($mapother[$val['id']])) {
+		    			// if($map[$val['id']]['data']['count']!=$val['count']) {
+			    		// 	$map[$val['id']]['type'] = 3;
+			    		// 	$map[$val['id']]['data'] = $val;
+			    		// 	$this->change=true;
+			    		// } else {
+		    			$mapother[$val['id']]['type'] = 0;
+		    			$mapother[$val['id']]['data'] = $val;
+			    		// }
+			    	}else {
+	    				$mapother[$val['id']]['type'] = 2;
+		    			$mapother[$val['id']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+			    	foreach($mapother as $val => $ok) if($ok['type']==2) $out['newOther'][] = $ok['data'];
+		    		
+	    		}
+
 			}else{
 				$out['new']= $new['delete'];
+				$out['newOther']= $new['other'];
     			$this->change=true;
 			}
 			return $out;

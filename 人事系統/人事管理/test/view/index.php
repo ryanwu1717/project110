@@ -536,7 +536,6 @@ function scrollToTag(){
 }
 function changeDelete(data){
    $.each(data.result.delete.new,function(){
-      // console.log(this);outgoingBox
       $(`[name=outgoingBox][data-senttime="${this.sentTime}"]`).html(`
         <div class="d-flex flex-row-reverse bd-highlight">
           <div class="p-2 bd-highlight bg-secondary text-white rounded" >
@@ -545,6 +544,19 @@ function changeDelete(data){
         </div>
         <small>${this.showTime}</small>
       `);
+   });
+   $.each(data.result.delete.newOther,function(){
+      console.log(this);
+      $(`[name=incomingBox][data-senttime="${this.sentTime}"]`).html(`
+        <div class="d-flex bd-highlight">
+          <div class="p-2 bd-highlight bg-dark text-white rounded">
+            此訊息已刪除
+          </div>
+        </div>
+        
+        <small>${this.showTime}</small>
+      `);
+
    });
 }
 
@@ -833,7 +845,7 @@ function changeChat(type,data){
     dd = mydate;
     if(this.diff!='me'){
       $('[name=chatBox]').append(
-        `<div class="text-left incoming_msg" data-sentTime="${this.fullsentTime}">
+        `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
           <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
           <div class="d-flex bd-highlight" >
             <div class="p-2 bd-highlight bg-dark text-white rounded"  >
