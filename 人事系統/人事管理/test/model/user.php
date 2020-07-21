@@ -2238,7 +2238,7 @@ use Slim\Http\UploadedFile;
 			// $sth->execute();
 			// $row = $sth->fetchAll();
 			$sql = '
-					SELECT  staff_name
+					SELECT  staff_name,staff_id
 					FROM staff."staff"
 					WHERE "staff_id" = :staff_id ';
 			$sth = $this->conn->prepare($sql);
@@ -2276,7 +2276,12 @@ use Slim\Http\UploadedFile;
 					$text = $tmprow[0]['name'].'以及其他'.($num-1).'人
 					回復了留言';
 				}
-				$textSender =  $senderrow[0]['staff_name'].'以及其他'.$num.'人回復了留言';
+				if($senderrow[0]['staff_id'] == $_SESSION['id']){
+					$textSender = 'dontSend';
+				}else{
+					$textSender =  $senderrow[0]['staff_name'].'以及其他'.$num.'人回復了留言';
+				}
+				
 				$ack = array(
 					'status' => 'success',
 					'people'=>$row ,

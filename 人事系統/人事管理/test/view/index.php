@@ -532,7 +532,12 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
+  
+ if(tagType == 'comment'){
+    $('[name = iconComment][data-senttime = "'+tmpTagMsg+'"]').click();
+  }
   tmpTagMsg = "";
+  tagType = "";
 }
 function changeDelete(data){
    $.each(data.result.delete.new,function(){
@@ -934,6 +939,8 @@ function inDelete(){
         } else {
             // compare first click to this click and see if they occurred within double click threshold
             if (((new Date().getTime()) - touchtime) < 800) {
+              return false; 
+
               // double click occurred
               // alert("double clicked");
               console.log($(this));
@@ -1118,7 +1125,7 @@ function getNotification(){
         // console.log(this.sendtime);
 
         $('[name=bellDropdown]').append(
-          '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this);"'+
+          '<a class="dropdown-item d-flex align-items-center" id="notification'+this.id+'" style=" z-index:9999;" data-time="'+this.fullsendTime+'" onclick="notificationOnclick('+this.chatID+',\''+encodeURIComponent(this.chatName)+'\','+this.id+',this,\''+this.type+'\');"'+
             `<div class="mr-3">
               <div class="icon-circle bg-primary">
                 <i class="fas ${this.type == 'tag'? 'fa-file-alt': 'fa-comment-dots'} text-white"></i>
@@ -1184,6 +1191,8 @@ function getTarget(_chatID,_chatName){
     routine(); 
   }else{
     scrollToTag();
+
+
   }
   updateLastReadTime();
   $(document).scrollTop(document.body.scrollHeight);
@@ -1285,12 +1294,14 @@ $('#dropupTag').hide();
     }
 })(jQuery);
 var tmpTagMsg= "";
-function notificationOnclick(chatID,chatName,id,attr){
+var tagType = "";
+function notificationOnclick(chatID,chatName,id,attr,typeNotice){
 
   if($("#notification"+id).css("background-color")=="rgb(240, 248, 255)"){
     $('[name=notificationNum]').text(parseInt($('[name=notificationNum]').text())-1);
   }
   tmpTagMsg = $(attr).data('time');
+  tagType = typeNotice;
   getTarget(chatID,chatName);
   // console.log($(attr).data('time'));
 
@@ -1594,31 +1605,37 @@ function sendComment(commentID,senttime){
       success:function(response){
         console.log(response);
         tmpsenter = response.UID;
+        getCommentMember(response.UID,commentID,senttime);
+        
       }
     });
-    $.ajax({
-      url:'/chat/comment/member/'+commentID,
-      type:'get',
-      data:{},
-      dataType:'json',
-      success:function(response){
-        // console.log(response.num);
-        if(response.status == 'success'){
-          addCommentNotice(tmpsenter,response.textSender,Msg,senttime);
-          $(response.people).each(function(){
-            // console.log(this);
-            addCommentNotice(this.UID,response.text,Msg,senttime);
-          });
-        }else if(response.status == 'no'){
-          addCommentNotice(tmpsenter,response.text,Msg,senttime);
-        }
-          
-      }
-    });
+    
     
     $("#commentinput").val("");
   }
   
+}
+function getCommentMember(tmpUsr,commentID,senttime){
+  $.ajax({
+    url:'/chat/comment/member/'+commentID,
+    type:'get',
+    data:{},
+    dataType:'json',
+    success:function(response){
+      // console.log(response.num);
+      if(response.status == 'success'){
+          if(response.textSender != 'dontSend'){
+            addCommentNotice(tmpUsr,response.textSender,Msg,senttime);
+          }
+        $(response.people).each(function(){
+          addCommentNotice(this.UID,response.text,Msg,senttime);
+        });
+      }else if(response.status == 'no'){
+        addCommentNotice(tmpUsr,response.text,Msg,senttime);
+      }
+        
+    }
+  });
 }
 function addCommentNotice(tmpStaff,tmpDetail,tmpMsg,senttime){
   console.log(tmpStaff,tmpDetail,tmpMsg);
