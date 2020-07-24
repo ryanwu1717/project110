@@ -551,7 +551,6 @@ function changeDelete(data){
       `);
    });
    $.each(data.result.delete.newOther,function(){
-      console.log(this);
       $(`[name=incomingBox][data-senttime="${this.sentTime}"]`).html(`
         <div class="d-flex bd-highlight">
           <div class="p-2 bd-highlight bg-dark text-white rounded">
@@ -853,7 +852,7 @@ function changeChat(type,data){
         `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
           <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
           <div class="d-flex bd-highlight" >
-            <div class="p-2 bd-highlight bg-dark text-white rounded"  >
+            <div class="p-2 bd-highlight bg-dark text-white rounded"  name = 'incomeChatbox' data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}">
             ${this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')}
             </div>
           </div>
@@ -863,7 +862,7 @@ function changeChat(type,data){
 
           <small>${this.sentTime}</small>
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
-          <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>
+          <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>
           <button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button>
           
         </div>`
@@ -873,7 +872,7 @@ function changeChat(type,data){
       $('[name=chatBox]').append(
         '<div name="outgoingBox" class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
-            '<div class="p-2 bd-highlight bg-secondary text-white rounded" name="contentBox" ondblclick="ondblclickMessage(this)" data-type="deleteMessage" data-sentTime="'+this.fullsentTime+'">'+
+            '<div class="p-2 bd-highlight bg-secondary text-white rounded" name="contentBox" ondblclick="ondblclickMessage(this)" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'">'+
               this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
@@ -921,13 +920,13 @@ function changeChat(type,data){
     },3000);
     // getStatus($(this).attr("data-id"),this);
   });
-  inDelete();
+  inMoreFunction();
   // $('[name="dropdownItemDelete"]').unbind().on('click',function(){
   //    console.log($(this).data('senttime'));
   // });
 }
 
-function inDelete(){
+function inMoreFunction(){
     var longpress = 1000;
     // holds the start time
     var start;
@@ -939,16 +938,17 @@ function inDelete(){
         } else {
             // compare first click to this click and see if they occurred within double click threshold
             if (((new Date().getTime()) - touchtime) < 800) {
-              return false; 
+              // return false; 
 
               // double click occurred
               // alert("double clicked");
-              console.log($(this));
+              // console.log($(this).data('content'));
               // $(this).hide();
              $(this).prepend(
               `<div class="btn-group dropleft">
                 <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
-                 <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(this).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
+                <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="reportMessage" data-senttime="${$(this).data('senttime')}" data-content="${$(this).data('content')}" name="dropdownItemReport">轉傳訊息</button>
+                <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(this).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
                 </div>
               </div>`);
               touchtime = 0;
@@ -962,6 +962,36 @@ function inDelete(){
                 touchtime = new Date().getTime();
             }
         }
+    });
+    $("[name=incomeChatbox]").on("click", function() {
+      if (touchtime == 0) {
+          // set first click
+          touchtime = new Date().getTime();
+      } else {
+          if (((new Date().getTime()) - touchtime) < 800) {
+            // return false; 
+
+            // double click occurred
+            // alert("double clicked");
+            // console.log($(this).data('content'));
+            // $(this).hide();
+           $(this).append(
+            `<div class="btn-group dropright">
+              <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
+              <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="reportMessage" data-senttime="${$(this).data('senttime')}" data-content="${$(this).data('content')}" name="dropdownItemReport">轉傳訊息</button>
+              
+            </div>`);
+            touchtime = 0;
+             $('body').mouseup(function(e){
+                if(1 == e.which){
+                  $('[name="dropdownRightClick"]').hide();
+                }
+              });
+          } else {
+              // not a double click so set as a new first click
+              touchtime = new Date().getTime();
+          }
+      }
     });
     // $("[name=contentBox]").on( 'mousedown', function( e ) {
     //     start = new Date().getTime();
@@ -1033,8 +1063,141 @@ function ondblclickMessage(message){
   // });
 }
 
+function reportMessage(senttime,content){
+  $('[name="dropdownRightClick"]').remove();
+  $('#basicModal .modal-title').html('轉傳訊息');
+  
+  $('#basicModal .modal-body').html(
+    `<div class="card">
+      <div class="card-header">
+       請選擇轉傳聊天室
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">
+        <div class="srch_bar">
+          <div class="stylish-input-group">
+            <input type="text" class="search-bar searchInput" placeholder="搜尋" id="reportSearchInput">
+            <span class="input-group-addon">
+              <button type="button">
+                <i class="fa fa-search" aria-hidden="true"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>    
+    `);
+   $('#basicModal .modal-footer').append(` <button type="button" class="btn btn-primary" id="reportBtn">轉傳</button>`);
+  $.ajax({
+    url:'/chat/chatroom',
+    type:'get',
+    
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+      $(response).each(function(){
+        var reportChatName
+        if (this.chatName==''){
+          reportChatName=this.staff_name;
+        }
+        else{
+          reportChatName=this.chatName;
+        }
+        if(this.chatID!= -1){
+          $('#basicModal .modal-body').append(
+            `<div class="input-group-prepend" value="${reportChatName}" name="reportChatroom" id = "reportChatroom${this.chatID}">
+              <div class="input-group-text">
+                <input type="radio" class="checkItem" data-name="${reportChatName}" value="${this.chatID}" name="reportRadios">
+              </div>
+              <input type="text" class="form-control listID" disabled="" value="${reportChatName}">
+            </div>`);
+        }
+        
+
+      });
+
+    }
+  });
+          console.log(content);
+
+  $('#reportBtn').unbind().on('click',function(){
+        if($('[name="reportRadios"]').is(':checked') != false){
+          var tmpChatID = $('[name="reportRadios"]:checked').val();
+          console.log(content);
+          $('#reportBtn').hide();
+          content = decodeURIComponent(content).replace(/\r?\n/g, '<br />');
+          $('#basicModal .modal-body').html(`確定將</br>${decodeURIComponent(content)}</br>轉傳至 ${$('[name="reportRadios"]:checked').data('name')}?`);
+          $('#basicModal .modal-footer').append(` <button type="button" class="btn btn-primary" id="lastReportBtn">確定</button>`);
+          var orgCommentID;
+          $('#lastReportBtn').unbind().on('click',function(){
+            $.ajax({
+              url:'/chat/commentID/'+chatID+'/'+encodeURIComponent(senttime),
+              type:'get',
+              dataType:'json',
+              success:function(response){
+                orgCommentID = response;
+
+                $.ajax({
+                  url:'/chat/message',
+                  type:'post',
+                  data:{Msg:decodeURIComponent(content),
+                        chatID:tmpChatID,_METHOD:'PATCH'},
+                  dataType:'json',
+                  success:function(response){
+                    console.log(response.time);
+
+                    $.ajax({
+                      url:'/chat/commentID/'+tmpChatID+'/'+encodeURIComponent(response.time),
+                      type:'get',
+                      dataType:'json',
+                      success:function(response){
+                        console.log(response);
+                        updateReport(orgCommentID,response);
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          });
+        }
+      });
+  $('#reportSearchInput').unbind().on('keyup',function(){
+        // console.log($('#reportSearchInput').val());
+
+    setTimeout(function(){
+      $('[name=reportChatroom]').each(function(){
+        // console.log($(this).find('input.form-control ').val());
+        if($(this).find('input.form-control ').val().indexOf($('#reportSearchInput').val())>-1){
+          $(this).show();
+        }else{
+          $(this).hide();
+        }
+      });
+    },300);
+  });
+
+
+}
+
+function updateReport(orgCommentID , newCommentID){
+  $.ajax({
+    url:'/chat/report',
+    type:'post',
+    data:{orgCommentID:orgCommentID,
+          newCommentID:newCommentID,_METHOD:'PATCH'},
+    dataType:'json',
+    success:function(response){
+      console.log(response);
+
+      // updateRepost(orgCommentID,response);
+    }
+  });
+}
+
 function deleteMessage(senttime){
-  $('[name="dropdownRightClick"]').hide();
+  $('[name="dropdownRightClick"]').remove();
+
   $('#basicModal .modal-title').text('刪除訊息');
   $('#basicModal .modal-body').html('確認刪除此訊息?');
   $('#basicModal .modal-footer').html(`<button class="btn btn-primary" name="sureDeleteBtn" data-senttime="${senttime}" type="button">確認</button>`);
@@ -1284,7 +1447,7 @@ $('#dropupTag').hide();
         if('selectionStart' in el) {
             pos = el.selectionStart;
         } else if('selection' in document) {
-            el.focus();
+            el.focus();content.replace
             var Sel = document.selection.createRange();
             var SelLength = document.selection.createRange().text.length;
             Sel.moveStart('character', -el.value.length);
@@ -1578,12 +1741,13 @@ function sendMsg(){
     }
   });
 }
+
 function sendComment(commentID,senttime){
   if($("#commentinput").val()!=""){
     Msg=$("#commentinput").val();
     Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
-      url:'/chat/comment/'+commentID+'/'+Msg,
+      url:'/chat/comment/'+commentID+'/'+encodeURIComponent(Msg),
       type:'post',
       data:{
            commentID:commentID,
@@ -1593,7 +1757,7 @@ function sendComment(commentID,senttime){
       success:function(response){
         // console.log(response);
 
-        getCommentReadList(commentID)
+        getCommentReadList(commentID);
       }
     });
     var tmpsenter;
@@ -1617,7 +1781,7 @@ function sendComment(commentID,senttime){
 }
 function getCommentMember(tmpUsr,commentID,senttime){
   $.ajax({
-    url:'/chat/comment/member/'+commentID,
+    url:'/chat/comment/member/'+commentID+'/'+tmpUsr,
     type:'get',
     data:{},
     dataType:'json',
@@ -1631,7 +1795,9 @@ function getCommentMember(tmpUsr,commentID,senttime){
           addCommentNotice(this.UID,response.text,Msg,senttime);
         });
       }else if(response.status == 'no'){
-        addCommentNotice(tmpUsr,response.text,Msg,senttime);
+        if(response.textSender != 'dontSend'){
+          addCommentNotice(tmpUsr,response.text,Msg,senttime);
+        }
       }
         
     }
@@ -1686,8 +1852,13 @@ $('#basicModal').on('show.bs.modal',function(e){
     getFile($(e.relatedTarget).data());
   }else if(type=='deleteMessage'){
     deleteMessage($(e.relatedTarget).data('senttime'));
+  }else if(type=='reportMessage'){
+    reportMessage($(e.relatedTarget).data('senttime'),$(e.relatedTarget).data('content'));
   }
 });
+
+
+
 function getFile(relatedData){
   $('#basicModal .modal-title').text('讀取中...');
   $('#basicModal .modal-body').html('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span> </div>');

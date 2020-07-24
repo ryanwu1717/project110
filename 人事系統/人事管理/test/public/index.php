@@ -463,7 +463,7 @@ $app->group('/chat', function () use ($app) {
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
-			$result = $chat->testGetChatroom($_GET);
+			$result = $chat->getChatroom($_GET);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
@@ -650,6 +650,16 @@ $app->group('/chat', function () use ($app) {
 		});
 	});
 
+	$app->group('/report', function () use ($app) {
+		$app->patch('', function(Request $request, Response $response, array $args){
+			$chat = new Chat($this->db);
+			$result = $chat->updateReport($request->getParsedBody());
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+	});
+
 	$app->group('/star', function () use ($app) {
 		$app->get('', function(Request $request, Response $response, array $args){
 			$star = new Chat($this->db);
@@ -688,9 +698,9 @@ $app->group('/chat', function () use ($app) {
 			$response = $response->withJson($result);
 		    return $response;
 		});
-		$app->get('/member/{commentID}', function (Request $request, Response $response, array $args) { //TODO
+		$app->get('/member/{commentID}/{orgSender}', function (Request $request, Response $response, array $args) { //TODO
 			$chat = new Chat($this->db);
-			$result = $chat->getCommentMember($args['commentID']);
+			$result = $chat->getCommentMember($args['commentID'],$args['orgSender']);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
