@@ -186,10 +186,11 @@
  include('partial/footer.php')
 ?>
 <script type='text/javascript'>
-// window focus
-// $("body").on('contextmenu', function () {
-//   return false;
-// });
+/*
+NOTICE
+
+report = repost
+*/
 
 var isTabActive = true;
 var titleOrg=$('title').text();
@@ -1126,7 +1127,7 @@ function reportMessage(senttime,content){
           console.log(content);
           $('#reportBtn').hide();
           content = decodeURIComponent(content).replace(/\r?\n/g, '<br />');
-          $('#basicModal .modal-body').html(`確定將</br>${decodeURIComponent(content)}</br>轉傳至 ${$('[name="reportRadios"]:checked').data('name')}?`);
+          $('#basicModal .modal-body').html(`確定將<p>${decodeURIComponent(content)}</p>轉傳至 ${$('[name="reportRadios"]:checked').data('name')}?`);
           $('#basicModal .modal-footer').append(` <button type="button" class="btn btn-primary" id="lastReportBtn">確定</button>`);
           var orgCommentID;
           $('#lastReportBtn').unbind().on('click',function(){
@@ -1747,10 +1748,9 @@ function sendComment(commentID,senttime){
     Msg=$("#commentinput").val();
     Msg = Msg.replace(/\r?\n/g, '<br />');
     $.ajax({
-      url:'/chat/comment/'+commentID+'/'+encodeURIComponent(Msg),
+      url:'/chat/comment/'+commentID,
       type:'post',
       data:{
-           commentID:commentID,
             Msg:Msg
           },
       dataType:'json',

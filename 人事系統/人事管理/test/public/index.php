@@ -691,9 +691,10 @@ $app->group('/chat', function () use ($app) {
 			$response = $response->withJson($result);
 		    return $response;
 		});
-		$app->post('/{commentID}/{content}', function (Request $request, Response $response, array $args) { //TODO
+		$app->post('/{commentID}', function (Request $request, Response $response, array $args) { //TODO
+			$content = $request->getParsedBody()['Msg'];
 			$chat = new Chat($this->db);
-			$result = $chat->insertComment($args['commentID'],$args['content']);
+			$result = $chat->insertComment($args['commentID'],$content);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
