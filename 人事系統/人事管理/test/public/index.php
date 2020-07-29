@@ -377,7 +377,17 @@ $app->group('/chat', function () use ($app) {
 		session_start();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
+		$_SESSION['chat'][$_SESSION['id']][$args['chatID']] = $result;
 		$_SESSION['last'][$args['timestamp']] = $result;
+	    return $response;
+	});
+	$app->get('/saveChat/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getSaveChat($args['chatID']);
+		if(empty($result)){
+			return $response;
+		}
+		$response = $response->withJson($result);
 	    return $response;
 	});
 	$app->get('/list', function (Request $request, Response $response, array $args) {

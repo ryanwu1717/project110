@@ -454,6 +454,11 @@ queue['commentreadtime'] = null;
 var scrollable = false;
 
 
+function expendLimit(){
+  sliceChat+= 10;
+}
+
+
 var todatDate = null;
 function init(){
   todayDate = Date.now();
@@ -499,6 +504,7 @@ function routine(){
             changeChatroom('routine',response);
           }else if(key=='chat'){
             changeChat('routine',response);
+            // changeChat('routine',response);
             changeStar('routine',response);
             changeComment('routine',response);
             changeHeart(response);
@@ -822,6 +828,7 @@ function notifyUnread(){
 var staffStatus;
 function changeChat(type,data){
   // $('[name=chatBox]').html("");
+  console.log('in');
   $('[name=msgSendNow]').remove();
 
   if(chatID==-1){
@@ -836,7 +843,14 @@ function changeChat(type,data){
       newChat.push(data.chat[data.chat.length-(1+i)]);
     }
   }
+
+  if(type == 'saveChat'){
+    console.log('insave');
+    $('[name=chatBox]').html("");
+    newChat = data.tmpchat;
+  }
   $(newChat).each(function(){
+    console.log(this,this.fullsentTime);
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
       $('[name=chatBox]').append(
@@ -1334,18 +1348,41 @@ var chatName = '';
 $('#tool_dropdown').hide();
 
 
+function inSaveChat(chatInfo){
+  console.log(chatInfo.chat);
+  changeChat('saveChat',chatInfo);
+  
+
+
+}
+
 function getTarget(_chatID,_chatName){
   // // console.log($(div).attr("data-name"));
   // // chatID=$(div).attr("data-name");
   // scrollable = false;
   // last['count'] = 0;
   // $('[name=chatBox]').html("");
-  if(chatID!=_chatID)
+  if(chatID!=_chatID){
+    console.log(chatID,_chatID);
+    
+
     $('[name=chatBox]').html(
       '<div class="spinner-border text-primary" role="status">'+
         '<span class="sr-only">Loading...</span>'+
       '</div>'
     );
+    $.ajax({
+      url:'/chat/saveChat/'+_chatID,
+      type:'get',
+      data:{},
+      dataType:'json',
+      success:function(response){
+        console.log(response);
+        inSaveChat(response);
+      }
+    });
+  }
+    
   chatName = decodeURIComponent(_chatName);
   $('[name=navbarChatroomTitle]').text(chatName);
   $('#tool_dropdown').show();

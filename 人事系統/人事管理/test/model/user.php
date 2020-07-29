@@ -1227,6 +1227,11 @@ use Slim\Http\UploadedFile;
 
 		}
 
+		function getSaveChat($chatID){
+			$UID = $_SESSION['id'];
+			return $_SESSION['chat'][$UID][$chatID];
+		}
+
 		function init(){
 			$class = $this->getClass();
 			$chatroom = $this->getChatroom();
@@ -1353,6 +1358,7 @@ use Slim\Http\UploadedFile;
 				);
 				$result['delete'] = $this->checkDelete($data['delete'],$delete);
 
+				$tmpchat = array_slice($chat, -10, 10);
                 $now = new DateTime( 'NOW' );
 
 			}
@@ -1364,6 +1370,7 @@ use Slim\Http\UploadedFile;
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
+				'tmpchat'=>$tmpchat,
 				'comment'=>$comment,
 				'heart'=>$heart,
 				'delete'=>$delete,
@@ -1960,6 +1967,7 @@ use Slim\Http\UploadedFile;
 					order by "chatContent"."sentTime" desc
 				) as "tmpChatContent"
 				order by "tmpChatContent"."sentTime" asc
+				-- limit 10
 			';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
