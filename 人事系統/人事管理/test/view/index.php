@@ -508,7 +508,7 @@ function routine(){
             changeStar('routine',response);
             changeComment('routine',response);
             changeHeart(response);
-            changeDelete(response);
+            changeDelete('routine',response);
           }else if(key == 'notification'){
             changeNotification('routine',response.notification);
           }else if(key=='readCount'){
@@ -546,8 +546,11 @@ function scrollToTag(){
   tmpTagMsg = "";
   tagType = "";
 }
-function changeDelete(data){
-   $.each(data.result.delete.new,function(){
+function changeDelete(type,data){
+  console.log(data.delete);
+  if(type == 'saveChat'){
+    $.each(data.delete.delete,function(){
+      console.log(this);
       $(`[name=outgoingBox][data-senttime="${this.sentTime}"]`).html(`
         <div class="d-flex flex-row-reverse bd-highlight">
           <div class="p-2 bd-highlight bg-secondary text-white rounded" >
@@ -556,8 +559,8 @@ function changeDelete(data){
         </div>
         <small>${this.showTime}</small>
       `);
-   });
-   $.each(data.result.delete.newOther,function(){
+     });
+     $.each(data.delete.other,function(){
       $(`[name=incomingBox][data-senttime="${this.sentTime}"]`).html(`
         <div class="d-flex bd-highlight">
           <div class="p-2 bd-highlight bg-dark text-white rounded">
@@ -568,7 +571,31 @@ function changeDelete(data){
         <small>${this.showTime}</small>
       `);
 
-   });
+     });
+  }else if(type == 'routine'){
+    $.each(data.result.delete.new,function(){
+      $(`[name=outgoingBox][data-senttime="${this.sentTime}"]`).html(`
+        <div class="d-flex flex-row-reverse bd-highlight">
+          <div class="p-2 bd-highlight bg-secondary text-white rounded" >
+            此訊息已刪除
+          </div>
+        </div>
+        <small>${this.showTime}</small>
+      `);
+     });
+     $.each(data.result.delete.newOther,function(){
+        $(`[name=incomingBox][data-senttime="${this.sentTime}"]`).html(`
+          <div class="d-flex bd-highlight">
+            <div class="p-2 bd-highlight bg-dark text-white rounded">
+              此訊息已刪除
+            </div>
+          </div>
+          
+          <small>${this.showTime}</small>
+        `);
+
+     });
+  }
 }
 
 function changeHeart(data){
@@ -850,7 +877,6 @@ function changeChat(type,data){
     newChat = data.tmpchat;
   }
   $(newChat).each(function(){
-    console.log(this,this.fullsentTime);
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
       $('[name=chatBox]').append(
@@ -1351,9 +1377,7 @@ $('#tool_dropdown').hide();
 function inSaveChat(chatInfo){
   console.log(chatInfo.chat);
   changeChat('saveChat',chatInfo);
-  
-
-
+  changeDelete('saveChat',chatInfo);
 }
 
 function getTarget(_chatID,_chatName){
