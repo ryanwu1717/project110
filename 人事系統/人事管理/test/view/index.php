@@ -996,9 +996,12 @@ function inMoreFunction(){
               </div>`);
               touchtime = 0;
                $('body').mouseup(function(e){
-                  if(1 == e.which){
-                    $('[name=moreFunctionDrop]').remove();
 
+                  if(1 == e.which && $('[name=moreFunctionDrop]').is(":visible")){
+                    $('[name=moreFunctionDrop]').hide();
+                    setTimeout(function(){
+                      $('[name=moreFunctionDrop]').remove();
+                    }, 1000);
                   }
                 });
             } else {
@@ -1028,8 +1031,10 @@ function inMoreFunction(){
             touchtime = 0;
              $('body').mouseup(function(e){
                 if(1 == e.which){
-                  $('[name=moreFunctionDrop]').remove();
-
+                  $('[name=moreFunctionDrop]').hide();
+                  setTimeout(function(){
+                    $('[name=moreFunctionDrop]').remove();
+                  }, 1000);
                 }
               });
           } else {
