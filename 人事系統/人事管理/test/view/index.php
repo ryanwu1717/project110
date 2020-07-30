@@ -547,10 +547,8 @@ function scrollToTag(){
   tagType = "";
 }
 function changeDelete(type,data){
-  console.log(data.delete);
   if(type == 'saveChat'){
     $.each(data.delete.delete,function(){
-      console.log(this);
       $(`[name=outgoingBox][data-senttime="${this.sentTime}"]`).html(`
         <div class="d-flex flex-row-reverse bd-highlight">
           <div class="p-2 bd-highlight bg-secondary text-white rounded" >
@@ -972,7 +970,11 @@ function inMoreFunction(){
     // holds the start time
     var start;
     var touchtime = 0;
-    $("[name=contentBox]").on("click", function() {
+    $('[name=moreFunctionDrop]').remove();
+
+
+    $('[name=contentBox]').on("click", function() {
+
         if (touchtime == 0) {
             // set first click
             touchtime = new Date().getTime();
@@ -986,7 +988,7 @@ function inMoreFunction(){
               // console.log($(this).data('content'));
               // $(this).hide();
              $(this).prepend(
-              `<div class="btn-group dropleft">
+              `<div class="btn-group dropleft" name="moreFunctionDrop">
                 <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
                 <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="reportMessage" data-senttime="${$(this).data('senttime')}" data-content="${$(this).data('content')}" name="dropdownItemReport">轉傳訊息</button>
                 <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="deleteMessage" data-senttime="${$(this).data('senttime')}" name="dropdownItemDelete">刪除訊息</button>
@@ -995,7 +997,8 @@ function inMoreFunction(){
               touchtime = 0;
                $('body').mouseup(function(e){
                   if(1 == e.which){
-                    $('[name="dropdownRightClick"]').hide();
+                    $('[name=moreFunctionDrop]').remove();
+
                   }
                 });
             } else {
@@ -1017,7 +1020,7 @@ function inMoreFunction(){
             // console.log($(this).data('content'));
             // $(this).hide();
            $(this).append(
-            `<div class="btn-group dropright">
+            `<div class="btn-group dropright" name="moreFunctionDrop">
               <div class="dropdown-menu show" aria-labelledby="dropdownMenuButton" name="dropdownRightClick">
               <button class="dropdown-item" data-toggle="modal" data-target="#basicModal" data-type="reportMessage" data-senttime="${$(this).data('senttime')}" data-content="${$(this).data('content')}" name="dropdownItemReport">轉傳訊息</button>
               
@@ -1025,7 +1028,8 @@ function inMoreFunction(){
             touchtime = 0;
              $('body').mouseup(function(e){
                 if(1 == e.which){
-                  $('[name="dropdownRightClick"]').hide();
+                  $('[name=moreFunctionDrop]').remove();
+
                 }
               });
           } else {
@@ -1034,6 +1038,7 @@ function inMoreFunction(){
           }
       }
     });
+
     // $("[name=contentBox]").on( 'mousedown', function( e ) {
     //     start = new Date().getTime();
          
@@ -1105,7 +1110,7 @@ function ondblclickMessage(message){
 }
 
 function reportMessage(senttime,content){
-  $('[name="dropdownRightClick"]').remove();
+  $('[name="moreFunctionDrop"]').remove();
   $('#basicModal .modal-title').html('轉傳訊息');
   
   $('#basicModal .modal-body').html(
@@ -1194,6 +1199,7 @@ function reportMessage(senttime,content){
                       success:function(response){
                         console.log(response);
                         updateReport(orgCommentID,response);
+                        $('#basicModal').modal('hide');
                       }
                     });
                   }
@@ -1237,7 +1243,7 @@ function updateReport(orgCommentID , newCommentID){
 }
 
 function deleteMessage(senttime){
-  $('[name="dropdownRightClick"]').remove();
+  $('[name="moreFunctionDrop"]').remove();
 
   $('#basicModal .modal-title').text('刪除訊息');
   $('#basicModal .modal-body').html('確認刪除此訊息?');
