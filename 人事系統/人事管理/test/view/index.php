@@ -1001,8 +1001,9 @@ function inMoreFunction(){
                     $('[name=moreFunctionDrop]').hide();
                     setTimeout(function(){
                       $('[name=moreFunctionDrop]').remove();
-                    }, 1000);
+                    }, 200);
                   }
+                  
                 });
             } else {
                 // not a double click so set as a new first click
@@ -1029,14 +1030,17 @@ function inMoreFunction(){
               
             </div>`);
             touchtime = 0;
-             $('body').mouseup(function(e){
-                if(1 == e.which){
-                  $('[name=moreFunctionDrop]').hide();
-                  setTimeout(function(){
-                    $('[name=moreFunctionDrop]').remove();
-                  }, 1000);
-                }
-              });
+             // $('body').mouseup(function(e){
+             //     if(1 == e.which && $('[name=moreFunctionDrop]').is(":visible")){
+             //        $('[name=moreFunctionDrop]').hide();
+             //        setTimeout(function(){
+             //          $('[name=moreFunctionDrop]').remove();
+             //        }, 200);
+             //      }else if (1 == e.which && !($('[name=moreFunctionDrop]').is(":visible"))){
+             //          $('[name=moreFunctionDrop]').remove();
+                    
+             //      }
+             //  });
           } else {
               // not a double click so set as a new first click
               touchtime = new Date().getTime();

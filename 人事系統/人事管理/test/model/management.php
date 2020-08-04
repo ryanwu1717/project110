@@ -82,54 +82,164 @@ use Slim\Http\UploadedFile;
 			$this->conn = $db;
 		}
 
-		function checkin($date,$time,$location){
-			$sql ="INSERT INTO staff.\"employeeCheckin\"(
-						 \"checkinDate\", \"checkinTime\", \"location\", \"UID\")
-		 					VALUES (:checkinDate, :checkinTime, :location, :UID);";
+		function getCheckin(){
+			$sql ='SELECT "checkin".id,"checkin"."UID","checkin"."checkinTime","checkin"."latitude",
+				"checkin"."longitude",
+				"out".id,"out"."checkoutTime","out"."latitude" as "outlatitude",
+				"out"."longitude" as "outlongitude",
+				case when "checkin"."checkinDate" is NULL 
+					then "out"."checkoutDate"
+					else "checkin"."checkinDate"
+				end as "checkinDate",
+				case when "checkin"."checkinTime" is NULL 
+					then \'未打卡\'
+					else  to_char("checkin"."checkinTime"::time, \'HH:MI:SS\')
+				end as "inTime",
+				case when "out"."checkoutTime" is NULL 
+					then \'未打卡\'
+					else to_char("out"."checkoutTime"::time, \'HH:MI:SS\')
+				end as "outTime"
+		FROM staff."employeeCheckin" as "checkin",(
+			SELECT  "UID","checkinDate", MIN("checkinTime") as "checkinTime"
+			FROM staff."employeeCheckin" 
+			GROUP BY  "UID","checkinDate"
+		) as "tmpCheckin"
+		FULL OUTER JOIN (
+			SELECT "checkout".id,"checkout"."UID","checkout"."checkoutDate","checkout"."checkoutTime","checkout"."latitude",
+				"checkout"."longitude"
+			FROM staff."employeeCheckout" as "checkout",(
+				SELECT  "UID","checkoutDate", MAX("checkoutTime") as "checkoutTime"
+				FROM staff."employeeCheckout" 
+				GROUP BY  "UID","checkoutDate"
+			) as "tmpCheckout"
+			WHERE "tmpCheckout"."checkoutDate" = "checkout"."checkoutDate" 
+					and "tmpCheckout"."checkoutTime" = "checkout"."checkoutTime" 
+					and "checkout"."UID" = :UID
+			order by "checkout"."checkoutDate"
+		)as "out" ON "out"."checkoutDate"="tmpCheckin"."checkinDate"
+		WHERE "tmpCheckin"."checkinDate" = "checkin"."checkinDate" 
+				and "tmpCheckin"."checkinTime" = "checkin"."checkinTime" 
+				and "checkin"."UID" = :UID
+		order by "checkin"."checkinDate"'
+		;
 			$sth = $this->conn->prepare($sql);
-	   	$sth->bindParam(':checkinDate',$date);
-	   	$sth->bindParam(':checkinTime',$time);
-	   	$sth->bindParam(':location',$location);
-	   	$sth->bindParam(':UID',$_SESSION['id']);
+		   	$sth->bindParam(':UID',$_SESSION['id']);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			foreach ($row as $key => $value) {
+				// var_dump($key.'=>'.$value);
+			}
+			$ack = array(
+				'info' => $row
+			);
+			return $ack;
+		}
+
+		function checkin($date,$time,$location,$latitude,$longitude){
+			$sql ="INSERT INTO staff.\"employeeCheckin\"(
+						 \"checkinDate\", \"checkinTime\", \"location\", \"UID\", \"latitude\", \"longitude\")
+		 					VALUES (:checkinDate, :checkinTime, :location, :UID,:latitude,:longitude);";
+			$sth = $this->conn->prepare($sql);
+		   	$sth->bindParam(':checkinDate',$date);
+		   	$sth->bindParam(':checkinTime',$time);
+		   	$sth->bindParam(':location',$location);
+		   	$sth->bindParam(':latitude',$latitude);
+		   	$sth->bindParam(':longitude',$longitude);
+		   	$sth->bindParam(':UID',$_SESSION['id']);
 			$sth->execute();
 			$row = $sth->fetchAll();
 		}
-		function checkout($date,$time,$location){
+		function checkout($date,$time,$location,$latitude,$longitude){
 			$sql ="INSERT INTO staff.\"employeeCheckout\"(
-						 \"checkoutDate\", \"checkoutTime\", \"location\", \"UID\")
-		 					VALUES (:checkoutDate, :checkoutTime, :location, :UID);";
+						 \"checkoutDate\", \"checkoutTime\", \"location\", \"UID\", \"latitude\", \"longitude\")
+		 					VALUES (:checkoutDate, :checkoutTime, :location, :UID,:latitude,:longitude);";
 			$sth = $this->conn->prepare($sql);
 	   	$sth->bindParam(':checkoutDate',$date);
 	   	$sth->bindParam(':checkoutTime',$time);
 	   	$sth->bindParam(':location',$location);
+	   	$sth->bindParam(':latitude',$latitude);
+	   	$sth->bindParam(':longitude',$longitude);
 	   	$sth->bindParam(':UID',$_SESSION['id']);
 			$sth->execute();
 			$row = $sth->fetchAll();
 		}
 
+		function makeup(){
+			$_POST=json_decode($_POST['data'],true);
+			$sql ='INSERT INTO staff."makeUpCheckin"(
+				 "UID", "time", "date", type, latitude, longitude, cause)
+				VALUES ( :UID, :tmpTime, :tmpDate, :type, :latitude, :longitude, :cause);';
+			$sth = $this->conn->prepare($sql);
+	   		$sth->bindParam(':UID',$_SESSION['id']);
+	   		$sth->bindParam(':tmpTime',$_POST['time']);
+	   		$sth->bindParam(':tmpDate',$_POST['date']);
+	   		$sth->bindParam(':type',$_POST['type']);
+	   		$sth->bindParam(':latitude',$_POST['latitude']);
+	   		$sth->bindParam(':longitude',$_POST['longitude']);
+	   		$sth->bindParam(':cause',$_POST['cause']);
+
+			$sth->execute();
+			$ack = array(
+				'status' => 'success'
+			);
+			return $ack;
+		}
+
+		function checkMakeup(){
+			$_POST=json_decode($_POST['data'],true);
+			$ack = array(
+					'status' => 'success',
+					'content' => '確認申請補卡？'
+				);
+			$date = strtotime("day");
+			$checkDate =  date('Y-m-d', $date);
+			if(empty($_POST['type'])){
+				$ack = array(
+					'status' => 'failed',
+					'content' => '選項不得為空'
+				);
+       		}else if(empty($_POST['time'])){
+				$ack = array(
+					'status' => 'failed',
+					'content' => '補卡時間不得為空'
+				);
+       		}else if(($_POST['time'])>$checkDate){
+				$ack = array(
+					'status' => 'failed',
+					'content' => '補卡時間不在有效時間'
+				);
+       		}else if ($_POST['cause'] == ""){
+       			$ack = array(
+					'status' => 'failed',
+					'content' => '原因不得為空'
+				);
+       		}
+       		return $ack;
+		}
+
 		function employeeCheckin(){
 			$_POST=json_decode($_POST['data'],true);
 			try{
-				if($_POST['type']=="上班打卡"){
+				if($_POST['type']=="onWork"){
 					// var $boolCheckin=false;
 					$sql ='SELECT  "checkinTime"
-									FROM staff."employeeCheckin"
-									WHERE "checkinDate"=:checkinDate AND "UID"=:UID
-									order by "checkinTime" desc;';
+							FROM staff."employeeCheckin"
+							WHERE "checkinDate"=:checkinDate AND "UID"=:UID
+							order by "checkinTime" desc;';
 					$sth = $this->conn->prepare($sql);
-			   	$sth->bindParam(':checkinDate',$_POST['date']);
-			   	$sth->bindParam(':UID',$_SESSION['id']);
+			   		$sth->bindParam(':checkinDate',$_POST['date']);
+			   		$sth->bindParam(':UID',$_SESSION['id']);
 					$sth->execute();
 					$row = $sth->fetchAll();
 					if(count($row)==0){
-						$this->checkin($_POST['date'],$_POST['time'],$_POST['location']);	
+						$this->checkin($_POST['date'],$_POST['time'],$_POST['location'],$_POST['latitude'],$_POST['longitude']);	
 						$ack = array(
 							'status' => 'success'
 						);
 					}else{
 						if($_POST['time']>date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkinTime"])))){
 								// var_dump(date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkinTime"]))));
-							$this->checkin($_POST['date'],$_POST['time'],$_POST['location']);	
+							$this->checkin($_POST['date'],$_POST['time'],$_POST['location'],$_POST['latitude'],$_POST['longitude']);		
 							$ack = array(
 								'status' => 'success'
 							);
@@ -142,11 +252,11 @@ use Slim\Http\UploadedFile;
 							);
 						}
 					}
-				}else if($_POST['type']=="下班打卡"){
+				}else if($_POST['type']=="offWork"){
 					$sql ="SELECT  \"checkoutTime\"
-									FROM staff.\"employeeCheckout\"
-									WHERE \"checkoutDate\"=:checkoutDate AND \"UID\"=:UID
-									order by \"checkoutTime\" desc;";
+							FROM staff.\"employeeCheckout\"
+							WHERE \"checkoutDate\"=:checkoutDate AND \"UID\"=:UID
+							order by \"checkoutTime\" desc;";
 					$sth = $this->conn->prepare($sql);
 			   	$sth->bindParam(':checkoutDate',$_POST['date']);
 			   	$sth->bindParam(':UID',$_SESSION['id']);
@@ -156,14 +266,14 @@ use Slim\Http\UploadedFile;
 					// var_dump($row[0]["nextCheckinTime"]>$_POST['time']);
 
 					if(count($row)==0){
-						$this->checkout($_POST['date'],$_POST['time'],$_POST['location']);	
+						$this->checkout($_POST['date'],$_POST['time'],$_POST['location'],$_POST['latitude'],$_POST['longitude']);	
 						$ack = array(
 							'status' => 'success'
 						);
 					}else{
 						if($_POST['time']>date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkoutTime"])))){
 							// var_dump($_POST['time'],date('H:i:s',strtotime('+30 minutes',strtotime($row[0]["checkoutTime"]))));
-							$this->checkout($_POST['date'],$_POST['time'],$_POST['location']);	
+							$this->checkout($_POST['date'],$_POST['time'],$_POST['location'],$_POST['latitude'],$_POST['longitude']);	
 							$ack = array(
 								'status' => 'success'
 							);
