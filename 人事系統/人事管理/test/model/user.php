@@ -2502,10 +2502,29 @@ use Slim\Http\UploadedFile;
 				$UID =$_SESSION['id'];
 				$chatID=$body['chatID'];
 				$Msg=$body['Msg'];
+				$sentMsg='';
+                $Msg=explode('<br />', $Msg);
+                $first = true;
+                foreach ($Msg as $key => $value) {
+                	if(!$first){
+                        $sentMsg .= '<br/>';
+                	}
+                    $MsgSplit = explode(" ", $value);
+                    foreach ($MsgSplit as $keySplit => $valueSplit) {
+                            if(strpos($valueSplit,'http://')==0&&strpos($valueSplit,'http://')!==false)
+                                    $sentMsg .= ' <a href="'.$valueSplit.'" style="color:#CCEEFF;" target="_blank">'.$valueSplit.'</a>';
+                            else if(strpos($valueSplit,'https://')==0&&strpos($valueSplit,'https://')!==false)
+                                    $sentMsg .= ' <a href="'.$valueSplit.'" style="color:#CCEEFF;" target="_blank">'.$valueSplit.'</a>';
+
+                            else
+                                    $sentMsg .= ' '.$valueSplit;
+                    }
+                    $first = false;
+                }
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':fullTime',$tmpFullTime,PDO::PARAM_INT);
-				$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
+				$sth->bindParam(':Msg',$sentMsg,PDO::PARAM_INT);
 				$sth->execute();
 				// $insert_id = $this->conn->lastInsertId();
 
