@@ -72,6 +72,7 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/register.php', $viewParam);
 			});
+
 			$app->get('/table', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/tables.php', $viewParam);
@@ -87,6 +88,10 @@ $app->group('/management', function () use ($app) {
 			$app->get('/oldcheckinlist', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/seeCheckin.php', $viewParam);
+			});
+			$app->get('/setWorkType', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/setWorkType.php', $viewParam);
 			});
 			$app->get('/checkLevel', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		

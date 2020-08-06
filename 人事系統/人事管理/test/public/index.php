@@ -97,11 +97,17 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/test.php', $viewParam);
 		});
-		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');	
-			return $this->view->render($response, '/employeeCheckin.php', $viewParam);
-
+		$app->group('/checkin', function () use ($app) {
+			$app->get('', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/employeeCheckin.php', $viewParam);
+			});
+			$app->get('/table', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/checkinTable.php', $viewParam);
+			});
 		});
+			
 		$app->get('/issue', function (Request $request, Response $response, array $args) {
 			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/issue.php', $viewParam);
@@ -767,13 +773,43 @@ $app->group('/chat', function () use ($app) {
 })->add('ViewMiddleware');
 
 $app->group('/work', function () use ($app) {
-	$app->post('/checkin', function (Request $request, Response $response, array $args) {
-	    $work = new Work($this->db);
-	    $result = $work->employeeCheckin();   
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;
-	    
+	$app->group('/checkin', function () use ($app) {
+		$app->post('', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->employeeCheckin();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckin();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+	});
+		
+	$app->group('/makeup', function () use ($app) {
+		$app->post('', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->makeup();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->post('/check', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->checkMakeup();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+
 	});
 	$app->get('/check/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);

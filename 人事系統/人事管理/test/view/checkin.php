@@ -127,8 +127,12 @@ button.switch-month:hover {
 						</div>
 						<div class="col-12">
 							<div class="col-auto text-center" name = "workMode">
-								<button type = "button" class ="btn btn-primary" name = "checkInButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="上" data-do="start"  data-toggle="modal" data-target="#checkInModel" >上班打卡</button>
-								<button type = "button" class ="btn btn-primary" name = "checkOutButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="下" data-do="finish"  data-toggle="modal" data-target="#checkInModel" >下班打卡</button>
+								<button type = "button" class ="btn btn-primary" name = "checkInButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="上" data-do="start"  data-toggle="modal" data-target="#checkInModel" >上班打卡
+                                    <i class="fas fa-bell fa-fw"></i>
+                                </button>
+								<button type = "button" class ="btn btn-primary" name = "checkOutButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="下" data-do="finish"  data-toggle="modal" data-target="#checkInModel" >下班打卡
+                                    <i class="fas fa-bell fa-fw"></i>
+                                </button>
 							</div>
 						</div>
 					</div>
