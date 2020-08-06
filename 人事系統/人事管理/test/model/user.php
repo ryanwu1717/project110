@@ -2494,7 +2494,11 @@ use Slim\Http\UploadedFile;
 				$date = DateTime::createFromFormat('0.u00 U', microtime());
 			  	$timezone = new DateTimeZone('Asia/Taipei');
 			  	$date->setTimezone($timezone);
-			  	$tmpFullTime = $date->format('Y-m-d H:i:s.u').'+08';
+			  	$t = microtime(true);
+				$micro = sprintf("%06d",($t - floor($t)) * 1000000);
+				$d = new DateTime( date('Y-m-d H:i:s.'.$micro, $t) );
+			  	$d->setTimezone($timezone);
+			  	$tmpFullTime = $d->format("Y-m-d H:i:s.u").'+08';
 			  	// var_dump( $tmpFullTime);
 				$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
 					VALUES ( :Msg , :UID , :fullTime, :chatID );';
