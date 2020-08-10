@@ -10,7 +10,6 @@
 	      	<a class="nav-link col-6" id="v-pills-profile-tab" data-toggle="pill" href="#checked" role="tab" aria-controls="v-pills-profile" aria-selected="false">審核完成</a>
     	</div>
   	</div>
-<<<<<<< HEAD
   	<div name="allClick" class="col-12">
   		<div class="custom-control custom-checkbox col-md-6">
   			<div class="col-12">
@@ -24,8 +23,6 @@
 		  	</div>
 		</div>
   	</div>
-=======
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
   	<div class="col-12">
 	    <div class="tab-content" id="v-pills-tabContent">
 		    <div class="tab-pane fade show active" id="checking" role="tabpanel" aria-labelledby="v-pills-home-tab">
@@ -86,7 +83,6 @@
  	</div>
 </div>
 
-<<<<<<< HEAD
 <div class="modal fade bd-example-modal-xl" id="modalDetail" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
   	<div class="modal-dialog modal-xl" role="document">
     	<div class="modal-content">
@@ -133,8 +129,6 @@
   	</div>
 </div>
 
-=======
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
 <?php
   include('partial/footer.php');
 ?>
@@ -148,14 +142,11 @@
 			url: '/work/holiday/checkedData',
 			type: 'GET',
 			dataType:'json',
-<<<<<<< HEAD
 			success: function(source){
                 $.each(source, function(i,n){
                 	var td0 = "<td></td>";
-=======
 			success: function(data){
                 $.each(data, function(i,n){
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
                     var td1 = $('<td>').text(n["id"]);
 					var td2 = $('<td>').text(n["staff_id"]);
 					var td3 = $('<td>').text(n["name"]);
@@ -165,7 +156,6 @@
 						onclick:"modalDetail("+n['id']+")"
 						});
 					var td4 = $('<td>').append(btn);
-<<<<<<< HEAD
 					var td5;
 					var tr
 					if(n['isCheck'] == 2){
@@ -177,17 +167,13 @@
 					}else{
 						tr = $('<tr>').append(td0,td1,td6,td2,td3,td4);
 					}
-=======
 					var tr = $('<tr>').append(td1,td2,td3,td4);
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
 					if(n["isCheck"] == 1){
 						$('[name=tbody_checking]').append(tr);
 					}else{
 						$('[name=tbody_checked]').append(tr);
 					}
                 });
-
-<<<<<<< HEAD
                 $('#tableChecking').DataTable({
 				    columnDefs: [{
 				        orderable: false,
@@ -201,9 +187,8 @@
 				    //     selector: 'td:first-child'
 				    // },
 			        order: [[1, 'asc']],
-=======
-                $('#tableChecking').DataTable({ 
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
+			    	})
+                $('#tableChecking').DataTable({
                 	language: {
 			            "emptyTable": "無資料...",
 			            "processing": "處理中...",
@@ -227,7 +212,6 @@
 			            }
 			        }
         		});
-<<<<<<< HEAD
         		$('#tableChecked').DataTable({
         			"columnDefs": [
         				{
@@ -235,10 +219,8 @@
 	        				"targets": 0,
 	        			},
         			],
-=======
-
+        		})
         		$('#tableChecked').DataTable({ 
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
                 	language: {
 			            "emptyTable": "無資料...",
 			            "processing": "處理中...",
@@ -283,7 +265,6 @@
 			}
 		});
 	});
-<<<<<<< HEAD
 
 	function modalDetail(j){
 		$.ajax({
@@ -419,12 +400,4 @@
 	$("#v-pills-home-tab").click(function(){
 		$("[name='allClick']").attr('style',"display:block")
 	})
-
-	
-
-	
-
-
-=======
->>>>>>> 76913eb4055500e34320b68acba05bc6d7e3fdba
 </script>
