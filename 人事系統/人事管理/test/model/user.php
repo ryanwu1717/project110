@@ -1017,6 +1017,17 @@ use Slim\Http\UploadedFile;
 			);
 			return $ack;
 		}
+		function getOtherDelete($chatID){
+			$sql = 'SELECT id, "chatID", "UID", "sentTime",to_char( "sentTime",\'MON DD , HH24:MI\' )as "showTime"
+					FROM staff_chat."chatDelete"
+					WHERE "chatID"=:chatID AND  "UID" != :UID;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
+			$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
+			$sth->execute();	
+			$row = $sth->fetchAll();
+			return $row;
+		}
 
 		function getDelete($chatID){
 			$sql = 'SELECT id, "chatID", "UID", "sentTime",to_char( "sentTime",\'MON DD , HH24:MI\' )as "showTime"
@@ -1216,6 +1227,11 @@ use Slim\Http\UploadedFile;
 
 		}
 
+		function getSaveChat($chatID){
+			$UID = $_SESSION['id'];
+			return $_SESSION['chat'][$UID][$chatID];
+		}
+
 		function init(){
 			$class = $this->getClass();
 			$chatroom = $this->getChatroom();
@@ -1333,12 +1349,16 @@ use Slim\Http\UploadedFile;
 				$result['heartClick'] = $this->checkHeartClick($data['heart'],$heart);
 
 				$deleteMes = $this->getDelete($chatID);
+				$otherDelete = $this->getOtherDelete($chatID);
 				$delete=array(
 					'chatID'=>$chatID,
-					'delete' => $deleteMes
+					'delete' => $deleteMes,
+					'other' =>$otherDelete
+
 				);
 				$result['delete'] = $this->checkDelete($data['delete'],$delete);
 
+				$tmpchat = array_slice($chat, -10, 10);
                 $now = new DateTime( 'NOW' );
 
 			}
@@ -1350,6 +1370,7 @@ use Slim\Http\UploadedFile;
 				'class'=>$class,
 				'chatroom'=>$chatroom,
 				'chat'=>$chat,
+				'tmpchat'=>$tmpchat,
 				'comment'=>$comment,
 				'heart'=>$heart,
 				'delete'=>$delete,
@@ -1368,7 +1389,7 @@ use Slim\Http\UploadedFile;
 		);
 
 		function checkDelete($old,$new){
-			$map = $out = array();
+			$map = $mapother = $out = array();
 			$out['new'] = array();
 			// var_dump($old['chatID'],$new['chatID']);
 			if($new['chatID'] == $old['chatID']){
@@ -1395,8 +1416,32 @@ use Slim\Http\UploadedFile;
 		    		
 	    		}
 
+	    		foreach($old['other'] as $val) {
+					$mapother[$val['id']]['type'] = 1; 
+					$mapother[$val['id']]['data'] = $val;
+				}
+				foreach($new['other'] as $val) {
+		    		if(isset($mapother[$val['id']])) {
+		    			// if($map[$val['id']]['data']['count']!=$val['count']) {
+			    		// 	$map[$val['id']]['type'] = 3;
+			    		// 	$map[$val['id']]['data'] = $val;
+			    		// 	$this->change=true;
+			    		// } else {
+		    			$mapother[$val['id']]['type'] = 0;
+		    			$mapother[$val['id']]['data'] = $val;
+			    		// }
+			    	}else {
+	    				$mapother[$val['id']]['type'] = 2;
+		    			$mapother[$val['id']]['data'] = $val;
+		    			$this->change=true;
+			    	}
+			    	foreach($mapother as $val => $ok) if($ok['type']==2) $out['newOther'][] = $ok['data'];
+		    		
+	    		}
+
 			}else{
 				$out['new']= $new['delete'];
+				$out['newOther']= $new['other'];
     			$this->change=true;
 			}
 			return $out;
@@ -1922,6 +1967,7 @@ use Slim\Http\UploadedFile;
 					order by "chatContent"."sentTime" desc
 				) as "tmpChatContent"
 				order by "tmpChatContent"."sentTime" asc
+				-- limit 10
 			';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
@@ -1932,18 +1978,48 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getCommentNum($chatID){
-			$sql = 'SELECT  "sentTIme" AS "sentTime" , id,
-					case when "commentChat".count IS NULL
-						then 0 
-						else "commentChat".count
-						end
-					FROM staff_chat."commentInfo"
+			$sql = 'SELECT  "newcommentChat"."id","newcommentChat"."sentTime",
+						case when "oldcommentChat".count IS NULL
+							then 0 
+							else "oldcommentChat".count
+							end as count
+					FROM(	SELECT  "sentTIme" AS "sentTime" , id,"repostComment"."orgCommentID",
+						case when "commentChat".count IS NULL
+							then 0
+							else "commentChat".count
+							end ,
+						case when "repostComment"."orgCommentID" IS NULL
+							then id
+							else "repostComment" ."orgCommentID"
+							end "lastCommentID"
+
+						FROM staff_chat."commentInfo"
+						LEFT JOIN (
+							SELECT "commentID",count(*)
+							FROM staff_chat."commentChat"
+							GROUP BY "commentID"
+						)as "commentChat" on "commentChat"."commentID" = "commentInfo".id
+						LEFT JOIN (
+							SELECT *
+							FROM staff_chat."repostComment"
+						)as "repostComment" on  "repostComment" ."commentID" = id
+						WHERE "chatID" = :chatID
+					)as "newcommentChat"
 					LEFT JOIN (
-						SELECT "commentID",count(*)
-						FROM staff_chat."commentChat"
-						GROUP BY "commentID"
-					)as "commentChat" on "commentChat"."commentID" = "commentInfo".id
-					WHERE "chatID" = :chatID;';
+						SELECT  "sentTIme" AS "sentTime" , id,
+						case when "commentChat".count IS NULL
+							then 0 
+							else "commentChat".count
+							end
+						FROM staff_chat."commentInfo"
+						LEFT JOIN (
+							SELECT "commentID",count(*)
+							FROM staff_chat."commentChat"
+							GROUP BY "commentID"
+						)as "commentChat" on "commentChat"."commentID" = "commentInfo".id
+
+
+					)as "oldcommentChat" on "oldcommentChat".id = "newcommentChat"."lastCommentID"';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 			$sth->execute();
@@ -2114,10 +2190,17 @@ use Slim\Http\UploadedFile;
 		}
 		function getCommentID($chatID,$sendtime){
 			$sql ='
-				SELECT id
+				SELECT  "commentInfo".id as "org",
+					case when "repostComment"."orgCommentID" IS NULL
+						then "commentInfo".id
+						else "repostComment"."orgCommentID"
+						end  as id
 				FROM staff_chat."commentInfo"
+				LEFT JOIN (
+					SELECT *
+					FROM staff_chat."repostComment"
+				)as "repostComment" on "commentInfo".id = "repostComment"."commentID"
 				WHERE "chatID" = :chatID AND "sentTIme"= :sentTIme
-				;
 			';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
@@ -2173,7 +2256,7 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
-		function getCommentMember($commentID){
+		function getCommentMember($commentID,$orgSender){
 			// $data = json_decode($body['data'],true);
 
 			$sql = '
@@ -2185,22 +2268,13 @@ use Slim\Http\UploadedFile;
 			$sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
 			$sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
 			$sth->execute();
-			$row = $sth->fetchAll();
+			$peoplerow = $sth->fetchAll();
 
-			$num = count($row);
+			$num = count($peoplerow);
 
-			// $sql = '
-			// 	SELECT  "UID",  "commentID"
-			// 	FROM staff_chat."commentChat"
-			// 	WHERE "commentID" = :commentID AND "UID" != :UID
-			// 	GROUP BY  "UID", "commentID"';
-			// $sth = $this->conn->prepare($sql);
-			// $sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
-			// $sth->bindParam(':UID',$_SESSION['id'],PDO::PARAM_STR);
-			// $sth->execute();
-			// $row = $sth->fetchAll();
+			
 			$sql = '
-					SELECT  staff_name
+					SELECT  staff_name,staff_id
 					FROM staff."staff"
 					WHERE "staff_id" = :staff_id ';
 			$sth = $this->conn->prepare($sql);
@@ -2208,14 +2282,18 @@ use Slim\Http\UploadedFile;
 			$sth->execute();
 			$senderrow = $sth->fetchAll();
 			if($num == 0 ){
-				
-
-				$ack = array(
-					'status' => 'no',
-					'text' => $senderrow[0]['staff_name'].'回復了留言'
-				);
-
-				// $num = 
+				if($senderrow[0]['staff_id'] != $orgSender){
+					$ack = array(
+						'status' => 'no',
+						'text' => $senderrow[0]['staff_name'].'回復了留言'
+					);
+				}else{
+					$ack = array(
+						'status' => 'nothing',
+						'sender' => $senderrow[0]['staff_id'],
+						'next'=> $_SESSION['id']
+					);
+				}
 			}else{
 				$sql = '
 					SELECT "commentChat"."UID", "commentChat"."sentTime" ,staff.staff_name as name
@@ -2233,15 +2311,20 @@ use Slim\Http\UploadedFile;
 				$sth->execute();
 				$tmprow = $sth->fetchAll();
 				if($num <= 1){
-					$text = $tmprow[0]['name'].'回復了留言';
+					$text = $senderrow[0]['staff_name'].'回復了留言';
 				}else{
-					$text = $tmprow[0]['name'].'以及其他'.($num-1).'人
+					$text = $senderrow[0]['staff_name'].'以及其他'.($num-1).'人
 					回復了留言';
 				}
-				$textSender =  $senderrow[0]['staff_name'].'以及其他'.$num.'人回復了留言';
+				if($senderrow[0]['staff_id'] == $_SESSION['id']){
+					$textSender = 'dontSend';
+				}else{
+					$textSender =  $senderrow[0]['staff_name'].'以及其他'.$num.'人回復了留言';
+				}
+				
 				$ack = array(
 					'status' => 'success',
-					'people'=>$row ,
+					'people'=>$peoplerow ,
 					'num' =>  $num ,
 					'text' => $text,
 					'textSender' => $textSender
@@ -2252,28 +2335,38 @@ use Slim\Http\UploadedFile;
 		}
 		function getCommentReadList($commentID,$sentTime,$UID,$chatID){
 			// $data = json_decode($body['data'],true);
-			$sql = 'SELECT staff_name as name,"chatHistory"."UID" as id , 
-					CASE WHEN "checkUnread"."UID" IS NULL 
-				            THEN 0 
-				            ELSE 1 
-				    END AS haveRead
-				FROM staff_chat."chatHistory" 
+			$sql = '
+				SELECT "UID", lasttime, "commentID",staff_name as name,
+				case when "lasttime" > :senttime
+						then 1
+						else 0
+						end  haveread
+				FROM staff_chat."commentHistory"
 				left join "staff"."staff"
-				on staff.staff_id="chatHistory"."UID"
-				left join (
-					SELECT "commentChat"."sentTime" ,"commentHistory"."UID" 
-					FROM staff_chat."commentHistory"  AS "commentHistory" 
-					left join 
-						(
-							SELECT  "commentChat" .content,  "commentChat" ."UID", "commentChat" . "sentTime","commentChat"."commentID"
-							FROM staff_chat."commentChat" 
-						)
-						as "commentChat" on "commentHistory"."commentID" = "commentChat"."commentID" AND "commentChat"."sentTime"<"commentHistory".lasttime 
-					WHERE "commentChat"."commentID" = :commentID 
-						 AND "commentHistory"."UID" != :UID 
-						 AND "commentChat"."sentTime" = :senttime
-				) AS "checkUnread" on "checkUnread"."UID" =  "chatHistory"."UID"
-				WHERE "chatID"= :chatID and staff_delete=false and "seniority_workStatus" =1 and "chatHistory"."UID" != :UID
+				on staff.staff_id="commentHistory"."UID"
+				WHERE "commentID" = :commentID and staff_delete=false and "seniority_workStatus" =1 and "UID"!= :UID; 
+			-- SELECT staff_name as name,"chatHistory"."UID" as id , 
+			-- 		CASE WHEN "checkUnread"."UID" IS NULL 
+			-- 	            THEN 0 
+			-- 	            ELSE 1 
+			-- 	    END AS haveRead
+			-- 	FROM staff_chat."chatHistory" 
+			-- 	left join "staff"."staff"
+			-- 	on staff.staff_id="chatHistory"."UID"
+			-- 	left join (
+			-- 		SELECT "commentChat"."sentTime" ,"commentHistory"."UID" 
+			-- 		FROM staff_chat."commentHistory"  AS "commentHistory" 
+			-- 		left join 
+			-- 			(
+			-- 				SELECT  "commentChat" .content,  "commentChat" ."UID", "commentChat" . "sentTime","commentChat"."commentID"
+			-- 				FROM staff_chat."commentChat" 
+			-- 			)
+			-- 			as "commentChat" on "commentHistory"."commentID" = "commentChat"."commentID" AND "commentChat"."sentTime"<"commentHistory".lasttime 
+			-- 		WHERE "commentChat"."commentID" = :commentID 
+			-- 			 AND "commentHistory"."UID" != :UID 
+			-- 			 AND "commentChat"."sentTime" = :senttime
+			-- 	) AS "checkUnread" on "checkUnread"."UID" =  "chatHistory"."UID"
+			-- 	WHERE "chatID"= :chatID and staff_delete=false and "seniority_workStatus" =1 and "chatHistory"."UID" != :UID
 				
 			';
 			$sth = $this->conn->prepare($sql);
@@ -2281,7 +2374,7 @@ use Slim\Http\UploadedFile;
 			$sth->bindParam(':commentID',$commentID,PDO::PARAM_STR);
 			$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 			$sth->bindParam(':senttime',$sentTime,PDO::PARAM_STR);
-			$sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
+			// $sth->bindParam(':chatID',$chatID,PDO::PARAM_STR);
 			$sth->execute();
 
 			$row = $sth->fetchAll();
@@ -2365,13 +2458,47 @@ use Slim\Http\UploadedFile;
 			return $result;
 		}
 
+		function updateReport($body){
+			$sql = 'SELECT  "orgCommentID"
+					FROM staff_chat."repostComment"
+					WHERE "commentID" = :commentID;';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(':commentID',intval($body['orgCommentID']),PDO::PARAM_INT);
+			$sth->execute();
+			$row = $sth->fetchAll();
+			// return $row[0]['orgCommentID'];
 
+			$sql = 'INSERT INTO staff_chat."repostComment"("commentID", "orgCommentID")
+						VALUES (:commentID, :orgCommentID);';
+			$sth = $this->conn->prepare($sql);
+			if(count($row) == 0){
+				$sth->bindParam(':commentID',intval($body['newCommentID']),PDO::PARAM_INT);
+				$sth->bindParam(':orgCommentID',intval($body['orgCommentID']),PDO::PARAM_INT);
+				$sth->execute();
+				$ack = array(
+					'0'=>$body['orgCommentID']
+				);
+				return $ack;
+			}else{
+				$sth->bindParam(':commentID',intval($body['newCommentID']),PDO::PARAM_INT);
+				$sth->bindParam(':orgCommentID',intval($row[0]['orgCommentID']),PDO::PARAM_INT);
+				$sth->execute();
+				$ack = array(
+					'1'=>$row[0]['orgCommentID']
+				);
+				return $ack;
+			}
+		}
 		function updateMessage($body){
 			try{
 				$date = DateTime::createFromFormat('0.u00 U', microtime());
 			  	$timezone = new DateTimeZone('Asia/Taipei');
 			  	$date->setTimezone($timezone);
-			  	$tmpFullTime = $date->format('Y-m-d H:i:s.u').'+08';
+			  	$t = microtime(true);
+				$micro = sprintf("%06d",($t - floor($t)) * 1000000);
+				$d = new DateTime( date('Y-m-d H:i:s.'.$micro, $t) );
+			  	$d->setTimezone($timezone);
+			  	$tmpFullTime = $d->format("Y-m-d H:i:s.u").'+08';
 			  	// var_dump( $tmpFullTime);
 				$sql = 'INSERT INTO staff_chat."chatContent"(	content, "UID", "sentTime", "chatID")
 					VALUES ( :Msg , :UID , :fullTime, :chatID );';
@@ -2379,10 +2506,29 @@ use Slim\Http\UploadedFile;
 				$UID =$_SESSION['id'];
 				$chatID=$body['chatID'];
 				$Msg=$body['Msg'];
+				$sentMsg='';
+                $Msg=explode('<br />', $Msg);
+                $first = true;
+                foreach ($Msg as $key => $value) {
+                	if(!$first){
+                        $sentMsg .= '<br/>';
+                	}
+                    $MsgSplit = explode(" ", $value);
+                    foreach ($MsgSplit as $keySplit => $valueSplit) {
+                            if(strpos($valueSplit,'http://')==0&&strpos($valueSplit,'http://')!==false)
+                                    $sentMsg .= ' <a href="'.$valueSplit.'" style="color:#CCEEFF;" target="_blank">'.$valueSplit.'</a>';
+                            else if(strpos($valueSplit,'https://')==0&&strpos($valueSplit,'https://')!==false)
+                                    $sentMsg .= ' <a href="'.$valueSplit.'" style="color:#CCEEFF;" target="_blank">'.$valueSplit.'</a>';
+
+                            else
+                                    $sentMsg .= ' '.$valueSplit;
+                    }
+                    $first = false;
+                }
 				$sth->bindParam(':UID',$UID,PDO::PARAM_STR);
 				$sth->bindParam(':chatID',$chatID,PDO::PARAM_INT);
 				$sth->bindParam(':fullTime',$tmpFullTime,PDO::PARAM_INT);
-				$sth->bindParam(':Msg',$Msg,PDO::PARAM_INT);
+				$sth->bindParam(':Msg',$sentMsg,PDO::PARAM_INT);
 				$sth->execute();
 				// $insert_id = $this->conn->lastInsertId();
 

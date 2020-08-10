@@ -69,8 +69,14 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/checkin">
-              <i class="fa fa-th-list" aria-hidden="true"></i>
+              <i class="fas fa-calendar-minus"></i>
               <span>打卡</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/checkin/table">
+              <i class="fas fa-calendar-check"></i>
+              <span>打卡記錄</span>
             </a>
           </li>
           <li class="nav-item">
@@ -176,6 +182,12 @@
             <a class="nav-link" href="<?=@$url?>/checkinlist">
               <i class="fas fa-fw fa-table"></i>
               <span>打卡資訊</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/setWorkType">
+              <i class="far fa-clipboard"></i>
+              <span>設定班別</span>
             </a>
           </li>
           <li class="nav-item">

@@ -142,8 +142,14 @@ html,body{
 		<!-- <button type="button" class="btn btn-primary" data-dismiss="modal" data-id="婚姻狀態" data-toggle="modal" data-target="#firstModel">新增</button> -->
 	</div>
 	<div class="col-md-1" name = "workMode"></br>
-		<button type = "button" class ="btn btn-primary" name = "checkInButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="上" data-do="start"  data-toggle="modal" data-target="#checkInModel" style="display:none">上班打卡</button>
-		<button type = "button" class ="btn btn-primary" name = "checkOutButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="下" data-do="finish"  data-toggle="modal" data-target="#checkInModel" style="display:none">下班打卡</button>
+		<button type = "button" class ="btn btn-primary" name = "checkInButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="上" data-do="start"  data-toggle="modal" data-target="#checkInModel" style="display:none">
+			上班打卡
+			<i class="fas fa-bell fa-fw"></i>
+		</button>
+		<button type = "button" class ="btn btn-primary" name = "checkOutButton" data-dismiss="modal" data-id="<?=@$name?>" data-type="下" data-do="finish"  data-toggle="modal" data-target="#checkInModel" style="display:none">
+			下班打卡
+			<i class="fas fa-bell fa-fw"></i>
+		</button>
 	</div>
 	<div class="col-md-4">
 	</div>
