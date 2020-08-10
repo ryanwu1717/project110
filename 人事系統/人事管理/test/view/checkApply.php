@@ -10,10 +10,17 @@
 	      	<a class="nav-link col-6" id="v-pills-profile-tab" data-toggle="pill" href="#checked" role="tab" aria-controls="v-pills-profile" aria-selected="false">審核完成</a>
     	</div>
   	</div>
-  	<div>
-  		<div class="custom-control custom-checkbox">
-		  	<input type="checkbox" class="custom-control-input" id="allCheck">
-		  	<label class="custom-control-label" for="allCheck">全選</label>
+  	<div name="allClick" class="col-12">
+  		<div class="custom-control custom-checkbox col-md-6">
+  			<div class="col-12">
+  				<input type="checkbox" class="custom-control-input" id="allCheck">
+		  		<label class="custom-control-label" for="allCheck">全選</label>
+		  		<button type="button" class="close" name="icon" onclick="iconAgree()" style="display:none">&#10004;
+	    		</button>
+	    		<button type="button" class="close" name="icon" onclick="iconRefuse()" style="display:none">
+	      			&#10062;
+	    		</button>
+		  	</div>
 		</div>
   	</div>
   	<div class="col-12">
@@ -25,6 +32,7 @@
 			    			<tr>
 			    				<th></th>
 				    			<th>假單編號</th>
+				    			<th>申請部門</th>
 				    			<th>申請人</th>
 				    			<th>類別</th>
 				    			<th>詳細資料</th>
@@ -34,6 +42,7 @@
 			    			<tr>
 			    				<th></th>
 				    			<th>假單編號</th>
+				    			<th>申請部門</th>
 				    			<th>申請人</th>
 				    			<th>類別</th>
 				    			<th>詳細資料</th>
@@ -51,8 +60,10 @@
 			    			<tr>
 			    				<th></th>
 				    			<th>假單編號</th>
+				    			<th>申請部門</th>
 				    			<th>申請人</th>
 				    			<th>類別</th>
+				    			<th>審核結果</th>
 				    			<th>詳細資料</th>
 				    		</tr>
 			    		</thead>
@@ -60,8 +71,10 @@
 			    			<tr>
 			    				<th></th>
 				    			<th>假單編號</th>
+				    			<th>申請部門</th>
 				    			<th>申請人</th>
 				    			<th>類別</th>
+				    			<th>審核結果</th>
 				    			<th>詳細資料</th>
 				    		</tr>
 			    		</tfoot>
@@ -85,8 +98,8 @@
       		</div>
       		<div class="modal-body" id="modalBody">
       		</div>
-      		<div class="modal-footer">
-      			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agree" data-dismiss="modal">&#10003;</button>
+      		<div class="modal-footer" id="modalfooter">
+      			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#agree" data-dismiss="modal" name="modAgree">&#10003;</button>
       			<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#refuse" data-dismiss="modal">&#967;</button>
         		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       		</div>
@@ -100,7 +113,7 @@
       		<div class="modal-body" id="modalBody">確定要同意這假單??
       		</div>
       		<div class="modal-footer">
-      			<button type="button" class="btn btn-primary">&#10003;</button>
+      			<button type="button" class="btn btn-primary" onclick="btnAgree()">&#10003;</button>
       			<button type="button" class="btn btn-danger" data-dismiss="modal">&#967;</button>
       		</div>
     	</div>
@@ -113,7 +126,7 @@
       		<div class="modal-body" id="modalBody">確定要拒絕這假單??
       		</div>
       		<div class="modal-footer">
-      			<button type="button" class="btn btn-primary">&#10003;</button>
+      			<button type="button" class="btn btn-primary" onclick="btnRefuse()">&#10003;</button>
       			<button type="button" class="btn btn-danger" data-dismiss="modal">&#967;</button>
       		</div>
     	</div>
@@ -132,21 +145,32 @@
 <script type="text/javascript">
 	$(function(){
 		$.ajax({
-			url: '/work/holiday/checkingData',
+			url: '/work/holiday/checkedData',
 			type: 'GET',
 			dataType:'json',
-			success: function(data){
-                $.each(data, function(i,n){
+			success: function(source){
+                $.each(source, function(i,n){
                 	var td0 = "<td></td>";
                     var td1 = $('<td>').text(n["id"]);
 					var td2 = $('<td>').text(n["staff_id"]);
 					var td3 = $('<td>').text(n["name"]);
+					var td6 = $('<td>').text(n["department_name"]);
 					var btn = $('<button>').text('詳細資料').attr({	class:"btn btn-primary",'data-toggle':"modal",
 						'data-target':"#modalDetail",
 						onclick:"modalDetail("+n['id']+")"
 						});
 					var td4 = $('<td>').append(btn);
-					var tr = $('<tr>').append(td0,td1,td2,td3,td4);
+					var td5;
+					var tr
+					if(n['isCheck'] == 2){
+						td5 = $('<td>').text("成功").attr("class","text-success");
+						tr = $('<tr>').append(td0,td1,td6,td2,td3,td5,td4);
+					}else if(n['isCheck'] == 3){
+						td5 = $('<td>').text("失敗").attr("class","text-danger");;
+						tr = $('<tr>').append(td0,td1,td6,td2,td3,td5,td4);
+					}else{
+						tr = $('<tr>').append(td0,td1,td6,td2,td3,td4);
+					}
 					if(n["isCheck"] == 1){
 						$('[name=tbody_checking]').append(tr);
 					}else{
@@ -159,14 +183,14 @@
 				        orderable: false,
 				        targets: 0,
 						'render': function (data, type, full, meta){
-						 return '<input type="checkbox" name="id[]" class="form-control" value="' + $('<div/>').text(data).html() + '">';
+						 return '<input type="checkbox" name="id[]" class="form-control" value="' + $('<div/>').text(meta.row).html() + '">';
 						}
 				    }],
-				    select: {
-				        style: 'os',
-				        selector: 'td:first-child'
-				    },
-			        order: [[ 1, 'asc' ]],
+				    // select: {
+				    //     style: 'os',
+				    //     selector: 'td:first-child'
+				    // },
+			        order: [[1, 'asc']],
                 	language: {
 			            "emptyTable": "無資料...",
 			            "processing": "處理中...",
@@ -190,7 +214,6 @@
 			            }
 			        }
         		});
-
         		$('#tableChecked').DataTable({
         			"columnDefs": [
         				{
@@ -222,22 +245,38 @@
 			        }
         		});
 
+	    		$("input[name='id[]']").change(function() {
+					if($(this).is(':checked')){
+						$("[name='icon']").attr('style',"display:block");
+					}else{
+						$("input[name='id[]']").each(function (index, item) {
+					        if($("input[name='id[]']").is(':checked')){
+								$("[name='icon']").attr('style',"display:block");
+					        }else{
+					        	$("[name='icon']").attr('style',"display:none");
+					        }
+					    });
+					}
+				});
+				// if($("input [type='checkbox']:checked")){
+				// 	console.log("231");
+				// }
 
 			}
 		});
 	});
 
 	function modalDetail(j){
-		console.log(j);
 		$.ajax({
 			url: '/work/holiday/checkingData',
 			type: 'GET',
 			dataType:'json',
 			success: function(data){
 				$.each(data, function(i,n){
-					console.log(n);
 					if(n['id'] == j){
 						$("#modalBody").html(`<dl class="row">
+								<dt class="col-sm-3">假單編號:</dt>
+								<dd class="col-sm-9">`+n['id']+`</dd>
 								<dt class="col-sm-3">假別:</dt>
 								<dd class="col-sm-9">`+n['name']+`</dd>
 								<dt class="col-sm-3">開始時間:</dt>
@@ -249,13 +288,122 @@
 								<dt class="col-sm-3">申請時間:</dt>
 								<dd class="col-sm-9">`+n['now'].slice(0, 16)+`</dd>
 							</dl>`
-							);
+						);
+						$("[name='modAgree']").attr('data-id',n['id']);
+
+						if(n['isCheck'] != 1){
+							$("#modalfooter").attr("style","visibility:hidden");
+						}else{
+							$("#modalfooter").attr("style","visibility:block");
+						}
 					}
+
 				});
-				
+
 			}
 		});
 	}
+
+	function btnAgree(){
+		var dataID = $("[name='modAgree']").attr('data-id');
+		$.ajax({
+			url: '/work/holiday/agree/' + dataID,
+			type:'patch',
+		    dataType:'json',
+		    data: {
+				data:JSON.stringify({
+					id : dataID,
+					ischeck : 2,
+        		})
+			},
+		    success: function(data){
+		    	location.reload();
+		    }
+		})
+	}
+
+	function btnRefuse(){
+		var dataID = $("[name='modAgree']").attr('data-id');
+		$.ajax({
+			url: '/work/holiday/refuse/' + dataID,
+			type:'patch',
+		    dataType:'json',
+		    data: {
+				data:JSON.stringify({
+					id : dataID,
+					ischeck : 3,
+        		})
+			},
+		    success: function(data){
+		    	location.reload();
+		    }
+		})
+	}
+
+	function iconAgree(){
+		$("input[name='id[]']").each(function(){
+			if ($(this).is(":checked")){
+				var dataID = $($(this).parent().parent().children()[1]).text();
+				$.ajax({
+					url: '/work/holiday/agree/' + dataID,
+					type:'patch',
+				    dataType:'json'
+				    data: {
+						data:JSON.stringify({
+							id : dataID,
+							ischeck : 2,
+		        		})
+					},
+				})
+			}
+		})
+		location.reload();
+	}
+
+	function iconRefuse(){
+		$("input[name='id[]']").each(function(){
+			if ($(this).is(":checked")){
+				var dataID = $($(this).parent().parent().children()[1]).text();
+				$.ajax({
+					url: '/work/holiday/refuse/' + dataID,
+					type:'patch',
+				    dataType:'json'
+				    data: {
+						data:JSON.stringify({
+							id : dataID,
+							ischeck : 3,
+		        		})
+					},
+				})
+			}
+		})
+		location.reload();
+	}
+
+	$("#allCheck").click(function(){
+		if($("#allCheck").prop("checked")){
+			$("input[name='id[]']").each(function() {
+				$(this).prop("checked", true);
+				$("[name='icon']").attr('style',"display:block");
+			});
+		}else{
+			$("input[name='id[]']").each(function() {
+				$(this).prop("checked", false);
+				$("[name='icon']").attr('style',"display:none");
+			});
+		}
+	});
+
+	$("#v-pills-profile-tab").click(function(){
+		$("[name='allClick']").attr('style',"display:none")
+	})
+	$("#v-pills-home-tab").click(function(){
+		$("[name='allClick']").attr('style',"display:block")
+	})
+
+	
+
+	
 
 
 </script>
