@@ -236,8 +236,7 @@
 			success: function(data){
 				$.each(data, function(i,n){
 					if(n['id'] == j){
-						$("#modalBody").html(`價別:`+n['name']+`<p>
-							123</p>`);
+						$("#modalBody").html(`假別:`+n['name']);
 					}
 				});
 				
