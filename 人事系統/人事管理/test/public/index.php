@@ -906,6 +906,14 @@ $app->group('/work', function () use ($app) {
 		    return $response;
 		});
 
+		$app->get('/applyData', function(Request $request, Response $response, array $args){
+			$staff = new Work($this->db);
+			$result = $staff->applyData();
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+
 		$app->patch('/agree/{dataID}', function (Request $request, Response $response, array $args) {
 			$_POST=$request->getParsedBody();
 			$staff = new Work($this->db);

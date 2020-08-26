@@ -625,7 +625,7 @@ use Slim\Http\UploadedFile;
 						on holiday.form.id = holiday."reviewRecord".id
 						LEFT JOIN holiday.level
 						on holiday.level.level = holiday."reviewRecord".level
-						WHERE holiday.level.id =:id;';
+						WHERE holiday.form.staff_id =:id;';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(":id", $_SESSION['id']);
 				$sth->execute(); 
@@ -648,12 +648,38 @@ use Slim\Http\UploadedFile;
 						on staff_information.department.department_id = holiday.form.department
 						INNER JOIN holiday.type
 						on holiday.form.type = holiday.type.id
-						INNER JOIN holiday."reviewRecord"
-						on holiday."reviewRecord".id = holiday.form.id
-						INNER JOIN holiday.level
+						LEFT JOIN holiday."reviewRecord"
+						on holiday.form.id = holiday."reviewRecord".id
+						LEFT JOIN holiday."checkLevel"
+						on holiday."checkLevel".id = holiday.form.id
+						LEFT JOIN holiday.level
 						on holiday."reviewRecord".level = holiday.level.level
-						WHERE holiday.level.id = :id
-						;';
+						WHERE holiday.level.id=:id;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":id", $_SESSION['id']);
+				$sth->execute(); 
+			    $response = $sth->fetchAll();
+			}catch(PDOException $e){
+				$response = array(
+					'status' => 'failed', 
+					'checkin'=> false
+				);
+			}	
+			return $response;
+
+		}
+
+		function applyData(){
+			try{	 
+				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name, form.staff_id, form."isCheck" ,department_name
+						FROM holiday.form
+						inner join staff_information.department
+						on staff_information.department.department_id = holiday.form.department
+						INNER JOIN holiday.type
+						on holiday.form.type = holiday.type.id
+						inner join holiday."checkLevel"
+						on holiday."checkLevel".id = holiday.form.id
+						where holiday."checkLevel".staff_id = :id;';
 				$sth = $this->conn->prepare($sql);
 				$sth->bindParam(":id", $_SESSION['id']);
 				$sth->execute(); 
@@ -669,21 +695,45 @@ use Slim\Http\UploadedFile;
 		}
 
 		function agreeApply($dataID){
+			$sql2 = 'SELECT level
+					FROM holiday.level
+					WHERE id=:id;';
+			$sth2 = $this->conn->prepare($sql2);
+			$sth2->bindParam(":id", $_SESSION['id']);
+			$sth2->execute();
+			$row2 = $sth2->fetchAll();
 			$_POST=json_decode($_POST['data'],true);
 			$id = $_POST['id'];
 			$ischeck = $_POST['ischeck'];
-			$sql ='UPDATE holiday.form SET "isCheck"=2 WHERE id = :id';
-			$sth = $this->conn->prepare($sql);
-			$sth->bindParam(":id", $dataID);
-			$sth->execute();
+			$level=$row2[0]['level'] - 1;
+			if($level==0){
+				$sql ='UPDATE holiday.form SET "isCheck"=2 WHERE id = :id;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":id", $dataID);
+				$sth->execute();
+			}
+			$sql3 ='UPDATE holiday."reviewRecord" SET level=:level WHERE id = :id;';
+			$sth3 = $this->conn->prepare($sql3);
+			$sth3->bindParam(":level", $level);
+			$sth3->bindParam(":id", $dataID);
+			$sth3->execute();
 			$this->recordData($id,$ischeck);
 		}
 
 		function refuseApply($dataID){
+			$_POST=json_decode($_POST['data'],true);
+			$id = $_POST['id'];
+			$ischeck = $_POST['ischeck'];
 			$sql ='UPDATE holiday.form SET "isCheck"=3 WHERE id = :id';
 			$sth = $this->conn->prepare($sql);
 			$sth->bindParam(":id", $dataID);
 			$sth->execute();
+			$sql3 ='UPDATE holiday."reviewRecord" SET level=0 WHERE id = :id;';
+			$sth3 = $this->conn->prepare($sql3);
+			$sth3->bindParam(":id", $dataID);
+			$sth3->execute();
+			$this->recordData($id,$ischeck);
+			
 		}
 
 
