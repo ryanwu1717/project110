@@ -150,6 +150,31 @@ $app->group('/management', function () use ($app) {
 	 	});
 	});
 
+	$app->group('/worktype', function () use ($app) {
+		$app->post('/check', function (Request $request, Response $response, array $args) {		
+		    $worktype = new WorkType($this->db);
+		    $result = $worktype->checkWorkType();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		$app->post('', function (Request $request, Response $response, array $args) {		
+		    $worktype = new WorkType($this->db);
+		    $result = $worktype->addWorkType();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		$app->get('/{UID}', function (Request $request, Response $response, array $args) {		
+		    $worktype = new WorkType($this->db);
+		    $result = $worktype->getWorkType($args['UID']);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		
+	});
+
 	$app->group('/checkin', function () use ($app) {
 		$app->get('/list', function (Request $request, Response $response, array $args) {		
 		    $checkin = new CheckinList($this->db);

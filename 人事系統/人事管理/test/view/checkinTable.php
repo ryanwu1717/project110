@@ -6,8 +6,36 @@
 		<h6 class="m-0 font-weight-bold text-primary">出勤紀錄</h6>
 	</div>
 	<div class="card-body">
+		<form>
+		  <div class="form-group row">
+		    <label for="staticEmail" class="col-sm-2 col-form-label">開始</label>
+		    <div class="col-sm-4">
+		       <input class="form-control" type="date" value="" id="inputStart">
+		    </div>
+		    <label for="staticEmail" class="col-sm-2 col-form-label">結束</label>
+		    <div class="col-sm-4">
+		       <input class="form-control" type="date" value="" id="inputEnd">
+		    </div>
+		  </div>
+		  <div class="form-group row">
+		    <div class="col-sm-6 ">
+				 <button type="button" id="searchCheckin" class="btn btn-primary">查詢</button>
+
+		    </div>
+		    <label for="staticEmail" class="col-sm-2 col-form-label">選擇</label>
+		    <div class="col-sm-4">
+		       <div class="btn-group" role="group" aria-label="Basic example">
+				  <button type="button" name="searchBy" data-type="week" class="btn btn-secondary">本週</button>
+				  <button type="button" name="searchBy" data-type="month" class="btn btn-secondary">本月</button>
+				</div>
+		    </div>
+		   
+		  </div>
+		  
+		</form>
 		<div class="table-responsive">
-			<table cellspacing="0" class="table table-bordered display"  id="dataTable" width="100%" >
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+
 				<thead>
 					<tr>
 
@@ -59,8 +87,52 @@
 <?php
   include('partial/footer.php');
 ?>
+<script src="/vendor/datatables/jquery.dataTables.min.js"></script>
+  <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 <script type='text/javascript'>
+var d = new Date();
+
+var month = d.getMonth()+1;
+var day = d.getDate();
+
+var output = d.getFullYear() + '-' +
+    (month<10 ? '0' : '') + month + '-' +
+    (day<10 ? '0' : '') + day;
+
+var dayArray = {'MONDAY': '星期一' , 'TUESDAY': '星期二','WEDNESDAY': '星期三', 'THURSDAY': '星期四' ,'FRIDAY': '星期五' ,'SATURDAY': '星期六' ,'SUNDAY': '星期日'};
+console.log(dayArray.MONDAY);
+
 $(function(){
+	$('#inputStart').val(output);
+	$('#inputEnd').val(output);
+	$('#searchCheckin').on('click', function (e) {
+		var start = $('#inputStart').val();
+		var end = $('#inputEnd').val();
+		$.ajax({
+	  		url:`/work/checkin/term/${start}/${end}`,
+	  		type:'GET',
+	  		data:{
+			},
+	  		dataType:'json',
+	  		success:function(response){
+	  			insertTable(response);
+	  		}
+	  	});
+	});
+	$('[name="searchBy"]').on('click', function (e) {
+		console.log($(this).data('type'));
+		$.ajax({
+	  		url:`/work/checkin/by/${$(this).data('type')}`,
+	  		type:'GET',
+	  		data:{
+			},
+	  		dataType:'json',
+	  		success:function(response){
+	  			insertTable(response);
+	  		}
+	  	});
+	});
+
 	$('#exampleModal').on('shown.bs.modal', function (e) {
   		var type = $(e.relatedTarget).data('type');
   		$('#exampleModal .modal-body').html(`
@@ -75,39 +147,110 @@ $(function(){
 		}
 	});
 
-
-
-	$.ajax({
-  		url:'/work/checkin',
-  		type:'GET',
-  		data:{
-		},
-  		dataType:'json',
-  		success:function(response){
-  			$.each(response.info,function(){
-  				console.log(this);
-  				$('#tbodyCheckin').append(`
-  					<tr>
-  						<td>${this.checkinDate}</td>
-  						<td></td>
-  						<td>
-  							${this.inTime}
-  							<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.latitude}"  data-longitude="${this.longitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
-  						</td>
-  						<td>
-  							${this.outTime}
-  							<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.outlatitude}"  data-longitude="${this.outlongitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
-  						</td>
-  						<td></td>
-  						<td></td>
-  					</tr>
-  				`);
-  			});
+	// $.ajax({
+ //  		url:'/work/checkin',
+ //  		type:'GET',
+ //  		data:{
+	// 	},
+ //  		dataType:'json',
+ //  		success:function(response){
+ //  			$.each(response.info,function(){
+ //  				console.log(this);
+ //  				$('#tbodyCheckin').append(`
+ //  					<tr>
+ //  						<td>${this.checkinDate}</td>
+ //  						<td></td>
+ //  						<td>
+ //  							${this.inTime}
+ //  							<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.latitude}"  data-longitude="${this.longitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+ //  						</td>
+ //  						<td>
+ //  							${this.outTime}
+ //  							<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.outlatitude}"  data-longitude="${this.outlongitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+ //  						</td>
+ //  						<td></td>
+ //  						<td></td>
+ //  					</tr>
+ //  				`);
+ //  			});
   			
-  		}
-  	});
+ //  		}
+ //  	});
 });
+var table;
+function insertTable(data){
+	if(table!=undefined)
+		table.destroy();
+	$('#tbodyCheckin').empty();
 
+	$.each(data.info,function(){
+		var tmpDay = (this.weekDay).trim();
+
+
+		if(this.checkinDate == null){
+			$('#tbodyCheckin').append(`
+				<tr>
+					<td>${this.date}</br>(${dayArray[tmpDay]})</td>
+					<td>${this.workType == null?'未設定': (this.workType == 'workOnoff'?'上班下班制':'時間制')}</td>
+					<td>
+						${this.checkinTime == null?'未打卡':this.checkinTime}
+						<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.latitude}"  data-longitude="${this.longitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+					</td>
+					<td>
+						${this.checkoutTime == null?'未打卡':this.checkoutTime}
+						<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.outlatitude}"  data-longitude="${this.outlongitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+					</td>
+					<td>未打卡</td>
+					<td>曠職</td>
+				</tr>
+			`);
+		}else {
+			$('#tbodyCheckin').append(`
+				<tr>
+					<td>${this.date}</br>(${dayArray[tmpDay]})</td>
+					<td>${this.workType == null?'未設定': (this.workType == 'workOnoff'?'上班下班制':'時間制')}</td>
+					<td>
+						${this.checkinTime == null?'未打卡':this.checkinTime}
+						<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.latitude}"  data-longitude="${this.longitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+					</td>
+					<td>
+						${this.checkoutTime == null?'未打卡':this.checkoutTime}
+						<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.outlatitude}"  data-longitude="${this.outlongitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+					</td>
+					<td>${(this.diff == null?'缺卡':this.diff) }</td>
+					<td>${this.workType == null?'未設定班別': (this.type == 'workOnoff'?this.onoffStatus:this.hoursStatus)}</td>
+				</tr>
+			`);
+		}
+		
+	
+	});
+	table = $('#dataTable').DataTable({  
+	    language: {
+	      "emptyTable": "無資料...",
+	      "processing": "處理中...",
+	      "loadingRecords": "載入中...",
+	      "lengthMenu": "顯示 _MENU_ 項結果",
+	      "zeroRecords": "沒有符合的結果",
+	      "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+	      "infoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+	      "infoFiltered": "(從 _MAX_ 項結果中過濾)",
+	      "infoPostFix": "",
+	      "search": "搜尋:",
+	      "paginate": {
+	        "first": "第一頁",
+	        "previous": "上一頁",
+	        "next": "下一頁",
+	        "last": "最後一頁"
+	      },
+	      aria: {
+	        "sortAscending": ": 升冪排列",
+	        "sortDescending": ": 降冪排列"
+	      }
+	    }
+ 	 });
+	
+}
 function onWorkLocation(latitude,longitude){
 	if (latitude == null || longitude == null ) {
 		$('#exampleModal .modal-body').html(`未打卡`);
