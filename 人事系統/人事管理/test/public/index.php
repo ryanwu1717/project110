@@ -51,7 +51,7 @@ $container['notFoundHandler'] = function ($container) {
 $container['ViewMiddleware'] = function($container) {
     return new ViewMiddleware($container->db);
 };
-$container['upload_directory'] ='C:\inetpub\wwwroot\uploads';
+$container['upload_directory'] = __DIR__.'/../uploads';
 
 session_start();
 require_once __DIR__.'/../route/management.php';
