@@ -399,7 +399,7 @@ function routine(){
           }else if(key=='chat'){
             changeChat('routine',response);
             changeStar('routine',response);
-	    changeComment('routine',response);
+            changeComment('routine',response);
             changeHeart(response);
             changeDelete('routine',response);
           }else if(key == 'notification'){
@@ -772,11 +772,6 @@ function changeChat(type,data){
     for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
       newChat.push(data.chat[data.chat.length-(1+i)]);
     }
-  }
-
-  if(type == 'saveChat'){
-    $('[name=chatBox]').html("");
-    newChat = data.tmpchat;
   }
 
   $(newChat).each(function(){
@@ -1229,16 +1224,16 @@ function getTarget(_chatID,_chatName){
         '<span class="sr-only">Loading...</span>'+
       '</div>'
     );
-    $.ajax({
-      url:'/chat/saveChat/'+_chatID,
-      type:'get',
-      data:{},
-      dataType:'json',
-      success:function(response){
-        console.log(response);
-        inSaveChat(response);
-      }
-    });
+    // $.ajax({
+    //   url:'/chat/saveChat/'+_chatID,
+    //   type:'get',
+    //   data:{},
+    //   dataType:'json',
+    //   success:function(response){
+    //     console.log(response);
+    //     inSaveChat(response);
+    //   }
+    // });
   }
 
   chatName = decodeURIComponent(_chatName);

@@ -345,7 +345,7 @@ $app->group('/chat', function () use ($app) {
 		$chat = new Chat($this->db);
 		$result = $chat->routine($data,$args['chatID']);
 		session_start();
-	    	$response = $response->withHeader('Content-type', 'application/json' );
+    	$response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 		$_SESSION['last'][$args['timestamp']] = $result;
 		$_SESSION['chat'][$_SESSION['id']][$args['chatID']] = $result;
