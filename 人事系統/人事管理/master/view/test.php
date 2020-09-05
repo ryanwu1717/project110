@@ -340,7 +340,7 @@ var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dis
       $(".scroll-to-down").fadeOut()
       scrollable = false;
     }
-    if($(this).scrollTop()==0){
+    if($(this).scrollTop()==0 && $(this)[0].scrollHeight>$(this)[0].clientHeight){
       expendLimit();
     }
   });
