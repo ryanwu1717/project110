@@ -800,10 +800,6 @@ use Slim\Http\UploadedFile;
 			$sleepRoutine = 1000000;
 			$start = new DateTime( 'NOW' );
 			$now = new DateTime( 'NOW' );
-			$startChat = new DateTime( 'NOW' );
-			$endChat = new DateTime( 'NOW' );
-			$stateChat = 'class';
-			$secondChat = 0;
 			while($now->getTimestamp() - $start->getTimestamp()<45 && !$this->change){
 				if($this->firstCheck){
 					usleep($sleepRoutine);
@@ -817,36 +813,10 @@ use Slim\Http\UploadedFile;
 			       		die();
 			    	}
 				$this->firstCheck=true;
-
-			$startChat = new DateTime( 'NOW' );
 				$class = $this->getClass();
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'class';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$notification = $this->getNotificationNum();
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'NotificationNum';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$starNum = $this->getStar('num');
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'StarNum';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$star = $this->getStar($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'Star';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$newstar=array(
 					'num'=>$starNum,
 					'info'=>$star,
@@ -860,27 +830,10 @@ use Slim\Http\UploadedFile;
 				// $class[0]['id']=14;
 				$result = array();
 				$result['notification'] = $this->checkNotification($data['notification'], $notification);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkNotification';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$result['star'] = $this->checkStar($data['star'], $newstar,$chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkStar';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$result['class'] = $this->checkClass($data['class'], $class);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkClass';
-			}
-			$startChat = new DateTime( 'NOW' );
-
+				//$chatroom = $this->getChatroomN();
+				//$result['chatroom'] = $this->checkChatroom($data['chatroom'], $chatroom);
 				if($chatID==$data['result']['chat']['chatID']){
 					$chatroom = $this->getChatroomN();
 					$result['chatroom'] = $this->checkChatroom($data['chatroom'], $chatroom);
@@ -888,12 +841,6 @@ use Slim\Http\UploadedFile;
 					$chatroom = $data['chatroom'];
 					$result['chatroom'] = $data['result']['chatroom'];
 				}
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getChatroom';
-			}
-			$startChat = new DateTime( 'NOW' );
 				// unset($chatroom[0]);
 				// $new = $chatroom[0];
 				// $chatroom[0]['chatID'] = 99;
@@ -901,113 +848,33 @@ use Slim\Http\UploadedFile;
 				// array_push($chatroom,$new);
 				// $chat = $this->getChat();
 				// var_dump($chat);
-
-					$chat = $this->getChat($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getChat';
-			}
-			$startChat = new DateTime( 'NOW' );
-					$result['chat'] = $this->checkChat($data,$chat,$chatID);
-				// }
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkChat';
-			}
-			$startChat = new DateTime( 'NOW' );
+				$chat = $this->getChat($chatID);
+				$result['chat'] = $this->checkChat($data,$chat,$chatID);
 				$readCount = $this->getReadCountN(array('data'=>json_encode(array("chatID"=>$chatID))));
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getReadCountN';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$result['readCount'] = $this->checkReadCount($data['readCount'],$readCount);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkReadCount';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$commentNum = $this->getCommentNum($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getCommentNum';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$comment=array(
 					'chatID'=>$chatID,
 					'comment' => $commentNum
 				);
 				$result['comment'] = $this->checkComment($data['comment'],$commentNum,$chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkComment';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$clickHeart = $this->getChatHeart($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getChatHeart';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$heartNum = $this->getChatHeartNum($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getChatHeartNum';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$heart=array(
 					'chatID'=>$chatID,
 					'num' => $heartNum,
 					'click' =>$clickHeart
 				);
 				$result['heartNum'] = $this->checkHeartNum($data['heart'],$heart);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkHeartNum';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$result['heartClick'] = $this->checkHeartClick($data['heart'],$heart);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkHeartClick';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$deleteMes = $this->getDelete($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getDelete';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$otherDelete = $this->getOtherDelete($chatID);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'getOtherDelete';
-			}
-			$startChat = new DateTime( 'NOW' );
 				$delete=array(
 					'chatID'=>$chatID,
 					'delete' => $deleteMes,
 					'other' =>$otherDelete
 				);
 				$result['delete'] = $this->checkDelete($data['delete'],$delete);
-			$endChat = new DateTime( 'NOW' );
-			if($secondChat<$endChat->getTimestamp() - $startChat->getTimestamp()){
-				$secondChat = $endChat->getTimestamp() - $startChat->getTimestamp();
-				$stateChat = 'checkDelete';
-			}
-			$startChat = new DateTime( 'NOW' );
 
 				$tmpchat = array_slice($chat, -10, 10);
 
@@ -1026,11 +893,7 @@ use Slim\Http\UploadedFile;
 				'chat'=>$chat,
 				'tmpchat'=>$tmpchat,
 				'readCount'=>$readCount,
-				'result'=>$result,
-				'startChat'=>$startChat,
-				'endChat'=>$endChat,
-				'secondChat'=>$secondChat,
-				'stateChat'=>$stateChat
+				'result'=>$result
 			);
 			return $ack;
 		}
@@ -1913,7 +1776,7 @@ use Slim\Http\UploadedFile;
 		   $row = $sth->fetchAll();
 		   return $row;
 		}
-		function getChat($chatID,$limit = 5){
+		function getChat($chatID){
 				$sql = '
 					SELECT "content",("sentTime")as "fullsentTime",to_char( "sentTime",\'MON DD HH24:MI:SS\' )as "sentTime","UID","diff","Read",staff_name
 					FROM (
@@ -1922,8 +1785,6 @@ use Slim\Http\UploadedFile;
 							SELECT *
 							FROM staff_chat."chatContent"
 							Where "chatID"=:chatID
-							-- order by "chatContent"."sentTime" desc 
-							-- limit 5
 						)AS "chatContent"
 						LEFT JOIN (
 							SELECT "content","sentTime","sentFrom",COUNT("UID") as "readCount"

@@ -21,8 +21,8 @@ $container['view'] = function ($container) {
     return new PhpRenderer(__DIR__.'/../view');
 };
 $container['db'] = function ($container) {
-	$dbhost = '140.127.49.129';
-	$dbport = '25432';
+	$dbhost = '10.0.10.200';
+	$dbport = '5432';
 	$dbuser = 'humanresource';
 	$dbpasswd = '7172930';
 	$dbname = 'humanresource';
@@ -345,7 +345,7 @@ $app->group('/chat', function () use ($app) {
 		$chat = new Chat($this->db);
 		$result = $chat->routine($data,$args['chatID']);
 		session_start();
-    	$response = $response->withHeader('Content-type', 'application/json' );
+	    	$response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 		$_SESSION['last'][$args['timestamp']] = $result;
 		$_SESSION['chat'][$_SESSION['id']][$args['chatID']] = $result;
