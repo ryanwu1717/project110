@@ -399,7 +399,7 @@ function routine(){
           }else if(key=='chat'){
             changeChat('routine',response);
             changeStar('routine',response);
-	    changeComment('routine',response);
+            changeComment('routine',response);
             changeHeart(response);
             changeDelete('routine',response);
           }else if(key == 'notification'){
@@ -757,6 +757,8 @@ function notifyUnread(){
   notify['Unread'] = setTimeout(notifyUnread,1000);
 }
 var staffStatus;
+var limit = new Object();
+var newChatData = [];
 function changeChat(type,data){
   // $('[name=chatBox]').html("");
   $('[name=msgSendNow]').remove();
@@ -765,7 +767,8 @@ function changeChat(type,data){
     return;
   }
   var newChat = [];
-  if(!data.result.chat.comchatID){
+  newChatData = data;
+  if(!data.result.chat.comchatID || (newChatData.length-limit[chatID]!=$('[name=chatBox]').children().length)){
     $('[name=chatBox]').html("");
     newChat = data.chat;
   }else{
@@ -778,8 +781,13 @@ function changeChat(type,data){
     $('[name=chatBox]').html("");
     newChat = data.tmpchat;
   }
-
-  $(newChat).each(function(){
+  if(!(chatID in limit)){
+    limit[chatID] = newChat.length-5;
+  }
+  $(newChat).each(function(id){
+    if(id<limit[chatID]){
+      return;
+    }
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
       $('[name=chatBox]').append(
@@ -830,6 +838,7 @@ function changeChat(type,data){
       );
     }
   });
+  $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight);
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   $('[name="tooltipOnlineTime"]').tooltip();
@@ -1113,6 +1122,12 @@ function deleteMessage(senttime){
 }
 
 function expendLimit(){
+  limit[chatID] = (limit[chatID]-5>-1)?limit[chatID]-5:0;
+  changeChat('routine',newChatData);
+  changeStar('routine',newChatData);
+  changeComment('routine',newChatData);
+  changeHeart(newChatData);
+  changeDelete('routine',newChatData);
 }
 
 
@@ -1229,16 +1244,16 @@ function getTarget(_chatID,_chatName){
         '<span class="sr-only">Loading...</span>'+
       '</div>'
     );
-    $.ajax({
-      url:'/chat/saveChat/'+_chatID,
-      type:'get',
-      data:{},
-      dataType:'json',
-      success:function(response){
-        console.log(response);
-        inSaveChat(response);
-      }
-    });
+    // $.ajax({
+    //   url:'/chat/saveChat/'+_chatID,
+    //   type:'get',
+    //   data:{},
+    //   dataType:'json',
+    //   success:function(response){
+    //     console.log(response);
+    //     inSaveChat(response);
+    //   }
+    // });
   }
 
   chatName = decodeURIComponent(_chatName);
@@ -1259,13 +1274,6 @@ function getTarget(_chatID,_chatName){
   // routine();
 }
 
-function expendLimit(){
-  last['limit']+=5;
-}
-
-function resetLimit(){
-  last['limit']=20;
-}
 var last = new Object();
 last['limit'] = 20;
 last['count'] = 0;
