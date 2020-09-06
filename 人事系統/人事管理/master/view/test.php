@@ -554,10 +554,6 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
-  else{
-    expendLimit();
-    scrollToTag();
-  }
  if(tagType == 'comment'){
     $('[name = iconComment][data-senttime = "'+tmpTagMsg+'"]').click();
   }
@@ -772,12 +768,16 @@ function changeChat(type,data){
   }
   var newChat = [];
   newChatData = data;
-  if(!data.result.chat.comchatID || (newChatData.length-limit[chatID]!=$('[name=chatBox]').children().length)){
+  if(!data.result.chat.comchatID){
     $('[name=chatBox]').html("");
     newChat = data.chat;
   }else{
-    for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
-      newChat.push(data.chat[data.chat.length-(1+i)]);
+    if(type == 'routine'){
+      for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
+        newChat.push(data.chat[data.chat.length-(1+i)]);
+      } 
+    }else if(type == 'expend'){
+      newChat = data.chat;
     }
   }
 
@@ -788,21 +788,38 @@ function changeChat(type,data){
   if(!(chatID in limit)){
     limit[chatID] = newChat.length-5;
   }
+  var box = $('[name=chatBox]');
+  if(limit[chatID] != newChat.length-5){
+    box = $('<div>');
+  }
   $(newChat).each(function(id){
     if(id<limit[chatID]){
-      return;
+      if(tmpTagMsg!=""){
+        if(this.fullsentTime == tmpTagMsg){
+          limit[chatID] = id;
+        }else{
+          return; 
+        }
+      }else{
+        return; 
+      }
     }
+    console.log(123);
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
-      $('[name=chatBox]').append(
+      box.append(
         '<div class="alert alert-success text-center" role="alert">'+
           this.fullsentTime.split(' ')[0] +
         '</div>'
       );
     }
     dd = mydate;
+    if(limit[chatID] != newChat.length-5){
+      if(id == limit[chatID]+5)
+        return false;
+    }
     if(this.diff!='me'){
-      $('[name=chatBox]').append(
+      box.append(
 	  `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
           <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
           <div class="d-flex bd-highlight" >
@@ -822,7 +839,7 @@ function changeChat(type,data){
       );
     }
     else{
-      $('[name=chatBox]').append(
+      box.append(
         '<div name="outgoingBox" class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
             '<div style="max-width:75%" class="p-2 bd-highlight bg-secondary text-white rounded text-break" name="contentBox" ondblclick="ondblclickMessage(this)" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'">'+
@@ -842,6 +859,10 @@ function changeChat(type,data){
       );
     }
   });
+  console.log(box);
+  if(limit[chatID] != newChat.length-5){
+    $('[name=chatBox]').prepend(box);
+  }
   $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight);
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
@@ -1127,7 +1148,8 @@ function deleteMessage(senttime){
 
 function expendLimit(){
   limit[chatID] = (limit[chatID]-5>-1)?limit[chatID]-5:0;
-  changeChat('routine',newChatData);
+  newChatData.result.chat.comchatID = true;
+  changeChat('expend',newChatData);
   changeStar('routine',newChatData);
   changeComment('routine',newChatData);
   changeHeart(newChatData);
@@ -1266,6 +1288,7 @@ function getTarget(_chatID,_chatName){
   // resetLimit();
   if(chatID != _chatID){
     chatID = _chatID;
+    delete limit[chatID];
     routine(); 
   }else{
     scrollToTag();
