@@ -554,6 +554,10 @@ function scrollToTag(){
     $('.msg_history').scrollTop($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').height());
   else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
+  else{
+    expendLimit();
+    scrollToTag();
+  }
  if(tagType == 'comment'){
     $('[name = iconComment][data-senttime = "'+tmpTagMsg+'"]').click();
   }
