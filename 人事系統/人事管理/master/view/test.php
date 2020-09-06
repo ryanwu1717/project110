@@ -783,15 +783,13 @@ function changeChat(type,data){
     newChat = data.tmpchat;
   }
   if(!(chatID in limit)){
-    limit[chatID] = newChat.length-5;
+    limit[chatID] = newChat.length-10;
   }
   var box = $('[name=chatBox]');
   if(type == 'expend'){
     box = $('<div>');
   }
   $(newChat).each(function(id){
-    var mydate = this.fullsentTime.split(' ')[0];
-    dd = mydate;
     if(tmpTagMsg!=""){
       if(this.fullsentTime == tmpTagMsg){
         limit[chatID] = id;
@@ -800,16 +798,27 @@ function changeChat(type,data){
     if(id<limit[chatID] && !data.result.chat.comchatID){
       return; 
     }
-    if(dd != mydate){
-      box.append(
-        '<div class="alert alert-success text-center" role="alert">'+
-          this.fullsentTime.split(' ')[0] +
-        '</div>'
-      );
-    }
     if(type == 'expend'){
       if(id >= limit[chatID]+5)
         return ;
+      var mydate = this.fullsentTime.split(' ')[0];
+      if(id>limit[chatID] && newChat[id-1].fullsentTime.split(' ')[0] != mydate){
+        box.append(
+          '<div class="alert alert-success text-center" role="alert">'+
+            this.fullsentTime.split(' ')[0] +
+          '</div>'
+        );
+      }
+    }else{
+      var mydate = this.fullsentTime.split(' ')[0];
+      if(dd != mydate){
+        box.append(
+          '<div class="alert alert-success text-center" role="alert">'+
+            this.fullsentTime.split(' ')[0] +
+          '</div>'
+        );
+      }
+      dd = mydate;
     }
     if(this.diff!='me'){
       box.append(
@@ -1139,7 +1148,7 @@ function deleteMessage(senttime){
 }
 
 function expendLimit(){
-  limit[chatID] = (limit[chatID]-5>-1)?limit[chatID]-5:0;
+  limit[chatID] = (limit[chatID]-5>-1)?limit[chatID]-5:-5;
   changeChat('expend',newChatData);
   changeStar('routine',newChatData);
   changeComment('routine',newChatData);
