@@ -781,6 +781,9 @@ function changeChat(type,data){
     var i = 0;
     var isPrepend = true;
     $(data.chat).each(function(){
+      if('fullsentTime' in newChatData[i]){
+        isPrepend = false;
+      }
       if(this.fullsentTime!=newChatData[i].fullsentTime){
         if(isPrepend)
           prepend.unshift(this);
