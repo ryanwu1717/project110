@@ -791,6 +791,7 @@ function changeChat(type,data){
   }
   $(newChat).each(function(id){
     var mydate = this.fullsentTime.split(' ')[0];
+    dd = mydate;
     if(tmpTagMsg!=""){
       if(this.fullsentTime == tmpTagMsg){
         limit[chatID] = id;
@@ -806,7 +807,6 @@ function changeChat(type,data){
         '</div>'
       );
     }
-    dd = mydate;
     if(type == 'expend'){
       if(id == limit[chatID]+5)
         return false;
