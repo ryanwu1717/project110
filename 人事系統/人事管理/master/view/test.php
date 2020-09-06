@@ -798,7 +798,7 @@ function changeChat(type,data){
     if(id<limit[chatID] && !data.result.chat.comchatID){
       return; 
     }
-    if(type == 'expend'){
+    if(type == 'expend' || !data.result.chat.comchatID){
       if(id >= limit[chatID]+5)
         return ;
       var mydate = this.fullsentTime.split(' ')[0];
