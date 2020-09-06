@@ -790,6 +790,7 @@ function changeChat(type,data){
     box = $('<div>');
   }
   $(newChat).each(function(id){
+    var mydate = this.fullsentTime.split(' ')[0];
     if(tmpTagMsg!=""){
       if(this.fullsentTime == tmpTagMsg){
         limit[chatID] = id;
@@ -798,7 +799,6 @@ function changeChat(type,data){
     if(id<limit[chatID] && !data.result.chat.comchatID){
       return; 
     }
-    var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
       box.append(
         '<div class="alert alert-success text-center" role="alert">'+
