@@ -814,6 +814,7 @@ function changeChat(type,data){
         '</div>'
       );
     }
+    dd = mydate;
     if(this.diff!='me'){
       box.append(
         `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
