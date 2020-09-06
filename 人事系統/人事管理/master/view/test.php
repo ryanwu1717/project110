@@ -808,8 +808,8 @@ function changeChat(type,data){
       );
     }
     if(type == 'expend'){
-      if(id == limit[chatID]+5)
-        return false;
+      if(id >= limit[chatID]+5)
+        return ;
     }
     if(this.diff!='me'){
       box.append(
