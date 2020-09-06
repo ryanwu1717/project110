@@ -768,19 +768,16 @@ function changeChat(type,data){
   }
   var newChat = [];
   newChatData = data;
-  if(!data.result.chat.comchatID){
+  if(type == 'expend'){
+    newChat = data.chat;
+  }else if(!data.result.chat.comchatID){
     $('[name=chatBox]').html("");
     newChat = data.chat;
   }else{
-    if(type == 'routine'){
-      for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
-        newChat.push(data.chat[data.chat.length-(1+i)]);
-      } 
-    }else if(type == 'expend'){
-      newChat = data.chat;
-    }
+    for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
+      newChat.push(data.chat[data.chat.length-(1+i)]);
+    } 
   }
-
   if(type == 'saveChat'){
     $('[name=chatBox]').html("");
     newChat = data.tmpchat;
@@ -789,22 +786,18 @@ function changeChat(type,data){
     limit[chatID] = newChat.length-5;
   }
   var box = $('[name=chatBox]');
-  if(limit[chatID] != newChat.length-5){
+  if(type == 'expend'){
     box = $('<div>');
   }
   $(newChat).each(function(id){
-    if(id<limit[chatID]){
-      if(tmpTagMsg!=""){
-        if(this.fullsentTime == tmpTagMsg){
-          limit[chatID] = id;
-        }else{
-          return; 
-        }
-      }else{
-        return; 
+    if(tmpTagMsg!=""){
+      if(this.fullsentTime == tmpTagMsg){
+        limit[chatID] = id;
       }
     }
-    console.log(123);
+    if(id<limit[chatID] && !data.result.chat.comchatID){
+      return; 
+    }
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
       box.append(
@@ -814,7 +807,7 @@ function changeChat(type,data){
       );
     }
     dd = mydate;
-    if(limit[chatID] != newChat.length-5){
+    if(type == 'expend'){
       if(id == limit[chatID]+5)
         return false;
     }
@@ -859,11 +852,10 @@ function changeChat(type,data){
       );
     }
   });
-  console.log(box);
-  if(limit[chatID] != newChat.length-5){
+  if(type == 'expend'){
     $('[name=chatBox]').prepend(box);
+    $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight);
   }
-  $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight);
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   $('[name="tooltipOnlineTime"]').tooltip();
@@ -1148,7 +1140,6 @@ function deleteMessage(senttime){
 
 function expendLimit(){
   limit[chatID] = (limit[chatID]-5>-1)?limit[chatID]-5:0;
-  newChatData.result.chat.comchatID = true;
   changeChat('expend',newChatData);
   changeStar('routine',newChatData);
   changeComment('routine',newChatData);
