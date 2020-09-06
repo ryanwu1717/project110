@@ -21,7 +21,7 @@ $container['view'] = function ($container) {
     return new PhpRenderer(__DIR__.'/../view');
 };
 $container['db'] = function ($container) {
-	$dbhost = '10.0.10.200';
+	$dbhost = 'localhost';
 	$dbport = '5432';
 	$dbuser = 'humanresource';
 	$dbpasswd = '7172930';
@@ -345,10 +345,62 @@ $app->group('/chat', function () use ($app) {
 		$chat = new Chat($this->db);
 		$result = $chat->routine($data,$args['chatID']);
 		session_start();
-	    	$response = $response->withHeader('Content-type', 'application/json' );
+    	$response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
 		$_SESSION['last'][$args['timestamp']] = $result;
 		$_SESSION['chat'][$_SESSION['id']][$args['chatID']] = $result;
+	    return $response;
+	});
+	$app->get('/routine/{timestamp}/{chatID}/{limit}', function (Request $request, Response $response, array $args) {
+		$data = $_SESSION['last'][$args['timestamp']];
+		if(!isset($_SESSION['now'])){
+			$_SESSION['now'] = 0;
+		}else{
+			$_SESSION['now'] = $_SESSION['now']+1;
+			if($_SESSION['now']==65535)
+				$_SESSION['now'] = 0;
+		}
+		if($args['chatID']==$data['result']['chat']['chatID'] && $data['limit'] != $args['limit']){
+			$result = $data;
+			$_SESSION['last'][$args['timestamp']]['limit'] = $args['limit'];
+			session_write_close();
+			$chat = array();
+			for($i = $args['limit'];$i<count($result['chat']);$i++){
+				array_push($chat, $result['chat'][$i]);
+			}
+			$result['chat'] = $chat;
+			if($args['limit']-10<0){
+				$result['limit'] = 0;
+			}else{
+				$result['limit'] = $args['limit'];
+			}	
+		}else{
+			$chat = new Chat($this->db);
+			$result = $chat->routine($data,$args['chatID']);		
+			if($args['limit']==-1){
+				if(count($result['chat'])-10<0){
+					$result['limit'] = 0;
+				}else{
+					$result['limit'] = count($result['chat'])-10;
+				}	
+			}else{
+				if($args['limit']-10<0){
+					$result['limit'] = 0;
+				}else{
+					$result['limit'] = $args['limit']-10;
+				}	
+			}
+			$chat = array();
+			for($i = $result['limit'];$i<count($result['chat']);$i++){
+				array_push($chat, $result['chat'][$i]);
+			}
+			session_start();
+			$_SESSION['last'][$args['timestamp']] = $result;
+			$_SESSION['chat'][$_SESSION['id']][$args['chatID']] = $result;
+			$result['chat'] = $chat;
+		}
+    	$response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
 	    return $response;
 	});
 	$app->get('/saveChat/{chatID}', function (Request $request, Response $response, array $args) {

@@ -340,7 +340,8 @@ var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dis
       $(".scroll-to-down").fadeOut()
       scrollable = false;
     }
-    if($(this).scrollTop()==0){
+    if($(this).scrollTop()==0 && $(this)[0].scrollHeight>$(this)[0].clientHeight){
+      console.log('expendLimit();');
       expendLimit();
     }
   });
@@ -382,15 +383,20 @@ function init(){
 }
 init();
 var ajax = null;
+var limit = new Object();
 function routine(){
   if(ajax!=null)
     ajax.abort();
+  if(!(chatID in limit)){
+    limit[chatID] = -1;
+  }
   ajax = $.ajax({
-    url:'/chat/routine/'+todayDate+'/'+chatID,
+    url:'/chat/routine/'+todayDate+'/'+chatID+'/'+limit[chatID],
     type:'get',
     dataType:'json',
     success:function(response){
       if(response.status=='success'){
+        limit[chatID] = response.limit;
         $.each(response.result,function(key,value){
           if(key=='class'){
             changeClass('routine',value,response.class);
@@ -399,7 +405,7 @@ function routine(){
           }else if(key=='chat'){
             changeChat('routine',response);
             changeStar('routine',response);
-            changeComment('routine',response);
+	          changeComment('routine',response);
             changeHeart(response);
             changeDelete('routine',response);
           }else if(key == 'notification'){
@@ -757,40 +763,54 @@ function notifyUnread(){
   notify['Unread'] = setTimeout(notifyUnread,1000);
 }
 var staffStatus;
-var limit = new Object();
 var newChatData = [];
 function changeChat(type,data){
   // $('[name=chatBox]').html("");
+  var append = [];
+  var prepend = [];
   $('[name=msgSendNow]').remove();
+  $('[name=expendLimit]').remove();
 
   if(chatID==-1){
     return;
   }
   var newChat = [];
-  newChatData = data;
-  if(!data.result.chat.comchatID || (newChatData.length-limit[chatID]!=$('[name=chatBox]').children().length)){
+  if(!data.result.chat.comchatID){
     $('[name=chatBox]').html("");
-    newChat = data.chat;
+    append = data.chat;
   }else{
-    for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
-      newChat.push(data.chat[data.chat.length-(1+i)]);
-    }
+    var i = 0;
+    var isPrepend = true;
+    $(data.chat).each(function(){
+      if(this.fullsentTime!=newChatData[i].fullsentTime){
+        if(isPrepend)
+          prepend.unshift(this);
+        else
+          append.push(this)
+      }else{
+        isPrepend = false;
+        i++;
+      }
+    });
+    // for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
+    //   newChat.push(data.chat[data.chat.length-(1+i)]);
+    // }
   }
 
   if(type == 'saveChat'){
-    $('[name=chatBox]').html("");
-    newChat = data.tmpchat;
+    // $('[name=chatBox]').html("");
+    // newChat = data.tmpchat;
   }
-  if(!(chatID in limit)){
-    limit[chatID] = newChat.length-5;
-  }
-  $(newChat).each(function(id){
-    if(id<limit[chatID]){
-      return;
-    }
+  newChatData = data.chat;
+  var box = $('[name=chatBox]');
+  $(append).each(insertChat);
+  box = $('<div>');
+  $(prepend).each(insertChat);
+  $('[name=chatBox]').prepend(box.html());
+  function insertChat(){
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
-      $('[name=chatBox]').append(
+      box.append(
         '<div class="alert alert-success text-center" role="alert">'+
           this.fullsentTime.split(' ')[0] +
         '</div>'
@@ -798,8 +818,8 @@ function changeChat(type,data){
     }
     dd = mydate;
     if(this.diff!='me'){
-      $('[name=chatBox]').append(
-	  `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
+      box.append(
+    `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
           <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
           <div class="d-flex bd-highlight" >
             <div style="max-width:75%" class="p-2 bd-highlight bg-dark text-white rounded text-break;"  name = 'incomeChatbox' data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}">
@@ -814,11 +834,11 @@ function changeChat(type,data){
           <a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>${this.Read}</a>
           <a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="${encodeURIComponent(this.content)} "data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-readcount="${this.Read}" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>
                  <button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}" data-UID="${this.UID}" data-isClick="false" onclick=\'onclickHeart(this,\"${this.fullsentTime}\");\'><i class="fa fa-heart mr-1" aria-hidden="true"></i>0</button> 
-	</div>`
+  </div>`
       );
     }
     else{
-      $('[name=chatBox]').append(
+      box.append(
         '<div name="outgoingBox" class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
             '<div style="max-width:75%" class="p-2 bd-highlight bg-secondary text-white rounded text-break" name="contentBox" ondblclick="ondblclickMessage(this)" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'">'+
@@ -831,14 +851,18 @@ function changeChat(type,data){
           '<small>'+this.sentTime+'</small>'+
           '<a target="_blank" href="#" data-toggle="modal" data-target="#basicModal" data-type="readlist" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'"><i class="fa fa-eye" aria-hidden="true"></i>'+this.Read+'</a>'+
           '<a style="display" class="btn badge badge-light ml-1" href="#" data-toggle="modal" data-target="#basicModal" data-type="comments" data-likeID="'+this.likeID+'" data-content="'+encodeURIComponent(this.content)+ '"data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-readcount="'+this.Read+'" name="iconComment"><i class="fa fa-reply" aria-hidden="true"></i></a>'+
-	  '<button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-isClick="false" onclick=\'onclickHeart(this,\"'+this.fullsentTime+'\");\'><i class="fa fa-heart mr-1"  aria-hidden="true"></i>'+
+    '<button class="btn badge badge-light ml-1" name="badgeLike" style="color: #AAAAAA;" href="#" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'" data-UID="'+this.UID+'" data-isClick="false" onclick=\'onclickHeart(this,\"'+this.fullsentTime+'\");\'><i class="fa fa-heart mr-1"  aria-hidden="true"></i>'+
             0+
           '</button>'+
         '</div>'
       );
     }
-  });
-  $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight);
+  }
+  if($('[name=chatBox]').children().length>5){
+    $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight); 
+  }else{
+    $('.msg_history').scrollTop($('[name=chatBox]').children()[$('[name=chatBox]').children().length].scrollHeight); 
+  }
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
   $('[name="tooltipOnlineTime"]').tooltip();
@@ -1121,15 +1145,6 @@ function deleteMessage(senttime){
 
 }
 
-function expendLimit(){
-  limit[chatID] = (limit[chatID]-5>-1)?limit[chatID]-5:0;
-  changeChat('routine',newChatData);
-  changeStar('routine',newChatData);
-  changeComment('routine',newChatData);
-  changeHeart(newChatData);
-  changeDelete('routine',newChatData);
-}
-
 
 function onclickHeart(button,senttime){
   var tmpHeartNum = parseInt($(button).text());
@@ -1224,8 +1239,8 @@ var chatName = '';
 $('#tool_dropdown').hide();
 
 function inSaveChat(chatInfo){
-  changeChat('saveChat',chatInfo);
-  changeDelete('saveChat',chatInfo);
+  // changeChat('saveChat',chatInfo);
+  // changeDelete('saveChat',chatInfo);
 }
 
 
@@ -1237,7 +1252,7 @@ function getTarget(_chatID,_chatName){
   // $('[name=chatBox]').html("");
   if(chatID!=_chatID){
     console.log(chatID,_chatID);
-    
+    newChatData = [];
 
     $('[name=chatBox]').html(
       '<div class="spinner-border text-primary" role="status">'+
@@ -1274,6 +1289,22 @@ function getTarget(_chatID,_chatName){
   // routine();
 }
 
+function expendLimit(){
+  if($('[name="expendLimit"]').length==0 || limit[chatID]!=0){
+    limit[chatID] = limit[chatID]-5>0?limit[chatID]-5:0;
+
+
+    $('[name=chatBox]').prepend(
+      '<div class="spinner-border text-primary" role="status" name="expendLimit">'+
+        '<span class="sr-only">Loading...</span>'+
+      '</div>'
+    );
+    routine();
+  }
+}
+
+function resetLimit(){
+}
 var last = new Object();
 last['limit'] = 20;
 last['count'] = 0;
