@@ -341,7 +341,6 @@ var basicModalFooter = '<button class="btn btn-secondary" type="button" data-dis
       scrollable = false;
     }
     if($(this).scrollTop()==0 && $(this)[0].scrollHeight>$(this)[0].clientHeight){
-      console.log('expendLimit();');
       expendLimit();
     }
   });
@@ -796,7 +795,6 @@ function changeChat(type,data){
     //   newChat.push(data.chat[data.chat.length-(1+i)]);
     // }
   }
-
   if(type == 'saveChat'){
     // $('[name=chatBox]').html("");
     // newChat = data.tmpchat;
@@ -816,10 +814,9 @@ function changeChat(type,data){
         '</div>'
       );
     }
-    dd = mydate;
     if(this.diff!='me'){
       box.append(
-    `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
+        `<div class="text-left incoming_msg" name="incomingBox" data-sentTime="${this.fullsentTime}">
           <div class=""> <span name="tooltipOnlineTime" data-id=${this.UID}  data-toggle="tooltip" data-placement="right" title="搜尋中...">${this.UID},${this.staff_name}</span></div>
           <div class="d-flex bd-highlight" >
             <div style="max-width:75%" class="p-2 bd-highlight bg-dark text-white rounded text-break;"  name = 'incomeChatbox' data-content="${encodeURIComponent(this.content)}" data-sentTime="${this.fullsentTime}">
@@ -1277,6 +1274,7 @@ function getTarget(_chatID,_chatName){
   // resetLimit();
   if(chatID != _chatID){
     chatID = _chatID;
+    delete limit[chatID];
     routine(); 
   }else{
     scrollToTag();
