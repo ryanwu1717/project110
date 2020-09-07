@@ -420,8 +420,12 @@ function routine(){
         // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
         // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
 // 
-        
-        scrollToTag()
+        // if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0 || $('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0){
+          scrollToTag();
+        // }else{
+        //   expendLimit();
+        //   return;
+        // } 
       }
       routine();
     }
@@ -848,7 +852,6 @@ function changeChat(type,data){
   function insertChat(id){
     if (id == 0){
       dd = this.fullsentTime.split(' ')[0];
-
     }
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
