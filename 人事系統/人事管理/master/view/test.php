@@ -803,29 +803,29 @@ function changeChat(type,data){
         return;
       }
       if(this.fullsentTime!=newChatData[i].fullsentTime){
-        // if(this.fullsentTime.split(' ')[0] != newChatData[i].fullsentTime.split(' ')[0] && tmpCount == 0){
-        //   box.prepend(
-        //     '<div class="alert alert-success text-center" role="alert">'+
-        //       this.fullsentTime.split(' ')[0] +
-        //     '</div>'
-        //   );
-        //   tmpCount++;
-        // }
+       
         if(isPrepend){
-           if(this.fullsentTime.split(' ')[0] != newChatData[i].fullsentTime.split(' ')[0] && tmpCount == 0){
-              box.prepend(
-                '<div class="alert alert-success text-center" role="alert">'+
-                  newChatData[i].fullsentTime.split(' ')[0] +
-                '</div>'
-              );
-              tmpCount++;
-            }
+            
           prepend.push(this);
         }else{
           
           append.push(this);
         }
       }else{
+        if(newChatData[0].fullsentTime.split(' ')[0] != prepend[prepend.length-1].fullsentTime.split(' ')[0] && tmpCount == 0){
+          console.log(prepend[prepend.length-1]);
+
+          box.prepend(
+            '<div class="alert alert-success text-center" role="alert">'+
+              newChatData[0].fullsentTime.split(' ')[0] +
+            '</div>'
+          );
+            console.log(this.fullsentTime.split(' ')[0]);
+            console.log(newChatData[i].fullsentTime.split(' ')[0]);
+           tmpCount++;
+        }
+        
+         
         isPrepend = false;
         i++;
       }
