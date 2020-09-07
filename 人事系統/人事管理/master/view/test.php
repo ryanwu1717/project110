@@ -767,6 +767,7 @@ function changeChat(type,data){
   // $('[name=chatBox]').html("");
   var append = [];
   var prepend = [];
+
   $('[name=msgSendNow]').remove();
   $('[name=expendLimit]').remove();
 
@@ -779,17 +780,51 @@ function changeChat(type,data){
     append = data.chat;
   }else{
     var i = 0;
+    var tmpCount = 0;
     var isPrepend = true;
+    var box = $('[name=chatBox]');
+
     $(data.chat).each(function(){
       if(newChatData.length<=i || newChatData.length==0){
+        if(newChatData.length > 0){
+          // console.log(this.fullsentTime.split(' ')[0]);
+          // console.log(newChatData[i-1].fullsentTime.split(' ')[0]);
+          if(this.fullsentTime.split(' ')[0] != newChatData[i-1].fullsentTime.split(' ')[0]){
+            box.append(
+              '<div class="alert alert-success text-center" role="alert">'+
+                this.fullsentTime.split(' ')[0] +
+              '</div>'
+            );
+            tmpCount++;
+          }
+        }
+         
         append.push(this)
         return;
       }
       if(this.fullsentTime!=newChatData[i].fullsentTime){
-        if(isPrepend)
+        // if(this.fullsentTime.split(' ')[0] != newChatData[i].fullsentTime.split(' ')[0] && tmpCount == 0){
+        //   box.prepend(
+        //     '<div class="alert alert-success text-center" role="alert">'+
+        //       this.fullsentTime.split(' ')[0] +
+        //     '</div>'
+        //   );
+        //   tmpCount++;
+        // }
+        if(isPrepend){
+           if(this.fullsentTime.split(' ')[0] != newChatData[i].fullsentTime.split(' ')[0] && tmpCount == 0){
+              box.prepend(
+                '<div class="alert alert-success text-center" role="alert">'+
+                  newChatData[i].fullsentTime.split(' ')[0] +
+                '</div>'
+              );
+              tmpCount++;
+            }
           prepend.push(this);
-        else
-          append.push(this)
+        }else{
+          
+          append.push(this);
+        }
       }else{
         isPrepend = false;
         i++;
@@ -806,12 +841,15 @@ function changeChat(type,data){
     // newChat = data.tmpchat;
   }
   newChatData = data.chat;
-  var box = $('[name=chatBox]');
   $(append).each(insertChat);
   box = $('<div>');
   $(prepend).each(insertChat);
   $('[name=chatBox]').html(box.html()+$('[name=chatBox]').html());
-  function insertChat(){
+  function insertChat(id){
+    if (id == 0){
+      dd = this.fullsentTime.split(' ')[0];
+
+    }
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
       box.append(
