@@ -781,13 +781,13 @@ function changeChat(type,data){
     var i = 0;
     var isPrepend = true;
     $(data.chat).each(function(){
-      if(newChatData.length<i || newChatData.length==0){
+      if(newChatData.length<=i || newChatData.length==0){
         append.push(this)
         return;
       }
       if(this.fullsentTime!=newChatData[i].fullsentTime){
         if(isPrepend)
-          prepend.unshift(this);
+          prepend.push(this);
         else
           append.push(this)
       }else{
