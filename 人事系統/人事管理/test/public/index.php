@@ -782,9 +782,17 @@ $app->group('/work', function () use ($app) {
 		    return $response;
 		    
 		});
-		$app->get('', function (Request $request, Response $response, array $args) {
+		$app->get('/term/{start}/{end}', function (Request $request, Response $response, array $args) {
 		    $work = new Work($this->db);
-		    $result = $work->getCheckin();   
+		    $result = $work->getCheckin($args['start'],$args['end']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('/by/{type}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckinBy($args['type']);   
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
