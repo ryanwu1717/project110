@@ -420,12 +420,22 @@ function routine(){
         // console.log($('.incoming_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
         // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
 // 
-        // if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0 || $('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0){
+        if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0 || $('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0){
+          $('#basicModal').modal('hide');
           scrollToTag();
-        // }else{
-        //   expendLimit();
-        //   return;
-        // } 
+        }else{
+          if(!$('#basicModal').is(':visible')){
+            $('#basicModal').find('.modal-title').text('訊息');
+            $('#basicModal').find('.modal-body').text('搜尋中，請稍候');
+            $('#basicModal').modal('show');
+            $('#basicModal').on('hide.bs.modal',function(){
+              tagType = "";
+              tmpTagMsg = "";
+            })
+          }
+          expendLimit();
+          return;
+        } 
       }
       routine();
     }
@@ -834,8 +844,8 @@ function changeChat(type,data){
         i++;
       }
     });
-    console.log(append);
-    console.log(prepend);
+    // console.log(append);
+    // console.log(prepend);
     // for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
     //   newChat.push(data.chat[data.chat.length-(1+i)]);
     // }
