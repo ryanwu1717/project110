@@ -384,11 +384,7 @@ $app->group('/chat', function () use ($app) {
 					$result['limit'] = count($result['chat'])-10;
 				}	
 			}else{
-				if($args['limit']-10<0){
-					$result['limit'] = 0;
-				}else{
-					$result['limit'] = $args['limit']-10;
-				}	
+				$result['limit'] = $args['limit'];
 			}
 			$chat = array();
 			for($i = $result['limit'];$i<count($result['chat']);$i++){
