@@ -814,7 +814,7 @@ function changeChat(type,data){
         '<div name="outgoingBox" class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
             '<div style="max-width:75%" class="p-2 bd-highlight bg-secondary text-white rounded text-break" name="contentBox" ondblclick="ondblclickMessage(this)" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'">'+
-              this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+              this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
           '<button type="button" class="btn badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
@@ -1217,7 +1217,7 @@ function inSaveChat(chatInfo){
 function getTarget(_chatID,_chatName){
   // // console.log($(div).attr("data-name"));
   // // chatID=$(div).attr("data-name");
-  // scrollable = false;
+  scrollable = false;
   // last['count'] = 0;
   // $('[name=chatBox]').html("");
   if(chatID!=_chatID){

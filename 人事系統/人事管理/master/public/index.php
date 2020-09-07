@@ -21,11 +21,11 @@ $container['view'] = function ($container) {
     return new PhpRenderer(__DIR__.'/../view');
 };
 $container['db'] = function ($container) {
-	$dbhost = 'localhost';
+	$dbhost = '10.0.1.14';
 	$dbport = '5432';
-	$dbuser = 'humanresource';
-	$dbpasswd = '7172930';
-	$dbname = 'humanresource';
+	$dbuser = 'minlab';
+	$dbpasswd = '970314970314';
+	$dbname = 'humanresourceclone';
 	$dsn = "pgsql:host=".$dbhost.";port=".$dbport.";dbname=".$dbname;
 	try
 	{
