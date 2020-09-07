@@ -505,7 +505,7 @@ function changeHeart(data){
 function changeComment(type,data){
   $.each(data.result.comment.new,function(){
     if(this.count!=0){
-      $(`[name=iconComment][data-senttime="${this.sentTime}"]`).append(`${this.count}`);
+      $(`[name=iconComment][data-senttime="${this.sentTime}"]`).html(`<i class="fa fa-reply" aria-hidden="true"></i>${this.count}`);
     }
     
   });
@@ -774,15 +774,16 @@ function changeChat(type,data){
     return;
   }
   var newChat = [];
-  if(!data.result.chat.comchatID){
+  if(chatID!=data.result.chat.chatID){
     $('[name=chatBox]').html("");
     append = data.chat;
   }else{
     var i = 0;
     var isPrepend = true;
     $(data.chat).each(function(){
-      if('fullsentTime' in newChatData[i]){
-        isPrepend = false;
+      if(newChatData.length<i || newChatData.length==0){
+        append.push(this)
+        return;
       }
       if(this.fullsentTime!=newChatData[i].fullsentTime){
         if(isPrepend)
@@ -794,6 +795,8 @@ function changeChat(type,data){
         i++;
       }
     });
+    console.log(append);
+    console.log(prepend);
     // for(var i = 0; i<parseInt(data.result.chat.count) ; i++){
     //   newChat.push(data.chat[data.chat.length-(1+i)]);
     // }
@@ -807,7 +810,7 @@ function changeChat(type,data){
   $(append).each(insertChat);
   box = $('<div>');
   $(prepend).each(insertChat);
-  $('[name=chatBox]').prepend(box.html());
+  $('[name=chatBox]').html(box.html()+$('[name=chatBox]').html());
   function insertChat(){
     var mydate = this.fullsentTime.split(' ')[0];
     if(dd != mydate){
@@ -1256,7 +1259,7 @@ function getTarget(_chatID,_chatName){
     newChatData = [];
 
     $('[name=chatBox]').html(
-      '<div class="spinner-border text-primary" role="status">'+
+      '<div class="spinner-border text-primary" role="status" name="expendLimit">'+
         '<span class="sr-only">Loading...</span>'+
       '</div>'
     );
@@ -1292,7 +1295,7 @@ function getTarget(_chatID,_chatName){
 }
 
 function expendLimit(){
-  if($('[name="expendLimit"]').length==0 || limit[chatID]!=0){
+  if($('[name="expendLimit"]').length==0 && limit[chatID]!=0){
     limit[chatID] = limit[chatID]-5>0?limit[chatID]-5:0;
 
 
