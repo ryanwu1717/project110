@@ -97,11 +97,17 @@ $app->group('', function () use ($app) {
 			$viewParam = $request->getAttribute('viewParam');	
 			return $this->view->render($response, '/test.php', $viewParam);
 		});
-		$app->get('/checkin', function (Request $request, Response $response, array $args) {	
-			$viewParam = $request->getAttribute('viewParam');	
-			return $this->view->render($response, '/employeeCheckin.php', $viewParam);
-
+		$app->group('/checkin', function () use ($app) {
+			$app->get('', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/employeeCheckin.php', $viewParam);
+			});
+			$app->get('/table', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');	
+				return $this->view->render($response, '/checkinTable.php', $viewParam);
+			});
 		});
+			
 		$app->get('/issue', function (Request $request, Response $response, array $args) {
 			$viewParam = $request->getAttribute('viewParam');
 			return $this->view->render($response, '/issue.php', $viewParam);
@@ -377,7 +383,17 @@ $app->group('/chat', function () use ($app) {
 		session_start();
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($result);
+		$_SESSION['chat'][$_SESSION['id']][$args['chatID']] = $result;
 		$_SESSION['last'][$args['timestamp']] = $result;
+	    return $response;
+	});
+	$app->get('/saveChat/{chatID}', function (Request $request, Response $response, array $args) {
+		$chat = new Chat($this->db);
+		$result = $chat->getSaveChat($args['chatID']);
+		if(empty($result)){
+			return $response;
+		}
+		$response = $response->withJson($result);
 	    return $response;
 	});
 	$app->get('/list', function (Request $request, Response $response, array $args) {
@@ -463,7 +479,7 @@ $app->group('/chat', function () use ($app) {
 	$app->group('/chatroom', function () use ($app) {
 		$app->get('', function (Request $request, Response $response, array $args) {
 			$chat = new Chat($this->db);
-			$result = $chat->testGetChatroom($_GET);
+			$result = $chat->getChatroom($_GET);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
@@ -650,6 +666,16 @@ $app->group('/chat', function () use ($app) {
 		});
 	});
 
+	$app->group('/report', function () use ($app) {
+		$app->patch('', function(Request $request, Response $response, array $args){
+			$chat = new Chat($this->db);
+			$result = $chat->updateReport($request->getParsedBody());
+			$response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		});
+	});
+
 	$app->group('/star', function () use ($app) {
 		$app->get('', function(Request $request, Response $response, array $args){
 			$star = new Chat($this->db);
@@ -681,16 +707,17 @@ $app->group('/chat', function () use ($app) {
 			$response = $response->withJson($result);
 		    return $response;
 		});
-		$app->post('/{commentID}/{content}', function (Request $request, Response $response, array $args) { //TODO
+		$app->post('/{commentID}', function (Request $request, Response $response, array $args) { //TODO
+			$content = $request->getParsedBody()['Msg'];
 			$chat = new Chat($this->db);
-			$result = $chat->insertComment($args['commentID'],$args['content']);
+			$result = $chat->insertComment($args['commentID'],$content);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
 		});
-		$app->get('/member/{commentID}', function (Request $request, Response $response, array $args) { //TODO
+		$app->get('/member/{commentID}/{orgSender}', function (Request $request, Response $response, array $args) { //TODO
 			$chat = new Chat($this->db);
-			$result = $chat->getCommentMember($args['commentID']);
+			$result = $chat->getCommentMember($args['commentID'],$args['orgSender']);
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;
@@ -746,13 +773,51 @@ $app->group('/chat', function () use ($app) {
 })->add('ViewMiddleware');
 
 $app->group('/work', function () use ($app) {
-	$app->post('/checkin', function (Request $request, Response $response, array $args) {
-	    $work = new Work($this->db);
-	    $result = $work->employeeCheckin();   
-	    $response = $response->withHeader('Content-type', 'application/json' );
-		$response = $response->withJson($result);
-	    return $response;
-	    
+	$app->group('/checkin', function () use ($app) {
+		$app->post('', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->employeeCheckin();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('/term/{start}/{end}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckin($args['start'],$args['end']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('/by/{type}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckinBy($args['type'],null,null);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+	});
+		
+	$app->group('/makeup', function () use ($app) {
+		$app->post('', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->makeup();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->post('/check', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->checkMakeup();   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+
 	});
 	$app->get('/check/{todayDate}', function (Request $request, Response $response, array $args) {
 	    $staff = new Work($this->db);

@@ -1,30 +1,11 @@
 <?php
   include('partial/header.php');
 ?>
-<div class="card o-hidden shadow-lg py-5">
+<div class="card shadow mb-4">
+	<div class="card-header py-3">
+		<h6 class="m-0 font-weight-bold text-primary">出勤紀錄</h6>
+	</div>
 	<div class="card-body">
-		<form id="formWorkType" name="formWorkType">
-			<div class="form-group row">
-				<label class="col-sm-2 col-form-label" for="staticEmail">部門</label>
-				<div class="col-sm-10">
-					<select class="custom-select" name="buttonDepartment" required="">
-						<option disabled selected value="">
-							請選擇
-						</option>
-					</select>
-				</div>
-			</div>
-			<div class="form-group row" id="rowEmployee" style="display:none">
-				<label class="col-sm-2 col-form-label" for="inputPassword">員工</label>
-				<div class="col-sm-10">
-					<select class="custom-select" name="buttonEmployee">
-						<option disabled selected value="">
-							請選擇
-						</option>
-					</select>
-				</div>
-			</div>
-		</form>
 		<form>
 		  <div class="form-group row">
 		    <label for="staticEmail" class="col-sm-2 col-form-label">開始</label>
@@ -57,7 +38,7 @@
 
 				<thead>
 					<tr>
-						<th>員工</th>
+
 						<th>日期</th>
 						<th>班別</th>
 						<th>上班</th>
@@ -68,7 +49,6 @@
 				</thead>
 				<tfoot>
 					<tr>
-						<th>員工</th>
 						<th>日期</th>
 						<th>班別</th>
 						<th>上班</th>
@@ -83,7 +63,6 @@
 			</table>
 		</div>
 	</div>
-</div>
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -103,26 +82,57 @@
     </div>
   </div>
 </div>
+
+</div>
 <?php
   include('partial/footer.php');
 ?>
 <script src="/vendor/datatables/jquery.dataTables.min.js"></script>
   <script src="/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 <script type='text/javascript'>
-var selectDepartment="0";
-var selectUID="0";
-
 var d = new Date();
+
 var month = d.getMonth()+1;
 var day = d.getDate();
+
 var output = d.getFullYear() + '-' +
     (month<10 ? '0' : '') + month + '-' +
     (day<10 ? '0' : '') + day;
 
 var dayArray = {'MONDAY': '星期一' , 'TUESDAY': '星期二','WEDNESDAY': '星期三', 'THURSDAY': '星期四' ,'FRIDAY': '星期五' ,'SATURDAY': '星期六' ,'SUNDAY': '星期日'};
+console.log(dayArray.MONDAY);
+
 $(function(){
 	$('#inputStart').val(output);
 	$('#inputEnd').val(output);
+	$('#searchCheckin').on('click', function (e) {
+		var start = $('#inputStart').val();
+		var end = $('#inputEnd').val();
+		$.ajax({
+	  		url:`/work/checkin/term/${start}/${end}`,
+	  		type:'GET',
+	  		data:{
+			},
+	  		dataType:'json',
+	  		success:function(response){
+	  			insertTable(response);
+	  		}
+	  	});
+	});
+	$('[name="searchBy"]').on('click', function (e) {
+		console.log($(this).data('type'));
+		$.ajax({
+	  		url:`/work/checkin/by/${$(this).data('type')}`,
+	  		type:'GET',
+	  		data:{
+			},
+	  		dataType:'json',
+	  		success:function(response){
+	  			insertTable(response);
+	  		}
+	  	});
+	});
+
 	$('#exampleModal').on('shown.bs.modal', function (e) {
   		var type = $(e.relatedTarget).data('type');
   		$('#exampleModal .modal-body').html(`
@@ -137,84 +147,36 @@ $(function(){
 		}
 	});
 
-	
-	// $('#exampleModal').on('shown.bs.modal', function (e) {
-	// 	$('#exampleModal .modal-footer').html(`<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>`);
-
-	// 	var type = $(e.relatedTarget).data('type');
-  		
- //  		inInsert();
-  				
-	// });
-	// $('#formWorkType').on('submit', function(e){
-	//     // validation code here
-	//     $('#exampleModal').modal('show');
-	//      e.preventDefault();
-	//  });
-	$('[name="searchBy"]').on('click', function (e) {
-		console.log($(this).data('type'));
-		if(selectUID == "0"){
-			var searchType = "department";
-			var searchID = $('[name="buttonDepartment"] option:selected' ).val();
-		}else{
-			var searchType = "staff";
-			var searchID = $('[name="buttonEmployee"] option:selected' ).val();
-		}
-		$.ajax({
-	  		url:`/management/checkin/by/${$(this).data('type')}/${searchType}/${searchID}`,
-	  		type:'GET',
-	  		data:{
-			},
-	  		dataType:'json',
-	  		success:function(response){
-	  			insertTable(response);
-	  		}
-	  	});
-	});
-	$('#searchCheckin').on('click', function (e) {
-		var start = $('#inputStart').val();
-		var end = $('#inputEnd').val();
-		if(selectUID == "0"){
-			var searchType = "department";
-			var searchID = $('[name="buttonDepartment"] option:selected' ).val();
-		}else{
-			var searchType = "staff";
-			var searchID = $('[name="buttonEmployee"] option:selected' ).val();
-		}
-		// console.log(searchType,searchID);
-		$.ajax({
-	  		url:`/management/checkin/term/${start}/${end}/${searchType}/${searchID}`,
-	  		type:'GET',
-	  		data:{
-			},
-	  		dataType:'json',
-	  		success:function(response){
-	  			insertTable(response);
-	  		}
-	  	});
-	});
-	$.ajax({
-        url:'/staff/department/get',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-
-	         $(response).each(function(eachid){
-	            $('[name=buttonDepartment]').append('<option value="'+this.department_id+'">'+this.department_name+'</option>');
-	           
-	         });
-        } 
-     });
-	$( '[name="buttonDepartment"]').change(function() {
-		$('#rowEmployee').show();
-	    getEmployee($('[name="buttonDepartment"] option:selected' ).val());
-	    selectUID="0";
-	});
-	
-
-
+	// $.ajax({
+ //  		url:'/work/checkin',
+ //  		type:'GET',
+ //  		data:{
+	// 	},
+ //  		dataType:'json',
+ //  		success:function(response){
+ //  			$.each(response.info,function(){
+ //  				console.log(this);
+ //  				$('#tbodyCheckin').append(`
+ //  					<tr>
+ //  						<td>${this.checkinDate}</td>
+ //  						<td></td>
+ //  						<td>
+ //  							${this.inTime}
+ //  							<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.latitude}"  data-longitude="${this.longitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+ //  						</td>
+ //  						<td>
+ //  							${this.outTime}
+ //  							<button type="button" class="btn btn-primary sm float-right" data-latitude="${this.outlatitude}"  data-longitude="${this.outlongitude}" data-type = 'onWorkLocation' data-toggle="modal" data-target="#exampleModal"><i class="fas fa-map-marker-alt"></i></button>
+ //  						</td>
+ //  						<td></td>
+ //  						<td></td>
+ //  					</tr>
+ //  				`);
+ //  			});
+  			
+ //  		}
+ //  	});
 });
-
 var table;
 function insertTable(data){
 	if(table!=undefined)
@@ -228,7 +190,6 @@ function insertTable(data){
 		if(this.checkinDate == null){
 			$('#tbodyCheckin').append(`
 				<tr>
-					<td>${this.staff_id}</td>
 					<td>${this.date}</br>(${dayArray[tmpDay]})</td>
 					<td>${this.workType == null?'未設定': (this.workType == 'workOnoff'?'上班下班制':'時間制')}</td>
 					<td>
@@ -246,7 +207,6 @@ function insertTable(data){
 		}else {
 			$('#tbodyCheckin').append(`
 				<tr>
-					<td>${this.staff_id}</td>
 					<td>${this.date}</br>(${dayArray[tmpDay]})</td>
 					<td>${this.workType == null?'未設定': (this.workType == 'workOnoff'?'上班下班制':'時間制')}</td>
 					<td>
@@ -291,26 +251,6 @@ function insertTable(data){
  	 });
 	
 }
-
-function getEmployee(departmentID){
-	$.ajax({
-        url:'/staff/name/'+departmentID+'/department',
-        type:'get',
-        dataType:'json',
-        success:function(response){
-        	$('[name=buttonEmployee]').html(`<option name = "selectDepartment" selected disabled value="">請選擇</option>`);
-        	
-	         $(response).each(function(eachid){
-	            $('[name=buttonEmployee]').append(`<option value="${this.staff_id}">${this.staff_id}&nbsp;&nbsp;${this.staff_name}</option>`);
-	         });
-	         $( '[name="buttonEmployee"]').change(function() {
-				selectUID = $('[name="buttonEmployee"] option:selected' ).val();
-				// getWorkType();
-			});
-        } 
-     });
-}
-
 function onWorkLocation(latitude,longitude){
 	if (latitude == null || longitude == null ) {
 		$('#exampleModal .modal-body').html(`未打卡`);
@@ -330,3 +270,4 @@ function onWorkLocation(latitude,longitude){
 		
 }
 </script>
+

@@ -69,8 +69,14 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/checkin">
-              <i class="fa fa-th-list" aria-hidden="true"></i>
+              <i class="fas fa-calendar-minus"></i>
               <span>打卡</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/checkin/table">
+              <i class="fas fa-calendar-check"></i>
+              <span>打卡記錄</span>
             </a>
           </li>
           <li class="nav-item">
@@ -85,6 +91,7 @@
               <span>審核假單</span>
             </a>
           </li>
+          
           <!-- Nav Item - Pages Collapse Menu -->
           <!-- <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
@@ -165,7 +172,12 @@
             </a>
           </li>
           <!-- Nav Item - Add -->
-         
+         <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/add">
+              <i class="fa fa-archive" aria-hidden="true"></i>
+              <span>新增類別</span>
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/oldcheckinlist">
               <i class="fas fa-fw fa-table"></i>
@@ -176,6 +188,12 @@
             <a class="nav-link" href="<?=@$url?>/checkinlist">
               <i class="fas fa-fw fa-table"></i>
               <span>打卡資訊</span>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/setWorkType">
+              <i class="far fa-clipboard"></i>
+              <span>設定班別</span>
             </a>
           </li>
           <li class="nav-item">
@@ -190,6 +208,7 @@
               <span>審核層級</span>
             </a>
           </li>
+          
           <?php } //management end?>
           <!-- Divider -->
           <hr class="sidebar-divider d-none d-md-block">

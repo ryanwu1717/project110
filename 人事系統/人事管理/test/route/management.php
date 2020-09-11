@@ -72,6 +72,7 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/register.php', $viewParam);
 			});
+
 			$app->get('/table', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/tables.php', $viewParam);
@@ -88,6 +89,10 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/seeCheckin.php', $viewParam);
 			});
+			$app->get('/setWorkType', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/setWorkType.php', $viewParam);
+			});
 			$app->get('/checkLevel', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/checkLevel.php', $viewParam);
@@ -95,6 +100,10 @@ $app->group('/management', function () use ($app) {
 			$app->get('/checkinlist', function (Request $request, Response $response, array $args) {	
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/managementCheckin.php', $viewParam);
+			});
+			$app->get('/add', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/add.php', $viewParam);
 			});
 
 		})->add('ManagementViewMiddleware');
@@ -145,6 +154,31 @@ $app->group('/management', function () use ($app) {
 	 	});
 	});
 
+	$app->group('/worktype', function () use ($app) {
+		$app->post('/check', function (Request $request, Response $response, array $args) {		
+		    $worktype = new WorkType($this->db);
+		    $result = $worktype->checkWorkType();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		$app->post('', function (Request $request, Response $response, array $args) {		
+		    $worktype = new WorkType($this->db);
+		    $result = $worktype->addWorkType();
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		$app->get('/{UID}', function (Request $request, Response $response, array $args) {		
+		    $worktype = new WorkType($this->db);
+		    $result = $worktype->getWorkType($args['UID']);
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+			return $response;
+		});
+		
+	});
+
 	$app->group('/checkin', function () use ($app) {
 		$app->get('/list', function (Request $request, Response $response, array $args) {		
 		    $checkin = new CheckinList($this->db);
@@ -159,6 +193,23 @@ $app->group('/management', function () use ($app) {
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 			return $response;
+		});
+		
+		$app->get('/term/{start}/{end}/{type}/{id}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckin($args['start'],$args['end'],$args['type'],$args['id']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('/by/{daytype}/{type}/{id}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckinBy($args['daytype'],$args['type'],$args['id']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
 		});
 	});
 
