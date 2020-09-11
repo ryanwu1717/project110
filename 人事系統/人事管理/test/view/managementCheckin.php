@@ -138,6 +138,7 @@ $(function(){
 	});
 
 	
+
 	// $('#exampleModal').on('shown.bs.modal', function (e) {
 	// 	$('#exampleModal .modal-footer').html(`<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>`);
 
@@ -193,6 +194,7 @@ $(function(){
 	  		}
 	  	});
 	});
+
 	$.ajax({
         url:'/staff/department/get',
         type:'get',
@@ -292,6 +294,7 @@ function insertTable(data){
 	
 }
 
+
 function getEmployee(departmentID){
 	$.ajax({
         url:'/staff/name/'+departmentID+'/department',
@@ -306,6 +309,7 @@ function getEmployee(departmentID){
 	         $( '[name="buttonEmployee"]').change(function() {
 				selectUID = $('[name="buttonEmployee"] option:selected' ).val();
 				// getWorkType();
+
 			});
         } 
      });

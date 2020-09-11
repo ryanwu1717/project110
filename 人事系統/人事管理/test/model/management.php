@@ -83,6 +83,7 @@ use Slim\Http\UploadedFile;
 		}
 
 		function getCheckin($start,$end,$type=null,$id=null){
+
 			if($start>$end){
 				$tmpDate = $start;
 				$start =$end;
@@ -359,6 +360,7 @@ use Slim\Http\UploadedFile;
 									END AS "checkinDate",
 									CASE
 										WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN \'早退\'
+
 										WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 >= "workType"."workHours" THEN \'正常\'
 										ELSE \'缺卡\'
 									END AS "hoursStatus",
@@ -400,6 +402,7 @@ use Slim\Http\UploadedFile;
 						)as "info" on "info"."checkinDate" = d.t::date
 						
 						WHERE date_trunc(:type, d.t)::date  - interval \'1 day\' IN (select date_trunc(:type, current_date) - interval \'1 day\' as current_week)
+
 					)as "tmp"
 					LEFT JOIN (
 						select "type","UID" 
@@ -435,6 +438,7 @@ use Slim\Http\UploadedFile;
 		}
 
 		
+
 		function checkin($date,$time,$location,$latitude,$longitude){
 			$sql ="INSERT INTO staff.\"employeeCheckin\"(
 						 \"checkinDate\", \"checkinTime\", \"location\", \"UID\", \"latitude\", \"longitude\")
@@ -718,6 +722,7 @@ use Slim\Http\UploadedFile;
 
 		function holidayAsk(){
 			$_POST=json_decode($_POST['data'],true);
+			$staff_id=$_SESSION['id'];
 			if(strpos($_POST["startTime"],"請")!= false || strpos($_POST["endTime"],"請")!= false || mb_strlen($_POST["startTime"]) < 10 || mb_strlen($_POST["endTime"]) < 10){
 				$ack = array(
 					'status' => 'fail', 
@@ -728,19 +733,23 @@ use Slim\Http\UploadedFile;
 	   			$dteEnd = new DateTime($_POST["endTime"]);
 				$dteDiff = $dteStart->diff($dteEnd);
 				if($dteDiff->format("%R") == "+"){
-					// var_dump($dteDiff->format("%R%a:%H:%I:%S"));
-					$sql ='INSERT INTO holiday.form("startTime", "endTime", reason, type, now)
-						VALUES (:startTime, :endTime, :reason, :type, now());';
+					$sql2 = 'SELECT staff_department FROM staff.staff WHERE staff.staff.staff_id = :staff_id';
+					$sth2 = $this->conn->prepare($sql2);
+					$sth2->bindParam(":staff_id", $staff_id);
+					$sth2->execute();
+					$row2 = $sth2->fetchAll();
+					$sql ='INSERT INTO holiday.form("startTime", "endTime", reason, type, now, staff_id, "isCheck", department)
+						VALUES (:startTime, :endTime, :reason, :type, now(), :staff_id, 1, :department);';
 					$sth = $this->conn->prepare($sql);
 					$sth->bindParam(":startTime", $_POST["startTime"]);
 					$sth->bindParam(":endTime", $_POST["endTime"]);
 					$sth->bindParam(":reason", $_POST["reason"]);
 					$sth->bindParam(":type", $_POST["type"]);
+					$sth->bindParam(":staff_id", $staff_id);
+					$sth->bindParam(":department", $row2[0]['staff_department']);
 					$sth->execute();
 					$row = $sth->fetchAll();
-					$ack = array(
-						'status' => 'success', 
-					);
+					$ack = $row2;
 				}else{
 					$ack = array(
 						'status' => 'fail', 
@@ -752,6 +761,57 @@ use Slim\Http\UploadedFile;
 			}
 
 
+		}
+
+		function record(){
+			$_POST=json_decode($_POST['data'],true);
+			$sql2 = 'SELECT holiday.form.id, holiday.level.level, staff.staff_department
+					FROM staff.staff
+					LEFT JOIN holiday.level
+					on staff.staff.staff_id=holiday.level.id
+					LEFT JOIN holiday.form
+					ON staff.staff.staff_id=holiday.form.staff_id
+					WHERE staff.staff.staff_id = :id and staff.staff.staff_department = :department
+					ORDER BY holiday.form.id DESC
+					LIMIT 1;';
+			$sth2 = $this->conn->prepare($sql2);
+			$sth2->bindParam(":id", $_SESSION['id']);
+			$sth2->bindParam(":department", $_POST['department']);
+			$sth2->execute();
+			$row2 = $sth2->fetchAll();
+			if(!$row2[0]['level']){
+				$sql3 = 'SELECT level
+						FROM holiday.level
+						WHERE department=:department
+						ORDER BY level DESC
+						LIMIT 1;';
+				$sth3 = $this->conn->prepare($sql3);
+				$sth3->bindParam(":department", $row2[0]['staff_department']);
+				$sth3->execute();
+				$row3 = $sth3->fetchAll();
+				$level = $row3[0]['level'];
+			}else{
+				$level = $row2[0]['level'] - 1;
+			}
+			$sql ='INSERT INTO "holiday"."reviewRecord"(id, department, level)
+				VALUES (:id, :department, :level);';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(":id", $row2[0]['id']);
+			$sth->bindParam(":department", $_POST['department']);
+			$sth->bindParam(":level", $level);
+			$sth->execute();
+			return [];
+		}
+
+		function recordData($id, $ischeck){
+			$staff_id=$_SESSION['id'];
+			$sql ='INSERT INTO holiday."checkLevel"(id, staff_id, "time", ischeck)
+				VALUES (:id, :staff_id, now(), :ischeck);';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(":id", $id);
+			$sth->bindParam(":staff_id", $staff_id);
+			$sth->bindParam(":ischeck", $ischeck);
+			$sth->execute();
 		}
 
 		function getlist($department){
@@ -859,12 +919,19 @@ use Slim\Http\UploadedFile;
 
 		function checkingData(){
 			try{	 
-				// $staff_id = $_SESSION['id'];	
-				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name, form.staff_id, form."isCheck" 
+				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name, form.staff_id, form."isCheck" ,department_name
 						FROM holiday.form
+						inner join staff_information.department
+						on staff_information.department.department_id = holiday.form.department
 						INNER JOIN holiday.type
-						on holiday.form.type = holiday.type.id;';
+						on holiday.form.type = holiday.type.id
+						LEFT JOIN holiday."reviewRecord"
+						on holiday.form.id = holiday."reviewRecord".id
+						LEFT JOIN holiday.level
+						on holiday.level.level = holiday."reviewRecord".level
+						WHERE holiday.form.staff_id =:id;';
 				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":id", $_SESSION['id']);
 				$sth->execute(); 
 			    $response = $sth->fetchAll();
 			}catch(PDOException $e){
@@ -876,6 +943,104 @@ use Slim\Http\UploadedFile;
 			return $response;
 
 		}
+
+		function checkedData(){
+			try{	 
+				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name, form.staff_id, form."isCheck" ,department_name
+						FROM holiday.form
+						inner join staff_information.department
+						on staff_information.department.department_id = holiday.form.department
+						INNER JOIN holiday.type
+						on holiday.form.type = holiday.type.id
+						LEFT JOIN holiday."reviewRecord"
+						on holiday.form.id = holiday."reviewRecord".id
+						LEFT JOIN holiday."checkLevel"
+						on holiday."checkLevel".id = holiday.form.id
+						LEFT JOIN holiday.level
+						on holiday."reviewRecord".level = holiday.level.level
+						WHERE holiday.level.id=:id;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":id", $_SESSION['id']);
+				$sth->execute(); 
+			    $response = $sth->fetchAll();
+			}catch(PDOException $e){
+				$response = array(
+					'status' => 'failed', 
+					'checkin'=> false
+				);
+			}	
+			return $response;
+
+		}
+
+		function applyData(){
+			try{	 
+				$sql ='SELECT form.id, form."startTime", form."endTime", form.reason, form.now, type.name, form.staff_id, form."isCheck" ,department_name
+						FROM holiday.form
+						inner join staff_information.department
+						on staff_information.department.department_id = holiday.form.department
+						INNER JOIN holiday.type
+						on holiday.form.type = holiday.type.id
+						inner join holiday."checkLevel"
+						on holiday."checkLevel".id = holiday.form.id
+						where holiday."checkLevel".staff_id = :id;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":id", $_SESSION['id']);
+				$sth->execute(); 
+			    $response = $sth->fetchAll();
+			}catch(PDOException $e){
+				$response = array(
+					'status' => 'failed', 
+					'checkin'=> false
+				);
+			}	
+			return $response;
+
+		}
+
+		function agreeApply($dataID){
+			$sql2 = 'SELECT level
+					FROM holiday.level
+					WHERE id=:id;';
+			$sth2 = $this->conn->prepare($sql2);
+			$sth2->bindParam(":id", $_SESSION['id']);
+			$sth2->execute();
+			$row2 = $sth2->fetchAll();
+			$_POST=json_decode($_POST['data'],true);
+			$id = $_POST['id'];
+			$ischeck = $_POST['ischeck'];
+			$level=$row2[0]['level'] - 1;
+			if($level==0){
+				$sql ='UPDATE holiday.form SET "isCheck"=2 WHERE id = :id;';
+				$sth = $this->conn->prepare($sql);
+				$sth->bindParam(":id", $dataID);
+				$sth->execute();
+			}
+			$sql3 ='UPDATE holiday."reviewRecord" SET level=:level WHERE id = :id;';
+			$sth3 = $this->conn->prepare($sql3);
+			$sth3->bindParam(":level", $level);
+			$sth3->bindParam(":id", $dataID);
+			$sth3->execute();
+			$this->recordData($id,$ischeck);
+		}
+
+		function refuseApply($dataID){
+			$_POST=json_decode($_POST['data'],true);
+			$id = $_POST['id'];
+			$ischeck = $_POST['ischeck'];
+			$sql ='UPDATE holiday.form SET "isCheck"=3 WHERE id = :id';
+			$sth = $this->conn->prepare($sql);
+			$sth->bindParam(":id", $dataID);
+			$sth->execute();
+			$sql3 ='UPDATE holiday."reviewRecord" SET level=0 WHERE id = :id;';
+			$sth3 = $this->conn->prepare($sql3);
+			$sth3->bindParam(":id", $dataID);
+			$sth3->execute();
+			$this->recordData($id,$ischeck);
+			
+		}
+
+
 
 		function uploadFile($directory,$uploadedFiles,$isPicture){
 			// handle single input with single file upload
@@ -1086,6 +1251,7 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+
 		// function getCheckin($staff_id,$checkDate,$type){
 		// 	try{	 	
 		// 		$sql ="SELECT checkintime,checkouttime,checkinlocation,checkoutlocation,staff_name,eight,nine 

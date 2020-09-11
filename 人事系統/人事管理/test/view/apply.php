@@ -67,7 +67,7 @@
                         	<div class='input-group date' id='datetimepicker1'>
 			                    <input type="date" id="firstDate">
 			                    <select id="firstTimeTable" class="m-b-10 sourceSelect2 valid">
-			                    	<option selected="selected">請選擇</option>
+			                    	<option selected="selected" disabled>請選擇</option>
 			                    	<option value="00:00">00:00</option>
 			                    	<option value="00:30">00:30</option>
 			                    	<option value="01:00">01:00</option>
@@ -128,7 +128,7 @@
                         	<div class='input-group date' id='datetimepicker2'>
 			                    <input type="date" id="secondDate">
 			                    <select id="secondTimeTable" class="m-b-10 sourceSelect2 valid">
-			                    	<option selected="selected">請選擇</option>
+			                    	<option selected="selected" disabled>請選擇</option>
 			                    	<option value="00:00">00:00</option>
 			                    	<option value="00:30">00:30</option>
 			                    	<option value="01:00">01:00</option>
@@ -259,11 +259,11 @@
 	});
 
 
-	function del(id){
-		console.log(id);
-		console.log($("#remove"+id));
-		$("#remove"+id).remove();
-	}
+	// function del(id){
+	// 	console.log(id);
+	// 	console.log($("#remove"+id));
+	// 	$("#remove"+id).remove();
+	// }
 
 	function go(){
 		var type;
@@ -276,22 +276,41 @@
 		endTime = $("#secondDate").val() + " " + $("#secondTimeTable").val();
 		reason = $("#reason").val();
 		fileId = $('#fileDownload').text();
-		$.ajax({
-			url: '/work/holiday/holidayAsk',
-			type: 'POST',
-			dataType: 'json',
-			data: {
-				data:JSON.stringify({
-					type : type,
-					startTime : startTime,
-					endTime : endTime,
-					reason : reason,
-        		})
-			},
-			success: function(e){
-				$("#reason").val("");
-			}
-		})
+		if($("#firstDate").val() != null && $("#firstTimeTable").val() != null && $("#secondDate").val() != null && $("#secondTimeTable").val() != null){
+			$.ajax({
+				url: '/work/holiday/holidayAsk',
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					data:JSON.stringify({
+						type : type,
+						startTime : startTime,
+						endTime : endTime,
+						reason : reason,
+	        		})
+				},
+				success: function(e){
+					$("#reason").val("");
+					var department = e[0]['staff_department'];
+					$.ajax({
+						url: '/work/holiday/record',
+						type: 'POST',
+						dataType: 'json',
+						data: {
+							data:JSON.stringify({
+								department : department,
+			        		})
+						},
+						success: function(x){
+							location.reload();
+						}
+					})
+				}
+			})
+		}else{
+			alert("記得輸入時間");
+		}
+		
 	}
 
 
