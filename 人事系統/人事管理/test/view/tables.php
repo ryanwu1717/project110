@@ -17,6 +17,7 @@
                       <th>職稱</th>
                       <th>部門</th>
                       <th>手機</th>
+                      <th>請假時數</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -27,6 +28,7 @@
                       <th>職稱</th>
                       <th>部門</th>
                       <th>手機</th>
+                      <th>請假時數</th>
                       <th>Action</th>
                     </tr>
                   </tfoot>
@@ -105,7 +107,8 @@
              this.position+'</td> <td>'+
              this.department+'</td> <td>'+
              this.phonenumber+'</td> <td>'+
-             '<button type="button" class="btn btn-primary" data-id="'+this.id+'" data-toggle="modal" data-target="#basicModal"><i class="far fa-eye"></i></button>'+
+             '<button type="button" class="btn btn-primary" data-id="'+this.id+'" data-toggle="modal" data-target="#basicModal"><i class="far fa-eye"></i></button>'+'</td> <td>'+
+             '<button type="button" class="btn btn-primary" data-id="'+this.id+'" data-toggle="modal" data-target="#basicModal" data-type="info"><i class="far fa-eye"></i></button>'+
              '<button type="button" class="btn btn-success" onclick="window.location.href=\'<?=@$url?>/register?id='+this.id+'\'"><i class="fas fa-edit" name="updateButton" ></i></button>'+
              ' <button type="button" class="btn btn-danger" data-id="'+this.id+'" data-toggle="modal" data-target="#deleteModel"><i class="far fa-trash-alt"></i></button>  </td> </tr>');
         });
@@ -137,38 +140,51 @@
       } 
     });
   });
-  $('#basicModal').on('show.bs.modal',function(e){
+  $('#basicModal').on('show.bs.modal', function(e) {
+    $('#exampleModal .modal-footer').html(`<button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>`);
+    $("#exampleModal .modal-dialog ").attr("class","modal-dialog");
+
+    // $('#exampleModal .modal-footer').html(basicModalFooter);
+    var type = $(e.relatedTarget).data('type');
     var staff_id = $(e.relatedTarget).data('id');
-    $.ajax({
-        url:'/table/profile/'+staff_id,
-        type:'get',
-        dataType:'json',
-        success:function(response){
-          $('#basicModal .modal-title').text('個人資料');
-          var content = $('<div></div>');
-          $.each(response.data,function(key,value){
-            $(content).append('<div class="row"><label class="col-sm-4">'+key+'</label><div class="col-sm-8">'+value+'</div></div>')
-          });
-          $('#basicModal .modal-body').html(content);
-        }
-    });
+    if(type == "info"){
+      getinfo(staff_id);
+    }
+  });
+  $('#basicModal').on('show.bs.modal',function(e){
+    
   });
 
-  $('#deleteModel').on('show.bs.modal',function(e){
-    var staff_id = $(e.relatedTarget).data('id');
-    $("button[name=deleteButton]").on('click', function(e){
-      $.ajax({
-          url:'/management/profile',
-          type:'POST',
-          data:{
-            data:JSON.stringify({staff_id : staff_id}),_METHOD:'delete'
-          },
-          dataType:'json',
-          success:function(response){
-            window.location.href='/management/table'; 
-          }
-      });
-    });
+  // $('#deleteModel').on('show.bs.modal',function(e){
+  //   var staff_id = $(e.relatedTarget).data('id');
+  //   $("button[name=deleteButton]").on('click', function(e){
+  //     $.ajax({
+  //         url:'/management/profile',
+  //         type:'POST',
+  //         data:{
+  //           data:JSON.stringify({staff_id : staff_id}),_METHOD:'delete'
+  //         },
+  //         dataType:'json',
+  //         success:function(response){
+  //           window.location.href='/management/table'; 
+  //         }
+  //     });
+  //   });
+  // });
+function getinfo(staff_id){
+  $.ajax({
+      url:'/table/profile/'+staff_id,
+      type:'get',
+      dataType:'json',
+      success:function(response){
+        $('#basicModal .modal-title').text('個人資料');
+        var content = $('<div></div>');
+        $.each(response.data,function(key,value){
+          $(content).append('<div class="row"><label class="col-sm-4">'+key+'</label><div class="col-sm-8">'+value+'</div></div>')
+        });
+        $('#basicModal .modal-body').html(content);
+      }
   });
+}
 </script>
 

@@ -208,6 +208,12 @@
               <span>審核層級</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/inputWork">
+              <i class="fas fa-fw fa-table"></i>
+              <span>匯入工時</span>
+            </a>
+          </li>
           
           <?php } //management end?>
           <!-- Divider -->

@@ -105,6 +105,10 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/add.php', $viewParam);
 			});
+			$app->get('/inputWork', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/inputWork.php', $viewParam);
+			});
 
 		})->add('ManagementViewMiddleware');
 		$app->get('/login', function (Request $request, Response $response, array $args) {	
