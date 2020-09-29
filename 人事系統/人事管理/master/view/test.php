@@ -421,8 +421,8 @@ function routine(){
         // console.log($('.sent_msg[data-senttime="'+tmpTagMsg+'"]')[0].scrollHeight);
 // 
         if($('.outgoing_msg[data-senttime = "'+tmpTagMsg+'"]').length>0 || $('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0){
-          $('#basicModal').modal('hide');
           scrollToTag();
+          $('#basicModal').modal('hide');
         }else{
           if(!$('#basicModal').is(':visible')){
             $('#basicModal').find('.modal-title').text('訊息');
@@ -574,7 +574,7 @@ function scrollToTag(){
   else if($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').length>0)
     $('.msg_history').scrollTop($('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]')[0].offsetTop-$('.msg_history')[0].offsetTop+$('.incoming_msg[data-senttime = "'+tmpTagMsg+'"]').height());
  if(tagType == 'comment'){
-    $('[name = iconComment][data-senttime = "'+tmpTagMsg+'"]').click();
+    setTimeout(function(){$('[name = iconComment][data-senttime = "'+tmpTagMsg+'"]').click()},2000);
   }
   tagType = "";
   tmpTagMsg = "";
@@ -826,17 +826,19 @@ function changeChat(type,data){
           append.push(this);
         }
       }else{
-        if(newChatData[0].fullsentTime.split(' ')[0] != prepend[prepend.length-1].fullsentTime.split(' ')[0] && tmpCount == 0){
-          console.log(prepend[prepend.length-1]);
+        if(prepend.length>0){
+          if(newChatData[0].fullsentTime.split(' ')[0] != prepend[prepend.length-1].fullsentTime.split(' ')[0] && tmpCount == 0){
+            console.log(prepend[prepend.length-1]);
 
-          box.prepend(
-            '<div class="alert alert-success text-center" role="alert">'+
-              newChatData[0].fullsentTime.split(' ')[0] +
-            '</div>'
-          );
-            console.log(this.fullsentTime.split(' ')[0]);
-            console.log(newChatData[i].fullsentTime.split(' ')[0]);
-           tmpCount++;
+            box.prepend(
+              '<div class="alert alert-success text-center" role="alert">'+
+                newChatData[0].fullsentTime.split(' ')[0] +
+              '</div>'
+            );
+              console.log(this.fullsentTime.split(' ')[0]);
+              console.log(newChatData[i].fullsentTime.split(' ')[0]);
+             tmpCount++;
+          } 
         }
         
          
@@ -897,7 +899,7 @@ function changeChat(type,data){
         '<div name="outgoingBox" class="text-right outgoing_msg" data-sentTime="'+this.fullsentTime+'">'+
           '<div class="d-flex flex-row-reverse bd-highlight">'+
             '<div style="max-width:75%" class="p-2 bd-highlight bg-secondary text-white rounded text-break" name="contentBox" ondblclick="ondblclickMessage(this)" data-content="'+encodeURIComponent(this.content)+'" data-sentTime="'+this.fullsentTime+'">'+
-              this.content.replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
+              this.content.replace(/style="color:#FFFFFF;"/g,'style="color:#CCEEFF;"').replace('<a href="/chat/','<a href="#" data-toggle="modal" data-target="#basicModal" data-type="file" data-href="/chat/')+
             '</div>'+
           '</div>'+
           '<button type="button" class="btn badge badge-light ml-1" name="starBtn" href="#" onclick=\'starOnclick(\"'+this.fullsentTime+'\",\"'+chatID+'\",\"'+this.content+'\",this);\'>'+
@@ -913,10 +915,12 @@ function changeChat(type,data){
       );
     }
   }
-  if($('[name=chatBox]').children().length>5){
-    $('.msg_history').scrollTop($('[name=chatBox]').children()[5].scrollHeight); 
-  }else{
-    $('.msg_history').scrollTop($('[name=chatBox]').children()[$('[name=chatBox]').children().length].scrollHeight); 
+  if(prepend.length>0){
+    if($('[name=chatBox]').children().length>10){
+      $('[name=chatBox]').children()[10].scrollIntoView(); 
+    }else{
+      $('[name=chatBox]').children()[$('[name=chatBox]').children().length].scrollIntoView(); 
+    } 
   }
   if(!scrollable)
     $('.msg_history').scrollTop($('.msg_history')[0].scrollHeight);
@@ -1347,7 +1351,7 @@ function getTarget(_chatID,_chatName){
 
 function expendLimit(){
   if($('[name="expendLimit"]').length==0 && limit[chatID]!=0){
-    limit[chatID] = limit[chatID]-5>0?limit[chatID]-5:0;
+    limit[chatID] = limit[chatID]-10>0?limit[chatID]-10:0;
 
 
     $('[name=chatBox]').prepend(

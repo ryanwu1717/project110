@@ -21,8 +21,8 @@ $container['view'] = function ($container) {
     return new PhpRenderer(__DIR__.'/../view');
 };
 $container['db'] = function ($container) {
-	$dbhost = '10.0.1.14';
-	$dbport = '5432';
+	$dbhost = '140.127.40.40';
+	$dbport = '25432';
 	$dbuser = 'minlab';
 	$dbpasswd = '970314970314';
 	$dbname = 'humanresourceclone';

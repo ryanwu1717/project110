@@ -131,7 +131,7 @@ use Slim\Http\UploadedFile;
 		function getDepartment($id)
 		{  	
 			if($id == 'get'){
-				$sql ='SELECT * from staff_information.department ORDER BY department_id;';	
+				$sql ='SELECT * from staff_information.department ORDER BY CASE WHEN department_name = \'總管理\' THEN 0 ELSE 1 END ASC, department;';	
 				$statement = $this->conn->prepare($sql);
 				$statement->execute();
 				$row = $statement->fetchAll();	

@@ -284,7 +284,7 @@
 				case '部門':
 					try{
 						$addsql = 'INSERT INTO staff_information.department(department_name)
-								VALUES (,:name);';
+								VALUES (:name);';
 						$statement = $this->conn->prepare($addsql);
 						$statement->bindParam(':name',$_POST['item']);
 						$statement->execute();
@@ -304,7 +304,7 @@
 				case '職位':
 					try{
 						$addsql = 'INSERT INTO staff_information.position(position_name)
-								VALUES (,:name);';
+								VALUES (:name);';
 						$statement = $this->conn->prepare($addsql);
 						$statement->bindParam(':name',$_POST['item']);
 						$statement->execute();
