@@ -82,17 +82,272 @@ use Slim\Http\UploadedFile;
 			$this->conn = $db;
 		}
 
-		function getCheckin($start,$end){
+		function getCheckin($start,$end,$type=null,$id=null){
+
 			if($start>$end){
 				$tmpDate = $start;
 				$start =$end;
 				$end = $tmpDate;
 			}
-			// var_dump($start,$end);
-			$sql ='SELECT * ,"tmpworkType".type as "workType"
+			if($type=='department'){
+				$sql = 'SELECT * 
+						FROM (
+							
+							SELECT to_char(day::date , \'DAY\')as "weekDay",day::date as "date",*,date_trunc(\'week\', current_date) - interval \'1 day\' as current_week
+							FROM   generate_series (:startDate ::timestamp,:endDate :: timestamp, interval \'1 day\') day
+							cross  JOIN (
+								SELECT staff_id ,"tmpworkType"."type" as "workType"
+								FROM staff.staff  
+								LEFT JOIN (
+									select "type","UID" 
+									from staff."workType"
+								)as "tmpworkType" on  "tmpworkType" ."UID" = "staff"."staff_id"
+								WHERE staff.staff_department = :id
+							)as "allStaff"
+							LEFT JOIN (
+								SELECT "checkin".id,"checkin"."UID","checkin"."checkinTime","checkin"."latitude",
+										"checkin"."longitude",
+										"out".id,"out"."checkoutTime","out"."latitude" AS "outlatitude","workType".type,
+										"out"."longitude" AS "outlongitude","out"."checkoutTime"-"checkin"."checkinTime" as diff,
+										"workType"."onWorkTime","workType"."offWorkTime","workType"."workHours", 
+										CASE WHEN "checkin"."checkinDate" IS NULL 
+											THEN "out"."checkoutDate"
+											ELSE "checkin"."checkinDate"
+										END AS "checkinDate",
+										CASE
+											WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN \'早退\'
+											WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 >= "workType"."workHours" THEN \'正常\'
+											ELSE \'缺卡\'
+										END AS "hoursStatus",
+										CASE
+											WHEN "checkin"."checkinTime" IS NULL THEN \'缺卡\'
+											WHEN "out"."checkoutTime" IS NULL THEN \'缺卡\'
+											WHEN "checkin"."checkinTime" > "workType"."onWorkTime" THEN \'遲到\'
+											WHEN "out"."checkoutTime" < "workType"."offWorkTime" THEN \'早退\'
+
+											ELSE \'正常\'
+										END AS "onoffStatus"
+
+								FROM staff."employeeCheckin" as "checkin",(
+									SELECT  "UID","checkinDate", MIN("checkinTime") as "checkinTime"
+									FROM staff."employeeCheckin" 
+									GROUP BY  "UID","checkinDate"
+								) as "tmpCheckin"
+								FULL OUTER JOIN (
+									SELECT "checkout".id,"checkout"."UID","checkout"."checkoutDate","checkout"."checkoutTime","checkout"."latitude",
+										"checkout"."longitude"
+									FROM staff."employeeCheckout" as "checkout",(
+										SELECT  "UID","checkoutDate", MAX("checkoutTime") as "checkoutTime"
+										FROM staff."employeeCheckout" 
+										GROUP BY  "UID","checkoutDate"
+									) as "tmpCheckout"
+									WHERE "tmpCheckout"."checkoutDate" = "checkout"."checkoutDate" 
+											and "tmpCheckout"."checkoutTime" = "checkout"."checkoutTime" 
+
+									order by "checkout"."checkoutDate"
+								)as "out" ON "out"."checkoutDate"="tmpCheckin"."checkinDate"
+								LEFT JOIN (
+									select *
+									from staff."workType"
+								)as "workType" on "tmpCheckin"."UID" ="workType"."UID"
+								WHERE "tmpCheckin"."checkinDate" = "checkin"."checkinDate" 
+										and "tmpCheckin"."checkinTime" = "checkin"."checkinTime" 
+										
+								order by "checkin"."checkinDate"
+							)as "info" on "info"."checkinDate" = day  AND "info"."UID" = "allStaff"."staff_id"
+
+						)as "tmp"
+						order by date , staff_id';
+				$sth = $this->conn->prepare($sql);
+			   	$sth->bindParam(':id',$id);
+			   	$sth->bindParam(':startDate',$start);
+			   	$sth->bindParam(':endDate',$end);
+				$sth->execute();
+				$row = $sth->fetchAll();
+
+				$ack = array(
+					'status'=> 'success',
+					'info' => $row
+				);
+				
+			}else{
+				$sql ='SELECT * ,"tmpworkType".type as "workType"
+						FROM (
+							SELECT to_char(day::date , \'DAY\')as "weekDay",day::date as "date",*,date_trunc(\'week\', current_date) - interval \'1 day\' as current_week,:UID as "staff_id"
+							FROM   generate_series (:startDate ::timestamp,:endDate :: timestamp, interval \'1 day\') day
+							LEFT JOIN (
+								SELECT "checkin".id,"checkin"."UID","checkin"."checkinTime","checkin"."latitude",
+										"checkin"."longitude",
+										"out".id,"out"."checkoutTime","out"."latitude" AS "outlatitude","workType".type,
+										"out"."longitude" AS "outlongitude","out"."checkoutTime"-"checkin"."checkinTime" as diff,
+										"workType"."onWorkTime","workType"."offWorkTime","workType"."workHours", 
+										CASE WHEN "checkin"."checkinDate" IS NULL 
+											THEN "out"."checkoutDate"
+											ELSE "checkin"."checkinDate"
+										END AS "checkinDate",
+										CASE
+											WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN\'早退\'
+											WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 >= "workType"."workHours" THEN \'正常\'
+											ELSE \'缺卡\'
+										END AS "hoursStatus",
+										CASE
+											WHEN "checkin"."checkinTime" IS NULL THEN \'缺卡\'
+											WHEN "out"."checkoutTime" IS NULL THEN \'缺卡\'
+											WHEN "checkin"."checkinTime" > "workType"."onWorkTime" THEN \'遲到\'
+											WHEN "out"."checkoutTime" < "workType"."offWorkTime" THEN \'早退\'
+
+											ELSE \'正常\'
+										END AS "onoffStatus"
+
+								FROM staff."employeeCheckin" as "checkin",(
+									SELECT  "UID","checkinDate", MIN("checkinTime") as "checkinTime"
+									FROM staff."employeeCheckin" 
+									GROUP BY  "UID","checkinDate"
+								) as "tmpCheckin"
+								FULL OUTER JOIN (
+									SELECT "checkout".id,"checkout"."UID","checkout"."checkoutDate","checkout"."checkoutTime","checkout"."latitude",
+										"checkout"."longitude"
+									FROM staff."employeeCheckout" as "checkout",(
+										SELECT  "UID","checkoutDate", MAX("checkoutTime") as "checkoutTime"
+										FROM staff."employeeCheckout" 
+										GROUP BY  "UID","checkoutDate"
+									) as "tmpCheckout"
+									WHERE "tmpCheckout"."checkoutDate" = "checkout"."checkoutDate" 
+											and "tmpCheckout"."checkoutTime" = "checkout"."checkoutTime" 
+											and "checkout"."UID" = :UID
+									order by "checkout"."checkoutDate"
+								)as "out" ON "out"."checkoutDate"="tmpCheckin"."checkinDate"
+								LEFT JOIN (
+									select *
+									from staff."workType"
+								)as "workType" on "tmpCheckin"."UID" ="workType"."UID"
+								WHERE "tmpCheckin"."checkinDate" = "checkin"."checkinDate" 
+										and "tmpCheckin"."checkinTime" = "checkin"."checkinTime" 
+										and "checkin"."UID" = :UID
+								order by "checkin"."checkinDate"
+							)as "info" on "info"."checkinDate" = day
+
+						)as "tmp"
+						LEFT JOIN (
+							select "type","UID" 
+							from staff."workType"
+							WHERE "UID" = :UID
+						)as "tmpworkType" on  "tmpworkType" ."UID" = "tmp"."staff_id"
+				';
+				$sth = $this->conn->prepare($sql);
+				if($type == null){
+			   		$sth->bindParam(':UID',$_SESSION['id']);
+
+				}else{
+			   		$sth->bindParam(':UID',$id);
+				}
+			   	$sth->bindParam(':startDate',$start);
+			   	$sth->bindParam(':endDate',$end);
+				$sth->execute();
+				$row = $sth->fetchAll();
+
+				$ack = array(
+					'status'=> 'success',
+					'info' => $row
+				);
+			}
+			return $ack;
+				
+		}
+		
+		function getCheckinBy($daytype,$type,$id){
+			if($type=='department'){
+				$sql ='SELECT * 
+						FROM (
+							with d as (select generate_series((now()- :days::interval),(now()+:days::interval),\'1 day\'::interval) t)
+							select to_char(d.t::date , \'DAY\')as "weekDay",date_trunc(:type, d.t)::date  - interval \'1 day\' as current_week, extract(\'dow\' from d.t), d.t::date as "date",*
+							FROM d
+							cross  JOIN (
+								SELECT staff_id ,"tmpworkType"."type" as "workType"
+								FROM staff.staff  
+								LEFT JOIN (
+									select "type","UID" 
+									from staff."workType"
+								)as "tmpworkType" on  "tmpworkType" ."UID" = "staff"."staff_id"
+								WHERE staff.staff_department = :id
+							)as "allStaff"
+							LEFT JOIN (
+								SELECT "checkin".id,"checkin"."UID","checkin"."checkinTime","checkin"."latitude",
+										"checkin"."longitude",
+										"out".id,"out"."checkoutTime","out"."latitude" AS "outlatitude","workType".type,
+										"out"."longitude" AS "outlongitude","out"."checkoutTime"-"checkin"."checkinTime" as diff,
+										"workType"."onWorkTime","workType"."offWorkTime","workType"."workHours", 
+										CASE WHEN "checkin"."checkinDate" IS NULL 
+											THEN "out"."checkoutDate"
+											ELSE "checkin"."checkinDate"
+										END AS "checkinDate",
+										CASE
+											WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN \'早退\'
+											WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 >= "workType"."workHours" THEN \'正常\'
+											ELSE \'缺卡\'
+										END AS "hoursStatus",
+										CASE
+											WHEN "checkin"."checkinTime" IS NULL THEN \'缺卡\'
+											WHEN "out"."checkoutTime" IS NULL THEN \'缺卡\'
+											WHEN "checkin"."checkinTime" > "workType"."onWorkTime" THEN \'遲到\'
+											WHEN "out"."checkoutTime" < "workType"."offWorkTime" THEN \'早退\'
+
+											ELSE \'正常\'
+										END AS "onoffStatus"
+
+								FROM staff."employeeCheckin" as "checkin",(
+									SELECT  "UID","checkinDate", MIN("checkinTime") as "checkinTime"
+									FROM staff."employeeCheckin" 
+									GROUP BY  "UID","checkinDate"
+								) as "tmpCheckin"
+								FULL OUTER JOIN (
+									SELECT "checkout".id,"checkout"."UID","checkout"."checkoutDate","checkout"."checkoutTime","checkout"."latitude",
+										"checkout"."longitude"
+									FROM staff."employeeCheckout" as "checkout",(
+										SELECT  "UID","checkoutDate", MAX("checkoutTime") as "checkoutTime"
+										FROM staff."employeeCheckout" 
+										GROUP BY  "UID","checkoutDate"
+									) as "tmpCheckout"
+									WHERE "tmpCheckout"."checkoutDate" = "checkout"."checkoutDate" 
+											and "tmpCheckout"."checkoutTime" = "checkout"."checkoutTime" 
+									order by "checkout"."checkoutDate"
+								)as "out" ON "out"."checkoutDate"="tmpCheckin"."checkinDate"
+								LEFT JOIN (
+									select *
+									from staff."workType"
+								)as "workType" on "tmpCheckin"."UID" ="workType"."UID"
+								WHERE "tmpCheckin"."checkinDate" = "checkin"."checkinDate" 
+										and "tmpCheckin"."checkinTime" = "checkin"."checkinTime" 
+								order by "checkin"."checkinDate"
+							)as "info" on "info"."checkinDate" = d.t::date AND "info"."UID" = "allStaff"."staff_id"
+
+							WHERE date_trunc(:type, d.t)::date  - interval \'1 day\' IN (select date_trunc(:type, current_date) - interval \'1 day\' as current_week)
+						)as "tmp"
+
+				';
+				$sth = $this->conn->prepare($sql);
+			   	$sth->bindParam(':id',$id);
+			   	if($daytype == 'week'){
+			   		$range = '7 day';
+				   	$sth->bindParam(':days',$range);
+				   	$sth->bindParam(':type',$daytype);
+			   	}else if($daytype == 'month'){
+			   		$range = '30 day';
+				   	$sth->bindParam(':days',$range);
+				   	$sth->bindParam(':type',$daytype);
+			   	}
+				$sth->execute();
+				$row = $sth->fetchAll();
+				$ack = array(
+					'status'=> 'success',
+					'info' => $row
+				);
+			}else{
+				$sql ='SELECT * ,"tmpworkType".type as "workType"
 					FROM (
-						SELECT to_char(day::date , \'DAY\')as "weekDay",day::date as "date",*,date_trunc(\'week\', current_date) - interval \'1 day\' as current_week,:UID as "tmpUID"
-						FROM   generate_series (:startDate ::timestamp,:endDate :: timestamp, interval \'1 day\') day
+						with d as (select generate_series((now()- :days::interval),(now()+:days::interval),\'1 day\'::interval) t)
+						select to_char(d.t::date , \'DAY\')as "weekDay",date_trunc(:type, d.t)::date  - interval \'1 day\' as current_week, extract(\'dow\' from d.t), d.t::date as "date",*,:UID as "staff_id"
+						FROM d
 						LEFT JOIN (
 							SELECT "checkin".id,"checkin"."UID","checkin"."checkinTime","checkin"."latitude",
 									"checkin"."longitude",
@@ -104,7 +359,8 @@ use Slim\Http\UploadedFile;
 										ELSE "checkin"."checkinDate"
 									END AS "checkinDate",
 									CASE
-										WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN\'早退\'
+										WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN \'早退\'
+
 										WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 >= "workType"."workHours" THEN \'正常\'
 										ELSE \'缺卡\'
 									END AS "hoursStatus",
@@ -143,115 +399,45 @@ use Slim\Http\UploadedFile;
 									and "tmpCheckin"."checkinTime" = "checkin"."checkinTime" 
 									and "checkin"."UID" = :UID
 							order by "checkin"."checkinDate"
-						)as "info" on "info"."checkinDate" = day
+						)as "info" on "info"."checkinDate" = d.t::date
+						
+						WHERE date_trunc(:type, d.t)::date  - interval \'1 day\' IN (select date_trunc(:type, current_date) - interval \'1 day\' as current_week)
 
 					)as "tmp"
 					LEFT JOIN (
 						select "type","UID" 
 						from staff."workType"
 						WHERE "UID" = :UID
-					)as "tmpworkType" on  "tmpworkType" ."UID" = "tmp"."tmpUID"
-			';
-			$sth = $this->conn->prepare($sql);
-		   	$sth->bindParam(':UID',$_SESSION['id']);
-		   	$sth->bindParam(':startDate',$start);
-		   	$sth->bindParam(':endDate',$end);
-			$sth->execute();
-			$row = $sth->fetchAll();
+					)as "tmpworkType" on  "tmpworkType" ."UID" = "tmp"."staff_id"
 
-			$ack = array(
-				'status'=> 'success',
-				'info' => $row
-			);
+				';
+				$sth = $this->conn->prepare($sql);
+				if($type == "staff"){
+			   		$sth->bindParam(':UID',$id);
+				}else{
+					$sth->bindParam(':UID',$_SESSION['id']);
+				}
+			   	if($daytype == 'week'){
+			   		$range = '7 day';
+				   	$sth->bindParam(':days',$range);
+				   	$sth->bindParam(':type',$daytype);
+			   	}else if($daytype == 'month'){
+			   		$range = '30 day';
+				   	$sth->bindParam(':days',$range);
+				   	$sth->bindParam(':type',$daytype);
+			   	}
+				$sth->execute();
+				$row = $sth->fetchAll();
+				$ack = array(
+					'status'=> 'success',
+					'info' => $row
+				);
+			}
+				
 			return $ack;
 		}
 
-		function getCheckinBy($type){
-			$sql ='SELECT * ,"tmpworkType".type as "workType"
-				FROM (
-					with d as (select generate_series((now()- :days::interval),(now()+:days::interval),\'1 day\'::interval) t)
-					select to_char(d.t::date , \'DAY\')as "weekDay",date_trunc(:type, d.t)::date  - interval \'1 day\' as current_week, extract(\'dow\' from d.t), d.t::date as "date",*,:UID as "tmpUID"
-					FROM d
-					LEFT JOIN (
-						SELECT "checkin".id,"checkin"."UID","checkin"."checkinTime","checkin"."latitude",
-								"checkin"."longitude",
-								"out".id,"out"."checkoutTime","out"."latitude" AS "outlatitude","workType".type,
-								"out"."longitude" AS "outlongitude","out"."checkoutTime"-"checkin"."checkinTime" as diff,
-								"workType"."onWorkTime","workType"."offWorkTime","workType"."workHours", 
-								CASE WHEN "checkin"."checkinDate" IS NULL 
-									THEN "out"."checkoutDate"
-									ELSE "checkin"."checkinDate"
-								END AS "checkinDate",
-								CASE
-									WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 < "workType"."workHours" THEN \'早退\'
-									WHEN EXTRACT(EPOCH FROM ("out"."checkoutTime"-"checkin"."checkinTime" ))/3600 >= "workType"."workHours" THEN \'正常\'
-									ELSE \'缺卡\'
-								END AS "hoursStatus",
-								CASE
-									WHEN "checkin"."checkinTime" IS NULL THEN \'缺卡\'
-									WHEN "out"."checkoutTime" IS NULL THEN \'缺卡\'
-									WHEN "checkin"."checkinTime" > "workType"."onWorkTime" THEN \'遲到\'
-									WHEN "out"."checkoutTime" < "workType"."offWorkTime" THEN \'早退\'
-
-									ELSE \'正常\'
-								END AS "onoffStatus"
-
-						FROM staff."employeeCheckin" as "checkin",(
-							SELECT  "UID","checkinDate", MIN("checkinTime") as "checkinTime"
-							FROM staff."employeeCheckin" 
-							GROUP BY  "UID","checkinDate"
-						) as "tmpCheckin"
-						FULL OUTER JOIN (
-							SELECT "checkout".id,"checkout"."UID","checkout"."checkoutDate","checkout"."checkoutTime","checkout"."latitude",
-								"checkout"."longitude"
-							FROM staff."employeeCheckout" as "checkout",(
-								SELECT  "UID","checkoutDate", MAX("checkoutTime") as "checkoutTime"
-								FROM staff."employeeCheckout" 
-								GROUP BY  "UID","checkoutDate"
-							) as "tmpCheckout"
-							WHERE "tmpCheckout"."checkoutDate" = "checkout"."checkoutDate" 
-									and "tmpCheckout"."checkoutTime" = "checkout"."checkoutTime" 
-									and "checkout"."UID" = :UID
-							order by "checkout"."checkoutDate"
-						)as "out" ON "out"."checkoutDate"="tmpCheckin"."checkinDate"
-						LEFT JOIN (
-							select *
-							from staff."workType"
-						)as "workType" on "tmpCheckin"."UID" ="workType"."UID"
-						WHERE "tmpCheckin"."checkinDate" = "checkin"."checkinDate" 
-								and "tmpCheckin"."checkinTime" = "checkin"."checkinTime" 
-								and "checkin"."UID" = :UID
-						order by "checkin"."checkinDate"
-					)as "info" on "info"."checkinDate" = d.t::date
-					
-					WHERE date_trunc(:type, d.t)::date  - interval \'1 day\' IN (select date_trunc(:type, current_date) - interval \'1 day\' as current_week)
-				)as "tmp"
-				LEFT JOIN (
-					select "type","UID" 
-					from staff."workType"
-					WHERE "UID" = :UID
-				)as "tmpworkType" on  "tmpworkType" ."UID" = "tmp"."tmpUID"
-
-			';
-			$sth = $this->conn->prepare($sql);
-		   	$sth->bindParam(':UID',$_SESSION['id']);
-		   	if($type == 'week'){
-		   		$range = '7 day';
-			   	$sth->bindParam(':days',$range);
-			   	$sth->bindParam(':type',$type);
-		   	}else if($type == 'month'){
-		   		$range = '30 day';
-			   	$sth->bindParam(':days',$range);
-			   	$sth->bindParam(':type',$type);
-		   	}
-			$sth->execute();
-			$row = $sth->fetchAll();
-			$ack = array(
-				'status'=> 'success',
-				'info' => $row
-			);
-			return $ack;
-		}
+		
 
 		function checkin($date,$time,$location,$latitude,$longitude){
 			$sql ="INSERT INTO staff.\"employeeCheckin\"(
@@ -1065,6 +1251,7 @@ use Slim\Http\UploadedFile;
 			$row = $sth->fetchAll();
 			return $row;
 		}
+
 		// function getCheckin($staff_id,$checkDate,$type){
 		// 	try{	 	
 		// 		$sql ="SELECT checkintime,checkouttime,checkinlocation,checkoutlocation,staff_name,eight,nine 
@@ -1339,72 +1526,37 @@ use Slim\Http\UploadedFile;
 			switch ($_POST['type']){
 				case '部門':
 					try{
-						$newId = 'A';
-						for($i=0;$i<=26;$i++){
-							++$newId . PHP_EOL;
-							$sql ='SELECT EXISTS(SELECT 1 FROM staff_information.department WHERE department_id=:id)';
-							$sth = $this->conn->prepare($sql);
-						   $sth->bindParam(':id',$newId);
-							$sth->execute();
-							$row = $sth->fetchColumn(0);
-							if($i==26){
-								$ack = array(
-									'status' => 'failed', 
-									'message' => '多餘10筆資料'
-								);
-								return $ack;
-							}
-							if(!$row){
-								$addsql = 'INSERT INTO staff_information.department(department_id,department_name)
-										VALUES (:id,:name);';
-								$statement = $this->conn->prepare($addsql);
-								$statement->bindParam(':id',$newId);
-								$statement->bindParam(':name',$_POST['item']);
-								$statement->execute();
-								$ack = array(
-									'status' => 'success', 
-									'message' => '新增成功'
-								);		
-								return $ack;
-							}
-						}
+						$addsql = 'INSERT INTO staff_information.department(department_name)
+								VALUES (:name);';
+						$statement = $this->conn->prepare($addsql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);		
+						return $ack;
 					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 
-							'message'=> '資料重複'
+							'message'=> $e
+
 						);			
 					}					
 					return $ack;
 
 				case '職位':
 					try{
-						for($i=1;$i<=10;$i++){
-							$sql ='SELECT EXISTS(SELECT 1 FROM staff_information.position WHERE position_id=:id)';
-							$sth = $this->conn->prepare($sql);
-						   $sth->bindParam(':id',$i);
-							$sth->execute();
-							$row = $sth->fetchColumn(0);
-							if($i==10){
-								$ack = array(
-									'status' => 'failed', 
-									'message' => '多餘10筆資料'
-								);
-								return $ack;
-							}
-							if(!$row){
-								$addsql = 'INSERT INTO staff_information.position(position_id,position_name)
-										VALUES (:id,:name);';
-								$statement = $this->conn->prepare($addsql);
-								$statement->bindParam(':id',$i);
-								$statement->bindParam(':name',$_POST['item']);
-								$statement->execute();
-								$ack = array(
-									'status' => 'success', 
-									'message' => '新增成功'
-								);		
-								return $ack;
-							}
-						}
+						$addsql = 'INSERT INTO staff_information.position(position_name)
+								VALUES (,:name);';
+						$statement = $this->conn->prepare($addsql);
+						$statement->bindParam(':name',$_POST['item']);
+						$statement->execute();
+						$ack = array(
+							'status' => 'success', 
+							'message' => '新增成功'
+						);		
+						return $ack;
 					}catch(PDOException $e){
 						$ack = array(
 							'status' => 'failed', 
@@ -1533,7 +1685,7 @@ use Slim\Http\UploadedFile;
 							'message'=> $e
 						);
 					}	
-					return $ack;		
-		}
+					return $ack;	
+			}
 	}
 ?>

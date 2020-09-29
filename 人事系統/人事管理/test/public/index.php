@@ -326,8 +326,6 @@ $app->group('/table', function () use ($app) {
 	    $ack = $staff->allInfo($args['staff_id']);
 	    $response = $response->withHeader('Content-type', 'application/json' );
 		$response = $response->withJson($ack);
-
-
 	    return $response;
 
 	});
@@ -772,6 +770,39 @@ $app->group('/chat', function () use ($app) {
 	});
 })->add('ViewMiddleware');
 
+$app->group('/workTime', function () use ($app) {
+	$app->post('', function (Request $request, Response $response, array $args){
+		$_POST=$request->getParsedBody();
+		$workTime = new WorkTime($this->db);
+	    $result = $workTime->insertLeaveTime();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+		    return $response;
+	});
+	$app->get('/file', function (Request $request, Response $response, array $args){
+		$workTime = new WorkTime($this->db);
+	    $result = $workTime->getFile();
+
+	    // $response = $response
+	    // 	->withHeader('Content-Description','File Transfer')
+    	// 	->withHeader('Content-type', 'application/csv;charset=utf-8' )
+    	// 	->withHeader('Content-Type', 'application/octet-stream')
+    		// ->withHeader('Content-Disposition', 'attachment;filename="export.csv"');
+		// $response = $response->withJson($result);
+	    // return $response;
+
+	});
+
+	$app->post('/check', function (Request $request, Response $response, array $args){
+		$_POST=$request->getParsedBody();
+		$workTime = new WorkTime($this->db);
+	    $result = $workTime->checkWorkTime();
+	    $response = $response->withHeader('Content-type', 'application/json' );
+		$response = $response->withJson($result);
+		    return $response;
+	});
+});
+
 $app->group('/work', function () use ($app) {
 	$app->group('/checkin', function () use ($app) {
 		$app->post('', function (Request $request, Response $response, array $args) {
@@ -792,7 +823,8 @@ $app->group('/work', function () use ($app) {
 		});
 		$app->get('/by/{type}', function (Request $request, Response $response, array $args) {
 		    $work = new Work($this->db);
-		    $result = $work->getCheckinBy($args['type']);   
+		    $result = $work->getCheckinBy($args['type'],null,null);   
+
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 		    return $response;

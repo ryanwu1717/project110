@@ -101,6 +101,14 @@ $app->group('/management', function () use ($app) {
 				$viewParam = $request->getAttribute('viewParam');		
 				return $this->view->render($response, '/managementCheckin.php', $viewParam);
 			});
+			$app->get('/add', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/add.php', $viewParam);
+			});
+			$app->get('/inputWork', function (Request $request, Response $response, array $args) {	
+				$viewParam = $request->getAttribute('viewParam');		
+				return $this->view->render($response, '/inputWork.php', $viewParam);
+			});
 
 		})->add('ManagementViewMiddleware');
 		$app->get('/login', function (Request $request, Response $response, array $args) {	
@@ -189,6 +197,23 @@ $app->group('/management', function () use ($app) {
 		    $response = $response->withHeader('Content-type', 'application/json' );
 			$response = $response->withJson($result);
 			return $response;
+		});
+		
+		$app->get('/term/{start}/{end}/{type}/{id}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckin($args['start'],$args['end'],$args['type'],$args['id']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
+		});
+		$app->get('/by/{daytype}/{type}/{id}', function (Request $request, Response $response, array $args) {
+		    $work = new Work($this->db);
+		    $result = $work->getCheckinBy($args['daytype'],$args['type'],$args['id']);   
+		    $response = $response->withHeader('Content-type', 'application/json' );
+			$response = $response->withJson($result);
+		    return $response;
+		    
 		});
 	});
 

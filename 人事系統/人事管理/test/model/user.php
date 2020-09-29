@@ -103,6 +103,106 @@ use Slim\Http\UploadedFile;
 	// 	$response = $response->withJson($result);
 	//     return $response;
 	// });
+	
+	Class WorkTime{
+		var $result;
+		var $conn;
+		function __construct($db){
+			$this->conn = $db;
+		}
+		function getFile(){
+			$sql ='SELECT staff_id AS "員工編號", staff_name  AS "員工姓名",\'\' AS 請假時數,\'\' AS "年度"
+				FROM staff.staff
+				ORDER BY staff_id';	
+			$statement = $this->conn->prepare($sql);
+			$statement->execute();
+			$rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+ 
+			$columnNames = array();
+			if(!empty($rows)){
+			    $firstRow = $rows[0];
+			    foreach($firstRow as $colName => $val){
+			        $columnNames[] = $colName;
+			    }
+			}
+			 
+			$filename = "export.csv";
+			header('Content-Type: application/csv');
+		    header('Content-Disposition: attachment; filename="'.$filename.'";');
+			 $f = fopen('php://output', 'w'); 
+			 fputs($f, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+			fputcsv($f, $columnNames);
+		    foreach ($rows as $line) { 
+
+		        fputcsv($f, $line); 
+		    }
+		    // fpassthru($f);
+		    fclose($f);
+		    readfile($f);
+		     
+		    // rewind($f);
+		    
+
+		}
+		function checkWorkTime(){
+			$_POST = json_decode($_POST['data'],true);
+			$ack = array(
+				'status' => 'success',
+				'message' => '確定新增'
+			);
+			foreach($_POST['data'] as $val){
+				if(empty($val['time']) || empty($val['year'])){
+
+					$ack = array(
+						'status' => 'failed',
+						'message' => $val['id'].' '.$val['name'].'有空白'
+					);
+				}
+				// return $val;
+			}
+			return $ack;
+		}
+		function insertLeaveTime(){
+			$_POST = json_decode($_POST['data'],true);
+			foreach($_POST['data'] as $val){
+				$sql ='SELECT id, "UID", "time", year
+						FROM staff."leaveTime"
+						WHERE "UID"=:UID AND year=:year;';	
+				$statement = $this->conn->prepare($sql);
+				$statement->bindValue(':UID',$val['id'],PDO::PARAM_STR);
+				$statement->bindValue(':year',$val['year'],PDO::PARAM_INT);
+				$statement->execute();
+				$row = $statement->fetchAll();
+				if(count($row) == 0){
+					$sql ='INSERT INTO staff."leaveTime"(
+						"UID", "time", year)
+						VALUES ( :UID, :leaveTime, :year);';
+					$statement = $this->conn->prepare($sql);
+					$statement->bindValue(':UID',$val['id'],PDO::PARAM_STR);
+					$statement->bindValue(':leaveTime',$val['time'],PDO::PARAM_INT);
+					$statement->bindValue(':year',$val['year'],PDO::PARAM_INT);
+					$statement->execute();
+				}else{
+					$sql ='UPDATE staff."leaveTime"
+							SET "time"=:leaveTime
+							WHERE "UID"=:UID AND year=:year;';
+					$statement = $this->conn->prepare($sql);
+					$statement->bindValue(':UID',$val['id'],PDO::PARAM_STR);
+					$statement->bindValue(':leaveTime',$val['time'],PDO::PARAM_INT);
+					$statement->bindValue(':year',$val['year'],PDO::PARAM_INT);
+					$statement->execute();
+				}
+				// return count($row);
+                
+
+			}
+			$ack = array(
+				'status' => 'success'
+			);
+			return $ack;
+		}
+		
+	}
 
 	Class Staff{
 		var $result;
@@ -111,31 +211,7 @@ use Slim\Http\UploadedFile;
 			$this->conn = $db;
 		}
 
-		// function getStaffName($id,$type){
-		// 	if($type == 'department'){
-		// 		$sql ='SELECT staff_name,staff_id
-		// 			FROM staff.staff
-		// 			WHERE staff_department = :staff_department;';	
-		// 		$statement = $this->conn->prepare($sql);
-		// 		$statement->bindParam(':staff_department',$id);
-		// 	}else if($type == 'departmentMember'){
-		// 		$sql ='SELECT staff_name,staff_id
-		// 			FROM staff.staff
-		// 			WHERE staff_department = :staff_department;';	
-		// 		$statement = $this->conn->prepare($sql);
-		// 		$statement->bindParam(':staff_department',$id);
-		// 	}else{
-		// 		$sql ='SELECT staff_name
-		// 			FROM staff.staff
-		// 			WHERE staff_id = :staff_id;';	
-		// 		$statement = $this->conn->prepare($sql);
-		// 		$statement->bindParam(':staff_id',$id);
-		// 	}
-			
-		// 	$statement->execute();
-		// 	$row = $statement->fetchAll();			
-		// 	return $row;
-		// }
+		
 
 		function getStaffName($id,$type,$chatID = null){
 			if(is_null($chatID)){
@@ -909,6 +985,8 @@ use Slim\Http\UploadedFile;
 		}
 		function getProfile($staff_id){
 			$profile = $this->allInfo($staff_id);
+			// var_dump($profile);
+			return $profile;
 			if(count($profile)==1){
 				$data = array();
 				foreach ($profile[0] as $key => $value) {

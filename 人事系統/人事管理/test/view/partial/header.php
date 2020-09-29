@@ -91,6 +91,7 @@
               <span>審核假單</span>
             </a>
           </li>
+          
           <!-- Nav Item - Pages Collapse Menu -->
           <!-- <li class="nav-item">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
@@ -171,7 +172,12 @@
             </a>
           </li>
           <!-- Nav Item - Add -->
-         
+         <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/add">
+              <i class="fa fa-archive" aria-hidden="true"></i>
+              <span>新增類別</span>
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="<?=@$url?>/oldcheckinlist">
               <i class="fas fa-fw fa-table"></i>
@@ -202,6 +208,13 @@
               <span>審核層級</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=@$url?>/inputWork">
+              <i class="fas fa-fw fa-table"></i>
+              <span>匯入工時</span>
+            </a>
+          </li>
+          
           <?php } //management end?>
           <!-- Divider -->
           <hr class="sidebar-divider d-none d-md-block">
